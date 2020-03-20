@@ -1,6 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>单例模式</title>
+    <url>/2020/03/20/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h4 id="1-定义"><a href="#1-定义" class="headerlink" title="1.定义"></a>1.定义</h4><p>确保某个类只有一个实例,并且自行实例化并向整个系统提供这个实例。</p>
+<h4 id="2-介绍"><a href="#2-介绍" class="headerlink" title="2.介绍"></a>2.介绍</h4><p>单例模式属于创建类模式。<br>单例模式有以下特点：</p>
+<ol>
+<li>单例类只能有一个实例。</li>
+<li>单例类必须自己创建自己的唯一实例。</li>
+<li>单例类必须给所有其他对象提供这一实例。</li>
+</ol>
+<h4 id="3-实现"><a href="#3-实现" class="headerlink" title="3.实现"></a>3.实现</h4><h5 id="3-4-饿汉式"><a href="#3-4-饿汉式" class="headerlink" title="3.4 饿汉式"></a>3.4 饿汉式</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;单例类.   </span><br><span class="line">public class Singleton &#123;</span><br><span class="line">    </span><br><span class="line">    private Singleton() &#123;&#x2F;&#x2F;构造方法为private,防止外部代码直接通过new来构造多个对象</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static final Singleton single &#x3D; new Singleton();  &#x2F;&#x2F;在类初始化时，已经自行实例化,所以是线程安全的。</span><br><span class="line"></span><br><span class="line">    public static Singleton getInstance() &#123;  &#x2F;&#x2F;通过getInstance()方法获取实例对象</span><br><span class="line">        return single;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>优点：写法简单，线程安全。</li>
+<li>缺点：没有懒加载的效果，如果没有使用过的话会造成内存浪费。</li>
+</ul>
+<h5 id="3-1-懒汉式（线程不安全）"><a href="#3-1-懒汉式（线程不安全）" class="headerlink" title="3.1 懒汉式（线程不安全）"></a>3.1 懒汉式（线程不安全）</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;单例类</span><br><span class="line">public class Singleton &#123;</span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static Singleton single &#x3D; null;</span><br><span class="line"></span><br><span class="line">    public static Singleton getInstance() &#123;</span><br><span class="line">        if (single &#x3D;&#x3D; null) &#123;</span><br><span class="line">            single &#x3D; new Singleton();  &#x2F;&#x2F;在第一次调用getInstance()时才实例化，实现懒加载,所以叫懒汉式</span><br><span class="line">        &#125;</span><br><span class="line">        return single;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>优点：实现了懒加载的效果。</li>
+<li>缺点：线程不安全。</li>
+</ul>
+<h5 id="3-1-懒汉式（线程安全）"><a href="#3-1-懒汉式（线程安全）" class="headerlink" title="3.1 懒汉式（线程安全）"></a>3.1 懒汉式（线程安全）</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;单例类</span><br><span class="line">public class Singleton &#123;</span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static Singleton single &#x3D; null;</span><br><span class="line"></span><br><span class="line">    public static synchronized Singleton getInstance() &#123; &#x2F;&#x2F;加上synchronized同步 </span><br><span class="line">        if (single &#x3D;&#x3D; null) &#123;</span><br><span class="line">            single &#x3D; new Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        return single;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>优点：实现了懒加载的效果，线程安全。</li>
+<li>缺点：使用synchronized会造成不必要的同步开销，而且大部分时候我们是用不到同步的。</li>
+</ul>
+<h5 id="3-3-双重检查锁定（DCL）"><a href="#3-3-双重检查锁定（DCL）" class="headerlink" title="3.3 双重检查锁定（DCL）"></a>3.3 双重检查锁定（DCL）</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line">    private volatile static Singleton singleton; &#x2F;&#x2F;volatile 能够防止代码的重排序，保证得到的对象是初始化过</span><br><span class="line"></span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Singleton getSingleton() &#123;</span><br><span class="line">        if (singleton &#x3D;&#x3D; null) &#123;  &#x2F;&#x2F;第一次检查，避免不必要的同步</span><br><span class="line">            synchronized (Singleton.class) &#123;  &#x2F;&#x2F;同步</span><br><span class="line">                if (singleton &#x3D;&#x3D; null) &#123;   &#x2F;&#x2F;第二次检查，为null时才创建实例</span><br><span class="line">                    singleton &#x3D; new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>优点：懒加载，线程安全，效率较高</li>
+<li>缺点：volatile影响一点性能，高并发下有一定的缺陷，某些情况下DCL会失效，虽然概率较小。</li>
+</ul>
+<h5 id="3-5-静态内部类"><a href="#3-5-静态内部类" class="headerlink" title="3.5 静态内部类"></a>3.5 静态内部类</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Singleton getInstance() &#123;</span><br><span class="line">        &#x2F;&#x2F;第一次调用getInstance方法时才加载SingletonHolder并初始化sInstance</span><br><span class="line">        return SingletonHolder.sInstance;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    &#x2F;&#x2F;静态内部类</span><br><span class="line">    private static class SingletonHolder &#123;</span><br><span class="line">        private static final Singleton sInstance &#x3D; new Singleton();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>优点：懒加载，线程安全，推荐使用</p>
+<h5 id="3-6-枚举单例"><a href="#3-6-枚举单例" class="headerlink" title="3.6 枚举单例"></a>3.6 枚举单例</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public enum Singleton &#123;</span><br><span class="line"></span><br><span class="line">    INSTANCE;   &#x2F;&#x2F;定义一个枚举的元素，它就是Singleton的一个实例</span><br><span class="line"></span><br><span class="line">    public void doSomething() &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>优点：线程安全，写法简单，能防止反序列化重新创建新的对象。</li>
+<li>缺点：可读性不高，枚举会比静态常量多那么一丁点的内存。</li>
+</ul>
+<h5 id="3-7-使用容器实现单例模式"><a href="#3-7-使用容器实现单例模式" class="headerlink" title="3.7 使用容器实现单例模式"></a>3.7 使用容器实现单例模式</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;单例管理类</span><br><span class="line">public class SingletonManager &#123;</span><br><span class="line">    private static Map&lt;String, Object&gt; objMap &#x3D; new HashMap&lt;String, Object&gt;();</span><br><span class="line"></span><br><span class="line">    public static void registerService(String key, Object instance) &#123;</span><br><span class="line">        if (!objMap.containsKey(key)) &#123;</span><br><span class="line">            objMap.put(key, instance);&#x2F;&#x2F;添加单例</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Object getService(String key) &#123;</span><br><span class="line">        return objMap.get(key);&#x2F;&#x2F;获取单例</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>优点：方便管理。</li>
+<li>缺点：写法稍复杂。</li>
+</ul>
+<h4 id="4-注意事项"><a href="#4-注意事项" class="headerlink" title="4.注意事项"></a>4.注意事项</h4><p>使用反射能够破坏单例模式，所以应该慎用反射</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Constructor con &#x3D; Singleton.class.getDeclaredConstructor();</span><br><span class="line">    con.setAccessible(true);</span><br><span class="line">    &#x2F;&#x2F; 通过反射获取实例</span><br><span class="line">    Singleton singeton1 &#x3D; (Singleton) con.newInstance();</span><br><span class="line">    Singleton singeton2 &#x3D; (Singleton) con.newInstance();</span><br><span class="line">    System.out.println(singeton1&#x3D;&#x3D;singeton2);&#x2F;&#x2F;结果为false,singeton1和singeton2将是两个不同的实例</span><br></pre></td></tr></table></figure>
+
+
+
+<p>可以通过当第二次调用构造函数时抛出异常来防止反射破坏单例，以懒汉式为例：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line">    private static boolean flag &#x3D; true;</span><br><span class="line">    private static Singleton single &#x3D; null;</span><br><span class="line"></span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">        if (flag) &#123;</span><br><span class="line">            flag &#x3D; !flag;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            throw new RuntimeException(&quot;单例模式被破坏！&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Singleton getInstance() &#123;</span><br><span class="line">        if (single &#x3D;&#x3D; null) &#123;</span><br><span class="line">            single &#x3D; new Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        return single;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>反序列化时也会破坏单例模式，可以通过重写readResolve方法避免，以饿汉式为例：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Singleton implements Serializable &#123;</span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static final Singleton single &#x3D; new Singleton();</span><br><span class="line"></span><br><span class="line">    public static Singleton getInstance() &#123;</span><br><span class="line">        return single;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private Object readResolve() throws ObjectStreamException &#123;&#x2F;&#x2F;重写readResolve()</span><br><span class="line">        return single;&#x2F;&#x2F;直接返回单例对象</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h5 id="5-应用场景"><a href="#5-应用场景" class="headerlink" title="5.应用场景"></a>5.应用场景</h5><ul>
+<li>频繁访问数据库或文件的对象。</li>
+<li>工具类对象；</li>
+<li>创建对象时耗时过多或耗费资源过多，但又经常用到的对象；</li>
+</ul>
+<h5 id="6-优点"><a href="#6-优点" class="headerlink" title="6.优点"></a>6.优点</h5><ul>
+<li>内存中只存在一个对象，节省了系统资源。</li>
+<li>避免对资源的多重占用，例如一个文件操作，由于只有一个实例存在内存中，避免对同一资源文件的同时操作。</li>
+</ul>
+<h5 id="7-缺点"><a href="#7-缺点" class="headerlink" title="7.缺点"></a>7.缺点</h5><ul>
+<li>获取对象时不能用new</li>
+<li>单例对象如果持有Context，那么很容易引发内存泄露。</li>
+<li>单例模式一般没有接口，扩展很困难，若要扩展，只能修改代码来实现。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>设计模式</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>六大原则</title>
+    <url>/2020/03/20/%E5%85%AD%E5%A4%A7%E5%8E%9F%E5%88%99/</url>
+    <content><![CDATA[<p><a href="https://www.jianshu.com/p/bf92927c9d22" target="_blank" rel="noopener">https://www.jianshu.com/p/bf92927c9d22</a></p>
+<h4 id="面向对象的六大原则"><a href="#面向对象的六大原则" class="headerlink" title="面向对象的六大原则"></a>面向对象的六大原则</h4><h5 id="1-单一职责原则（Single-Responsibility-Principle-SRP）"><a href="#1-单一职责原则（Single-Responsibility-Principle-SRP）" class="headerlink" title="1.单一职责原则（Single Responsibility Principle, SRP）"></a>1.单一职责原则（Single Responsibility Principle, SRP）</h5><p>定义：一个类应只包含单一的职责。</p>
+<ul>
+<li>一个类职责过大的话，首先引起的问题就是这个类比较大，显得过于臃肿，同时其复用性是比较差的。</li>
+<li>其次就是如果修改某个职责，有可能引起另一个职责发生错误。这是我们极力所避免的，因此设计一个类时我们应当去遵循单一职责原则。</li>
+</ul>
+<h5 id="2-开放封闭原则-Open-ClosedPrinciple-OCP"><a href="#2-开放封闭原则-Open-ClosedPrinciple-OCP" class="headerlink" title="2.开放封闭原则(Open - ClosedPrinciple ,OCP)"></a>2.开放封闭原则(Open - ClosedPrinciple ,OCP)</h5><p>定义：一个模块、类、函数应当是对修改关闭，扩展开放。</p>
+<ul>
+<li>修改原有的代码可能会导致原本正常的功能出现问题。</li>
+<li>因此，当需求有变化时，最好是通过扩展来实现，增加新的方法满足需求，而不是去修改原有代码。</li>
+</ul>
+<h5 id="3-里氏代换原则-Liskov-Substitution-Principle-LSP"><a href="#3-里氏代换原则-Liskov-Substitution-Principle-LSP" class="headerlink" title="3.里氏代换原则( Liskov Substitution Principle ,LSP )"></a>3.里氏代换原则( Liskov Substitution Principle ,LSP )</h5><p>定义：使用父类的地方能够使用子类来替换，反过来，则不行。</p>
+<ul>
+<li>使用子类对象去替换父类对象，程序将不会产生错误</li>
+<li>因此在程序中尽量使用基类类型来对对象进行定义，而在运行时再确定其子类类型，用子类对象来替换父类对象。</li>
+<li>需要注意的是：</li>
+</ul>
+<ol>
+<li>子类的所有方法必须在父类中声明，或子类必须实现父类中声明的所有方法。如果一个方法只存在子类中，没有在父类中声明，则无法在以父类定义的对象中使用该方法。</li>
+<li>父类应当被尽量设计为抽象类或者接口，让子类继承父类或实现父接口，并实现在父类中声明的方法，运行时，子类实例替换父类实例，我们可以很方便地扩展系统的功能，同时无须修改原有子类的代码，增加新的功能可以通过增加一个新的子类来实现</li>
+</ol>
+<h5 id="4-依赖倒置原则-Dependence-Inversion-Principle-DIP"><a href="#4-依赖倒置原则-Dependence-Inversion-Principle-DIP" class="headerlink" title="4.依赖倒置原则( Dependence Inversion Principle ,DIP )"></a>4.依赖倒置原则( Dependence Inversion Principle ,DIP )</h5><p>定义：抽象不应该依赖于细节，细节应当依赖于抽象。</p>
+<ul>
+<li>即要面向接口编程，而不是面向具体实现去编程。</li>
+<li>高层模块不应该依赖低层模块，应该去依赖抽象。</li>
+</ul>
+<h5 id="5-接口隔离原则-Interface-Segregation-Principle，ISL）"><a href="#5-接口隔离原则-Interface-Segregation-Principle，ISL）" class="headerlink" title="5.接口隔离原则(Interface Segregation Principle，ISL）"></a>5.接口隔离原则(Interface Segregation Principle，ISL）</h5><p>定义：一个类对另一个类的依赖应该建立在最小的接口上。</p>
+<ul>
+<li>一个类不应该依赖他不需要的接口。</li>
+<li>接口的粒度要尽可能小，如果一个接口的方法过多，可以拆成多个接口。</li>
+</ul>
+<h5 id="6-迪米特原则-Law-of-Demeter-LoD"><a href="#6-迪米特原则-Law-of-Demeter-LoD" class="headerlink" title="6.迪米特原则(Law of  Demeter, LoD)"></a>6.迪米特原则(Law of  Demeter, LoD)</h5><p>定义：一个类尽量不要与其他类发生关系</p>
+<ul>
+<li>一个类对其他类知道的越少，耦合越小。</li>
+<li>当修改一个类时，其他类的影响就越小，发生错误的可能性就越小。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>设计模式</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ROOM</title>
     <url>/2020/03/20/ROOM/</url>
     <content><![CDATA[<p>不使用AndroidX的依赖</p>
@@ -1056,17 +1191,6 @@
       </categories>
       <tags>
         <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>安卓系统签名转keystore</title>
-    <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore%20-%20%E5%89%AF%E6%9C%AC%20(2)/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>Android</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
       </tags>
   </entry>
   <entry>
