@@ -1,182 +1,1098 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search> 
-  
-  
-    
-    <entry>
-      <title>ROOM</title>
-      <link href="/2020/03/20/ROOM/"/>
-      <url>/2020/03/20/ROOM/</url>
-      
-        <content type="html"><![CDATA[<p>  不使用AndroidX的依赖</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def room_version &#x3D; &quot;1.1.1&quot;</span><br><span class="line"></span><br><span class="line">    implementation &quot;android.arch.persistence.room:runtime:$room_version&quot;</span><br><span class="line">    kapt &quot;android.arch.persistence.room:compiler:$room_version&quot; &#x2F;&#x2F; use kapt for Kotlin</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@Entity</span><br><span class="line">data class User(</span><br><span class="line">        @PrimaryKey val uid: Int,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;first_name&quot;) val firstName: String?,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;last_name&quot;) val lastName: String?)</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Database(entities &#x3D; [User::class], version &#x3D; 1)</span><br><span class="line">abstract class AppDatabase : RoomDatabase() &#123;</span><br><span class="line">    abstract fun userDao(): UserDao</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface UserDao &#123;</span><br><span class="line">    @Query(&quot;SELECT * FROM user&quot;)</span><br><span class="line">    fun getAll(): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE uid IN (:userIds)&quot;)</span><br><span class="line">    fun loadAllByIds(userIds: IntArray): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE first_name LIKE :first AND &quot; +</span><br><span class="line">            &quot;last_name LIKE :last LIMIT 1&quot;)</span><br><span class="line">    fun findByName(first: String, last: String): User</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertAll(vararg users: User)</span><br><span class="line"></span><br><span class="line">    @Delete</span><br><span class="line">    fun delete(user: User)</span><br><span class="line"></span><br><span class="line">    @Query(&quot;select max(uid) from user &quot;)</span><br><span class="line">    fun queryMaxId(): Int</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">val userDao: UserDao by lazy &#123;</span><br><span class="line">           Room.databaseBuilder(</span><br><span class="line">                   appContext,</span><br><span class="line">                   AppDatabase::class.java, &quot;database-name&quot;</span><br><span class="line">           ).build().userDao()</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure><h4 id="监控数据变化"><a href="#监控数据变化" class="headerlink" title="监控数据变化"></a>监控数据变化</h4><p>使用RoomDatabase.getInvalidationTracker获取InvalidationTracker对象来监听表数据的改变。一般推荐直接在DAO方法中返回LiveData或者Observable对象。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Query(&quot;SELECT * FROM ConsumeInfo where timeStr LIKE :month ORDER BY time ASC&quot;)</span><br><span class="line">  fun getDataWithMonth(month: String): LiveData&lt;List&lt;ConsumeInfo&gt;&gt;</span><br><span class="line">  </span><br><span class="line">  ViewModel中监听，也可以放在界面上监听，下面的代码只能在Model中监听</span><br><span class="line">  </span><br><span class="line">   val liveLists &#x3D; DaoUtil.instance.getConsumeInfoList(month)</span><br><span class="line">          &#x2F;&#x2F; 添加数据监听，当数据变化时自动更新数据</span><br><span class="line">          liveLists.observe(owner, Observer&lt;List&lt;ConsumeInfo&gt;&gt; &#123;</span><br><span class="line">              Logger.e(&quot;getHistoryConsume observe change&quot;)</span><br><span class="line">              getAverageConsume(it)</span><br><span class="line">          &#125;)</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">private val users: MutableLiveData&lt;List&lt;User&gt;&gt; by lazy &#123;</span><br><span class="line">       MutableLiveData&lt;List&lt;User&gt;&gt;().also &#123;</span><br><span class="line">           uiScope.launch &#123;</span><br><span class="line">               val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">               it.value &#x3D; rst.await()</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fun getUsers(): LiveData&lt;List&lt;User&gt;&gt; &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">       return users</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   fun setUsers() &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123;</span><br><span class="line">               var count &#x3D; App.userDao.queryMaxId()</span><br><span class="line">               App.userDao.insertAll(User(++count, &quot;f$count&quot;, &quot;l$count&quot;))</span><br><span class="line">               App.userDao.getAll()</span><br><span class="line">           &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>]]></content>
-      
-      
+<search>
+  <entry>
+    <title>ROOM</title>
+    <url>/2020/03/20/ROOM/</url>
+    <content><![CDATA[<p>不使用AndroidX的依赖</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">def room_version &#x3D; &quot;1.1.1&quot;</span><br><span class="line"></span><br><span class="line">    implementation &quot;android.arch.persistence.room:runtime:$room_version&quot;</span><br><span class="line">    kapt &quot;android.arch.persistence.room:compiler:$room_version&quot; &#x2F;&#x2F; use kapt for Kotlin</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@Entity</span><br><span class="line">data class User(</span><br><span class="line">        @PrimaryKey val uid: Int,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;first_name&quot;) val firstName: String?,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;last_name&quot;) val lastName: String?)</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Database(entities &#x3D; [User::class], version &#x3D; 1)</span><br><span class="line">abstract class AppDatabase : RoomDatabase() &#123;</span><br><span class="line">    abstract fun userDao(): UserDao</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface UserDao &#123;</span><br><span class="line">    @Query(&quot;SELECT * FROM user&quot;)</span><br><span class="line">    fun getAll(): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE uid IN (:userIds)&quot;)</span><br><span class="line">    fun loadAllByIds(userIds: IntArray): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE first_name LIKE :first AND &quot; +</span><br><span class="line">            &quot;last_name LIKE :last LIMIT 1&quot;)</span><br><span class="line">    fun findByName(first: String, last: String): User</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertAll(vararg users: User)</span><br><span class="line"></span><br><span class="line">    @Delete</span><br><span class="line">    fun delete(user: User)</span><br><span class="line"></span><br><span class="line">    @Query(&quot;select max(uid) from user &quot;)</span><br><span class="line">    fun queryMaxId(): Int</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">val userDao: UserDao by lazy &#123;</span><br><span class="line">           Room.databaseBuilder(</span><br><span class="line">                   appContext,</span><br><span class="line">                   AppDatabase::class.java, &quot;database-name&quot;</span><br><span class="line">           ).build().userDao()</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="监控数据变化"><a href="#监控数据变化" class="headerlink" title="监控数据变化"></a>监控数据变化</h4><p>使用RoomDatabase.getInvalidationTracker获取InvalidationTracker对象来监听表数据的改变。一般推荐直接在DAO方法中返回LiveData或者Observable对象。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Query(&quot;SELECT * FROM ConsumeInfo where timeStr LIKE :month ORDER BY time ASC&quot;)</span><br><span class="line">  fun getDataWithMonth(month: String): LiveData&lt;List&lt;ConsumeInfo&gt;&gt;</span><br><span class="line">  </span><br><span class="line">  ViewModel中监听，也可以放在界面上监听，下面的代码只能在Model中监听</span><br><span class="line">  </span><br><span class="line">   val liveLists &#x3D; DaoUtil.instance.getConsumeInfoList(month)</span><br><span class="line">          &#x2F;&#x2F; 添加数据监听，当数据变化时自动更新数据</span><br><span class="line">          liveLists.observe(owner, Observer&lt;List&lt;ConsumeInfo&gt;&gt; &#123;</span><br><span class="line">              Logger.e(&quot;getHistoryConsume observe change&quot;)</span><br><span class="line">              getAverageConsume(it)</span><br><span class="line">          &#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private val users: MutableLiveData&lt;List&lt;User&gt;&gt; by lazy &#123;</span><br><span class="line">       MutableLiveData&lt;List&lt;User&gt;&gt;().also &#123;</span><br><span class="line">           uiScope.launch &#123;</span><br><span class="line">               val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">               it.value &#x3D; rst.await()</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fun getUsers(): LiveData&lt;List&lt;User&gt;&gt; &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">       return users</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   fun setUsers() &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123;</span><br><span class="line">               var count &#x3D; App.userDao.queryMaxId()</span><br><span class="line">               App.userDao.insertAll(User(++count, &quot;f$count&quot;, &quot;l$count&quot;))</span><br><span class="line">               App.userDao.getAll()</span><br><span class="line">           &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+]]></content>
       <categories>
-          
-          <category> JetPack </category>
-          
+        <category>JetPack</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> JetPack </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Android.mk打包apk</title>
-      <link href="/2020/03/18/Android.mk%E6%89%93%E5%8C%85apk/"/>
-      <url>/2020/03/18/Android.mk%E6%89%93%E5%8C%85apk/</url>
-      
-        <content type="html"><![CDATA[<p>一、新建Android.mk文件 放在app/src/main 目录下</p><p>二、代码中引用的第三方库通过aar包存放在最外层libs目录下，所有app共享这些库文件。</p><p>如何有自己用的第三方开源库，<a href="https://www.jianshu.com/p/59efa895589e" target="_blank" rel="noopener">查找aar的方法</a> </p><p>电脑上rxandroid aar的目录：<br>C:\Users\Lenovo.gradle\caches\modules-2\files-2.1\io.reactivex\rxandroid（各个电脑目录不同）</p><p>Android.mk编写规则<br>（系统设置例子）</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line">#代表mk当前文档路径</span><br><span class="line">LOCAL_PATH :&#x3D; $(call my-dir) </span><br><span class="line"></span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line"></span><br><span class="line">LOCAL_PACKAGE_NAME :&#x3D; HQ_DevSet</span><br><span class="line"></span><br><span class="line">#指该模块在所有版本下都编译</span><br><span class="line">LOCAL_MODULE_TAGS :&#x3D; optional</span><br><span class="line"></span><br><span class="line">#混淆配置</span><br><span class="line">LOCAL_PROGUARD_ENABLED :&#x3D; full obfuscation</span><br><span class="line">LOCAL_PROGUARD_FLAG_FILES :&#x3D; ..&#x2F;..&#x2F;proguard-rules.pro</span><br><span class="line"></span><br><span class="line">#设置不打odex包</span><br><span class="line">LOCAL_DEX_PREOPT :&#x3D; false</span><br><span class="line">DONT_DEXPREOPT_PREBUILTS :&#x3D; true  </span><br><span class="line"></span><br><span class="line">#apk路径</span><br><span class="line">LOCAL_MODULE_PATH :&#x3D; $(TARGET_OUT)&#x2F;app</span><br><span class="line"></span><br><span class="line">#签名配置</span><br><span class="line">LOCAL_CERTIFICATE :&#x3D; platform</span><br><span class="line"></span><br><span class="line">LOCAL_MULTILIB :&#x3D; 32</span><br><span class="line"></span><br><span class="line">#源码文件</span><br><span class="line">#引用当前app的资源</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; $(LOCAL_PATH)&#x2F;res</span><br><span class="line"></span><br><span class="line">#声明当前app的代码目录</span><br><span class="line">src_dirs :&#x3D; java&#x2F;</span><br><span class="line"></span><br><span class="line">#引用当前app的代码</span><br><span class="line">LOCAL_SRC_FILES :&#x3D; $(call all-java-files-under, $(src_dirs))</span><br><span class="line"></span><br><span class="line">#添加aidl源码文件</span><br><span class="line">LOCAL_SRC_FILES +&#x3D; \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxOne.aidl \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxTwo.aidl</span><br><span class="line"></span><br><span class="line"># jar包</span><br><span class="line">#声明多个 jar 包的位置   ----其中\代表换行，后面不能跟任何字符，后面的一样</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES :&#x3D; \</span><br><span class="line"> hqlib:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqlib.jar \</span><br><span class="line"> hqapi:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi.jar \</span><br><span class="line"> hqapi_sq:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi_sq.jar\</span><br><span class="line"> rxjava:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxjava-1.3.7.jar</span><br><span class="line"></span><br><span class="line">#引用我们声明的多个 jar 包的变量</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D;  hqlib \</span><br><span class="line">                                hqapi \</span><br><span class="line">                                hqapi_sq \</span><br><span class="line">                                rxjava \</span><br><span class="line">                                android-support-v4</span><br><span class="line">#aar包</span><br><span class="line">#声明aar包</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES +&#x3D; PublicTitle2:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;PublicTitle2.aar\</span><br><span class="line">rxandroid:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxandroid-1.2.1.aar</span><br><span class="line"></span><br><span class="line">#引用aar包</span><br><span class="line">LOCAL_STATIC_JAVA_AAR_LIBRARIES +&#x3D; PublicTitle2 \</span><br><span class="line"> Rxandroid</span><br><span class="line"></span><br><span class="line">#引入使用的资源 添加包名</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">--extra-packages com.hopechart.sq.publictitle \</span><br><span class="line">--extra-packages rx.android </span><br><span class="line"></span><br><span class="line">#设置version版本</span><br><span class="line">#设置版本号和名字，如果不写会默认使用系统api的版本号25 --7.1.1</span><br><span class="line">version_code &#x3D; 24</span><br><span class="line">version_name :&#x3D; 4.0.0.1</span><br><span class="line"></span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-code $(version_code)</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-name $(version_name)    </span><br><span class="line"></span><br><span class="line">#打出来的minSDK和targetSDK version都是19 </span><br><span class="line">LOCAL_SDK_VERSION :&#x3D; 19  </span><br><span class="line">#如果有特殊情况可在清单文件中添加</span><br><span class="line"># 【</span><br><span class="line">#  AndroidManifest.xml清单文件添加sdk版本，优先使用清单文件中</span><br><span class="line"># 的版本号</span><br><span class="line">#  &lt;uses-sdk android:minSdkVersion&#x3D;&quot;19&quot;</span><br><span class="line">#         android:targetSdkVersion&#x3D;&quot;25&quot;&#x2F;&gt;</span><br><span class="line"># 】</span><br><span class="line"></span><br><span class="line">#打apk包</span><br><span class="line">include $(BUILD_PACKAGE)</span><br><span class="line"></span><br><span class="line">#调用子目录的mk文件</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure><p>#Android.mk END</p><p>#如果使用的系统的包，需要引入他们使用的资源文件，否则会提示编译资源找不到的错误</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#RecyclerView例子</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; frameworks&#x2F;support&#x2F;v7&#x2F;recyclerview&#x2F;res</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D; android-support-v7-recyclerview</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">--extra-packages android.support.v7.recyclerview</span><br></pre></td></tr></table></figure><p>代码编译<br>1、在源码任意目录下创建一个目录，把改好的代码上传到该目录；<br>2、切换到源码顶层目录，执行</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source build&#x2F;envsetup.sh;</span><br></pre></td></tr></table></figure><p>3、编译单个apk , 执行</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mmm  [apk mk文件的目录]</span><br></pre></td></tr></table></figure><p>需要在全编的情况下才能单独编译</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j32</span><br></pre></td></tr></table></figure><p>编译所有的模块编译所有的模块需要在每个模块的父级目录添加Android.mk文件</p><p>内容【</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH :&#x3D; $(call my-dir)</span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure><p>】<br>这样就可以执行子目录中的Android.mk文件。<br>如下目录执行的命令就是: mmm 代码目录/SQ10Inch,然后就可以在输出目录看到所有打包出来的apk文件。</p><p>参考链接：<br><a href="https://blog.csdn.net/jsn_ze/article/details/72790401" target="_blank" rel="noopener">Android源码编译第三方app如何写Android.mk</a><br><a href="https://www.jianshu.com/p/e19e0d3bf13a" target="_blank" rel="noopener">Android.mk引用jar包、so库、aar包系统签名</a></p>]]></content>
-      
-      
+      <tags>
+        <tag>JetPack</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nexus3.12私服搭建</title>
+    <url>/2020/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1）左shift打开CMD窗口nexus-3.12.1-01-win64\nexus-3.12.1-01\bin目录    </span><br><span class="line">2）nexus.exe &#x2F;install  安装服务  </span><br><span class="line">3）nexus.exe &#x2F;start    启动服务  </span><br><span class="line">4）nexus.exe &#x2F;stop     停止服务</span><br></pre></td></tr></table></figure>
+<p>（3）、使用nexus软件<br>在浏览器中输入<a href="http://localhost:8081/，点击“login" target="_blank" rel="noopener">http://localhost:8081/，点击“login</a> in”，输入admin/admin123即可。<br>（4）、管理目前的仓库<br>将central的远程地址修改如下（即改为aliyun的镜像，主要是速度快一些）：<a href="http://maven.aliyun.com/nexus/content/groups/public/" target="_blank" rel="noopener">http://maven.aliyun.com/nexus/content/groups/public/</a><br>（<a href="https://blog.csdn.net/ytfrdfiw/article/details/78476087" target="_blank" rel="noopener">参考链接</a>）</p>
+<h4 id="多平台Nexus私服搭建"><a href="#多平台Nexus私服搭建" class="headerlink" title="多平台Nexus私服搭建"></a>多平台Nexus私服搭建</h4><p><a href="http://www.10tiao.com/html/227/201703/2650238831/1.html" target="_blank" rel="noopener">Android Studio依赖管理与Nexus私服搭建</a>  </p>
+<p>创建自己的仓库</p>
+<p>创建用户</p>
+<p>首先使用管理员密码登陆到 Nexus私服 并添加用户：</p>
+<p>。。。。</p>
+<p>上传自己的Module到仓库</p>
+<p>1、 在项目级别的 build.gradle 中的 allprojects 下 repositories节点 添加 mavenLocal()：  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>2、 在 Lib Module 级别的 build.gradle 中添加 maven 插件 apply plugin: ‘maven’：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">apply plugin: &#39;com.android.library&#39;</span><br><span class="line">apply plugin: &#39;maven&#39;</span><br></pre></td></tr></table></figure>
+
+<p>3、 在 Lib Module 级别的 build.gradle 中 android节点 添加上传行为：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">uploadArchives &#123;</span><br><span class="line">    repositories.mavenDeployer &#123;</span><br><span class="line">        repository(url: &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;)&#123;</span><br><span class="line">            authentication(userName: &quot;wz&quot;,password: &quot;123456&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">        pom.groupId &#x3D; &#39;com.hopechart&#39;</span><br><span class="line">        pom.artifactId &#x3D; &#39;PublicTitle&#39;</span><br><span class="line">        pom.version &#x3D; &#39;1.0.1&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>4、使用Gradle插件上传aar到Maven私服，点击 uploadArchives 自动上传：</p>
+<p>5、引用私服中的Module  </p>
+<p>在需要依赖 Module 的 build.gradle 中添加如下节点,其中URL就是上文中创建仓库的ur</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;项目级别的 build.gradle</span><br><span class="line"> allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        ......</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;model级别的 build.gradle</span><br><span class="line"></span><br><span class="line"> compile &#39;com.hopechart:PublicTitle:1.0.0&#39;</span><br></pre></td></tr></table></figure>
+
+]]></content>
       <categories>
-          
-          <category> Android </category>
-          
+        <category>Android</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Android </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>systemUI</title>
-      <link href="/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/"/>
-      <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
-      
-        <content type="html"><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p><h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure><p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure><h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p><h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line"></span><br><span class="line">public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">super(host);</span><br><span class="line">&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@Override</span><br><span class="line">public void setListening(boolean listening) &#123;</span><br><span class="line">&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@Override</span><br><span class="line">protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">return new BooleanState();</span><br><span class="line">&#125;</span><br><span class="line">public void setFmModeUpdate()&#123;</span><br><span class="line">handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line"> return &quot;fm&quot; ;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> @Override</span><br><span class="line">protected void handleClick() &#123;</span><br><span class="line">&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@Override</span><br><span class="line">protected void handleUpdateState(</span><br><span class="line">com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line"></span><br><span class="line">int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">state.visible &#x3D; true ;</span><br><span class="line">state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line"></span><br><span class="line">&#125;else&#123;</span><br><span class="line">&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p><h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">.....</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">@Override</span><br><span class="line">public void onChange(boolean selfChange) &#123;</span><br><span class="line">setFmModeUpdate();</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure><pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p><p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    </span><br><span class="line">    mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure><p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p><h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p><p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p><p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p><p>首先看一下代码：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">this.getContentResolver().registerContentObserver(</span><br><span class="line">Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">private void unregisterContentObserver() &#123;</span><br><span class="line">this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">@Override</span><br><span class="line">public void onChange(boolean selfChange) &#123;</span><br><span class="line">int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">mSwitchPreference.setChecked(true);</span><br><span class="line">Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">mSwitchPreference.setChecked(false);</span><br><span class="line">Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p><p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>]]></content>
-      
-      
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>vi—终端中的编辑器</title>
+    <url>/2020/03/18/vi%E2%80%94%E7%BB%88%E7%AB%AF%E4%B8%AD%E7%9A%84%E7%BC%96%E8%BE%91%E5%99%A8/</url>
+    <content><![CDATA[<h1 id="vi-——-终端中的编辑器"><a href="#vi-——-终端中的编辑器" class="headerlink" title="vi —— 终端中的编辑器"></a><code>vi</code> —— 终端中的编辑器</h1><h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><ul>
+<li><code>vi</code> 简介</li>
+<li>打开和新建文件</li>
+<li>三种工作模式</li>
+<li>常用命令</li>
+<li>分屏命令</li>
+<li>常用命令速查图</li>
+</ul>
+<h2 id="01-vi-简介"><a href="#01-vi-简介" class="headerlink" title="01. vi 简介"></a>01. <code>vi</code> 简介</h2><h3 id="1-1-学习-vi-的目的"><a href="#1-1-学习-vi-的目的" class="headerlink" title="1.1 学习 vi 的目的"></a>1.1 学习 <code>vi</code> 的目的</h3><ul>
+<li>在工作中，要对 <strong>服务器</strong> 上的文件进行 <strong>简单</strong> 的修改，可以使用 <code>ssh</code> 远程登录到服务器上，并且使用 <code>vi</code> 进行快速的编辑即可</li>
+<li>常见需要修改的文件包括：<ul>
+<li><strong>源程序</strong></li>
+<li><strong>配置文件</strong>，例如 <code>ssh</code> 的配置文件 <code>~/.ssh/config</code></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li>在没有图形界面的环境下，要编辑文件，<code>vi</code> 是最佳选择！</li>
+<li>每一个要使用 Linux 的程序员，都应该或多或少的学习一些 <code>vi</code> 的常用命令</li>
+</ul>
+</blockquote>
+<h3 id="1-2-vi-和-vim"><a href="#1-2-vi-和-vim" class="headerlink" title="1.2 vi 和 vim"></a>1.2 vi 和 vim</h3><ul>
+<li>在很多 <code>Linux</code> 发行版中，直接把 <code>vi</code> 做成 <code>vim</code> 的软连接</li>
+</ul>
+<h4 id="vi"><a href="#vi" class="headerlink" title="vi"></a>vi</h4><ul>
+<li><code>vi</code> 是 <code>Visual interface</code> 的简称，是 <code>Linux</code> 中 <strong>最经典</strong> 的文本编辑器</li>
+<li><code>vi</code> 的核心设计思想 —— <strong>让程序员的手指始终保持在键盘的核心区域，就能完成所有的编辑操作</strong></li>
+</ul>
+<p><img src="media/14993340485745/001_vi%E9%94%AE%E7%9B%98.png" alt="001_vi键盘-w551"></p>
+<ul>
+<li><code>vi</code> 的特点：<ul>
+<li><strong>没有图形界面</strong> 的 <strong>功能强大</strong> 的编辑器</li>
+<li>只能是编辑 <strong>文本内容</strong>，不能对字体、段落进行排版</li>
+<li><strong>不支持鼠标操作</strong></li>
+<li><strong>没有菜单</strong></li>
+<li><strong>只有命令</strong></li>
+</ul>
+</li>
+<li><code>vi</code> 编辑器在 <strong>系统管理</strong>、<strong>服务器管理</strong> 编辑文件时，<strong>其功能永远不是图形界面的编辑器能比拟的</strong></li>
+</ul>
+<h4 id="vim"><a href="#vim" class="headerlink" title="vim"></a><code>vim</code></h4><p><strong>vim = vi improved</strong></p>
+<ul>
+<li><code>vim</code> 是从 <code>vi</code> 发展出来的一个文本编辑器，支持 <strong>代码补全</strong>、<strong>编译</strong> 及 <strong>错误跳转</strong> 等方便编程的功能特别丰富，在程序员中被广泛使用，被称为 <strong>编辑器之神</strong></li>
+</ul>
+<h4 id="查询软连接命令（知道）"><a href="#查询软连接命令（知道）" class="headerlink" title="查询软连接命令（知道）"></a>查询软连接命令（知道）</h4><ul>
+<li>在很多 <code>Linux</code> 发行版中直接把 <code>vi</code> 做成 <code>vim</code> 的软连接</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查找 vi 的运行文件</span></span><br><span class="line"></span><br><span class="line">$ <span class="built_in">which</span> vi</span><br><span class="line">$ ls -l /usr/bin/vi</span><br><span class="line">$ ls -l /etc/alternatives/vi</span><br><span class="line">$ ls -l /usr/bin/vim.basic</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查找 vim 的运行文件</span></span><br><span class="line">$ <span class="built_in">which</span> vim</span><br><span class="line">$ ls -l /usr/bin/vim</span><br><span class="line">$ ls -l /etc/alternatives/vim</span><br><span class="line">$ ls -l /usr/bin/vim.basic</span><br></pre></td></tr></table></figure>
+
+<h2 id="02-打开和新建文件"><a href="#02-打开和新建文件" class="headerlink" title="02. 打开和新建文件"></a>02. 打开和新建文件</h2><ul>
+<li>在终端中输入 <code>vi</code> <strong>在后面跟上文件名</strong> 即可</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vi 文件名</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果文件已经存在，会直接打开该文件</li>
+<li>如果文件不存在，会新建一个文件</li>
+</ul>
+<h3 id="2-1-打开文件并且定位行"><a href="#2-1-打开文件并且定位行" class="headerlink" title="2.1 打开文件并且定位行"></a>2.1 打开文件并且定位行</h3><ul>
+<li><p>在日常工作中，有可能会遇到 <strong>打开一个文件，并定位到指定行</strong> 的情况</p>
+</li>
+<li><p>例如：在开发时，<strong>知道某一行代码有错误</strong>，可以 <strong>快速定位</strong> 到出错代码的位置</p>
+</li>
+<li><p>这个时候，可以使用以下命令打开文件</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vi 文件名 +行数</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>提示：如果只带上 <code>+</code> 而不指定行号，会直接定位到文件末尾</p>
+</blockquote>
+<h3 id="2-2-异常处理"><a href="#2-2-异常处理" class="headerlink" title="2.2 异常处理"></a>2.2 异常处理</h3><ul>
+<li>如果 <code>vi</code> 异常退出，在磁盘上可能会保存有 <strong>交换文件</strong></li>
+<li>下次再使用 <code>vi</code> 编辑该文件时，会看到以下屏幕信息，按下字母 <code>d</code> 可以 <strong>删除交换文件</strong> 即可</li>
+</ul>
+<blockquote>
+<p>提示：按下键盘时，注意关闭输入法</p>
+</blockquote>
+<p><img src="media/14993340485745/002_%E5%88%A0%E9%99%A4%E4%BA%A4%E6%8D%A2%E6%96%87%E4%BB%B6.png" alt="002_删除交换文件-w1048"></p>
+<h2 id="03-三种工作模式"><a href="#03-三种工作模式" class="headerlink" title="03. 三种工作模式"></a>03. 三种工作模式</h2><ul>
+<li><p><code>vi</code> 有三种基本工作模式：</p>
+<ol>
+<li><strong>命令模式</strong><ul>
+<li><strong>打开文件首先进入命令模式</strong>，是使用 <code>vi</code> 的 <strong>入口</strong></li>
+<li>通过 <strong>命令</strong> 对文件进行常规的编辑操作，例如：<strong>定位</strong>、<strong>翻页</strong>、<strong>复制</strong>、<strong>粘贴</strong>、<strong>删除</strong>……</li>
+<li>在其他图形编辑器下，通过 <strong>快捷键</strong> 或者 <strong>鼠标</strong> 实现的操作，都在 <strong>命令模式</strong> 下实现</li>
+</ul>
+</li>
+<li><strong>末行模式</strong> —— 执行 <strong>保存</strong>、<strong>退出</strong> 等操作 <ul>
+<li>要退出 <code>vi</code> 返回到控制台，需要在末行模式下输入命令</li>
+<li><strong>末行模式</strong> 是 <code>vi</code> 的 <strong>出口</strong></li>
+</ul>
+</li>
+<li><strong>编辑模式</strong> —— 正常的编辑文字</li>
+</ol>
+</li>
+</ul>
+<p><img src="media/14993340485745/003_vi%E7%9A%84%E6%A8%A1%E5%BC%8F.png" alt="003_vi的模式-w500"></p>
+<blockquote>
+<p>提示：在 <code>Touch Bar</code> 的 Mac 电脑上 ，按 <code>ESC</code> 不方便，可以使用 <code>CTRL + [</code> 替代</p>
+</blockquote>
+<h3 id="末行模式命令"><a href="#末行模式命令" class="headerlink" title="末行模式命令"></a>末行模式命令</h3><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">w</td>
+<td align="center">write</td>
+<td>保存</td>
+</tr>
+<tr>
+<td align="center">q</td>
+<td align="center">quit</td>
+<td>退出，如果没有保存，不允许退出</td>
+</tr>
+<tr>
+<td align="center">q!</td>
+<td align="center">quit</td>
+<td>强行退出，不保存退出</td>
+</tr>
+<tr>
+<td align="center">wq</td>
+<td align="center">write &amp; quit</td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td align="center">x</td>
+<td align="center"></td>
+<td>保存并退出</td>
+</tr>
+</tbody></table>
+<h2 id="04-常用命令"><a href="#04-常用命令" class="headerlink" title="04. 常用命令"></a>04. 常用命令</h2><h3 id="命令线路图"><a href="#命令线路图" class="headerlink" title="命令线路图"></a>命令线路图</h3><ol start="0">
+<li>重复次数<ul>
+<li>在命令模式下，<strong>先输入一个数字</strong>，<strong>再跟上一个命令</strong>，可以让该命令 <strong>重复执行指定次数</strong> </li>
+</ul>
+</li>
+<li>移动和选择（<strong>多练</strong>）<ul>
+<li><code>vi</code> 之所以快，关键在于 <strong>能够快速定位到要编辑的代码行</strong></li>
+<li><strong>移动命令</strong> 能够 和 <strong>编辑操作</strong> 命令 <strong>组合使用</strong></li>
+</ul>
+</li>
+<li>编辑操作<ul>
+<li><strong>删除</strong>、<strong>复制</strong>、<strong>粘贴</strong>、<strong>替换</strong>、<strong>缩排</strong></li>
+</ul>
+</li>
+<li>撤销和重复</li>
+<li>查找替换</li>
+<li>编辑</li>
+</ol>
+<h4 id="学习提示"><a href="#学习提示" class="headerlink" title="学习提示"></a>学习提示</h4><ol>
+<li><code>vi</code> 的命令较多，<strong>不要期望一下子全部记住</strong>，个别命令忘记了，只是会影响编辑速度而已</li>
+<li>在使用 <code>vi</code> 命令时，注意 <strong>关闭中文输入法</strong></li>
+</ol>
+<h3 id="4-1-移动（基本）"><a href="#4-1-移动（基本）" class="headerlink" title="4.1 移动（基本）"></a>4.1 移动（基本）</h3><ul>
+<li>要熟练使用 <code>vi</code>，首先应该学会怎么在 <strong>命令模式</strong> 下样快速移动光标</li>
+<li><strong>编辑操作命令</strong>，能够和 <strong>移动命令</strong> 结合在一起使用</li>
+</ul>
+<h4 id="1-上、下、左、右"><a href="#1-上、下、左、右" class="headerlink" title="1) 上、下、左、右"></a>1) 上、下、左、右</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+<th align="center">手指</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">h</td>
+<td>向左</td>
+<td align="center">食指</td>
+</tr>
+<tr>
+<td align="center">j</td>
+<td>向下</td>
+<td align="center">食指</td>
+</tr>
+<tr>
+<td align="center">k</td>
+<td>向上</td>
+<td align="center">中指</td>
+</tr>
+<tr>
+<td align="center">l</td>
+<td>向右</td>
+<td align="center">无名指</td>
+</tr>
+</tbody></table>
+<p><img src="media/14993340485745/005_%E7%A7%BB%E5%8A%A8%E5%85%89%E6%A0%87.png" alt="005_移动光标-w551"></p>
+<h4 id="2-行内移动"><a href="#2-行内移动" class="headerlink" title="2) 行内移动"></a>2) 行内移动</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">w</td>
+<td align="center">word</td>
+<td>向后移动一个单词</td>
+</tr>
+<tr>
+<td align="center">b</td>
+<td align="center">back</td>
+<td>向前移动一个单词</td>
+</tr>
+<tr>
+<td align="center">0</td>
+<td align="center"></td>
+<td>行首</td>
+</tr>
+<tr>
+<td align="center">^</td>
+<td align="center"></td>
+<td>行首，第一个不是空白字符的位置</td>
+</tr>
+<tr>
+<td align="center">$</td>
+<td align="center"></td>
+<td>行尾</td>
+</tr>
+</tbody></table>
+<h4 id="3-行数移动"><a href="#3-行数移动" class="headerlink" title="3) 行数移动"></a>3) 行数移动</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">gg</td>
+<td align="center">go</td>
+<td>文件顶部</td>
+</tr>
+<tr>
+<td align="center">G</td>
+<td align="center">go</td>
+<td>文件末尾</td>
+</tr>
+<tr>
+<td align="center">数字gg</td>
+<td align="center">go</td>
+<td>移动到 数字 对应行数</td>
+</tr>
+<tr>
+<td align="center">数字G</td>
+<td align="center">go</td>
+<td>移动到 数字 对应行数</td>
+</tr>
+<tr>
+<td align="center">:数字</td>
+<td align="center"></td>
+<td>移动到 数字 对应行数</td>
+</tr>
+</tbody></table>
+<h4 id="4-屏幕移动"><a href="#4-屏幕移动" class="headerlink" title="4) 屏幕移动"></a>4) 屏幕移动</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Ctrl + b</td>
+<td align="center">back</td>
+<td>向上翻页</td>
+</tr>
+<tr>
+<td align="center">Ctrl + f</td>
+<td align="center">forward</td>
+<td>向下翻页</td>
+</tr>
+<tr>
+<td align="center">H</td>
+<td align="center">Head</td>
+<td>屏幕顶部</td>
+</tr>
+<tr>
+<td align="center">M</td>
+<td align="center">Middle</td>
+<td>屏幕中间</td>
+</tr>
+<tr>
+<td align="center">L</td>
+<td align="center">Low</td>
+<td>屏幕底部</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-移动（程序）"><a href="#4-2-移动（程序）" class="headerlink" title="4.2 移动（程序）"></a>4.2 移动（程序）</h3><h4 id="1-段落移动"><a href="#1-段落移动" class="headerlink" title="1) 段落移动"></a>1) 段落移动</h4><ul>
+<li><code>vi</code> 中使用 空行 来区分段落</li>
+<li>在程序开发时，通常 <strong>一段功能相关的代码会写在一起</strong> —— 之间没有空行</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">{</td>
+<td>上一段</td>
+</tr>
+<tr>
+<td align="center">}</td>
+<td>下一段</td>
+</tr>
+</tbody></table>
+<h4 id="2-括号切换"><a href="#2-括号切换" class="headerlink" title="2) 括号切换"></a>2) 括号切换</h4><ul>
+<li>在程序世界中，<code>()</code>、<code>[]</code>、<code>{}</code> 使用频率很高，而且 <strong>都是成对出现的</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">%</td>
+<td>括号匹配及切换</td>
+</tr>
+</tbody></table>
+<h4 id="3-标记"><a href="#3-标记" class="headerlink" title="3) 标记"></a>3) 标记</h4><ul>
+<li>在开发时，某一块代码可能<strong>需要稍后处理</strong>，例如：编辑、查看</li>
+<li>此时先使用 <code>m</code> 增加一个标记，这样可以 <strong>在需要时快速地跳转回来</strong> 或者 <strong>执行其他编辑操作</strong></li>
+<li><strong>标记名称</strong> 可以是 <code>a~z</code> 或者 <code>A~Z</code> 之间的任意 <strong>一个</strong> 字母</li>
+<li>添加了标记的 <strong>行如果被删除</strong>，<strong>标记同时被删除</strong></li>
+<li>如果 <strong>在其他行添加了相同名称的标记</strong>，<strong>之前添加的标记也会被替换掉</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">mx</td>
+<td align="center">mark</td>
+<td>添加标记 x，x 是 a<del>z 或者 A</del>Z 之间的任意一个字母</td>
+</tr>
+<tr>
+<td align="center">‘x</td>
+<td align="center"></td>
+<td>直接定位到标记 x 所在位置</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-选中文本（可视模式）"><a href="#4-3-选中文本（可视模式）" class="headerlink" title="4.3 选中文本（可视模式）"></a>4.3 选中文本（可视模式）</h3><ul>
+<li>学习 <code>复制</code> 命令前，应该先学会 <strong>怎么样选中 要复制的代码</strong></li>
+<li>在 <code>vi</code> 中要选择文本，需要先使用 <code>Visual</code> 命令切换到 <strong>可视模式</strong></li>
+<li><code>vi</code> 中提供了 <strong>三种</strong> 可视模式，可以方便程序员选择 <strong>选中文本的方式</strong></li>
+<li>按 <code>ESC</code> 可以放弃选中，返回到 <strong>命令模式</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>模式</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">v</td>
+<td>可视模式</td>
+<td>从光标位置开始按照正常模式选择文本</td>
+</tr>
+<tr>
+<td align="center">V</td>
+<td>可视行模式</td>
+<td>选中光标经过的完整行</td>
+</tr>
+<tr>
+<td align="center">Ctrl + v</td>
+<td>可视块模式</td>
+<td>垂直方向选中文本</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>可视模式</strong>下，可以和 <strong>移动命令</strong> 连用，例如：<code>ggVG</code> 能够选中所有内容</li>
+</ul>
+<h3 id="4-4-撤销和恢复撤销"><a href="#4-4-撤销和恢复撤销" class="headerlink" title="4.4 撤销和恢复撤销"></a>4.4 撤销和恢复撤销</h3><ul>
+<li>在学习编辑命令之前，先要知道怎样撤销之前一次 <strong>错误的</strong> 编辑动作！</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">u</td>
+<td align="center">undo</td>
+<td>撤销上次命令</td>
+</tr>
+<tr>
+<td align="center">CTRL + r</td>
+<td align="center">redo</td>
+<td>恢复撤销的命令</td>
+</tr>
+</tbody></table>
+<h3 id="4-5-删除文本"><a href="#4-5-删除文本" class="headerlink" title="4.5 删除文本"></a>4.5 删除文本</h3><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">x</td>
+<td align="center">cut</td>
+<td>删除光标所在字符，或者选中文字</td>
+</tr>
+<tr>
+<td align="center">d(移动命令)</td>
+<td align="center">delete</td>
+<td>删除移动命令对应的内容</td>
+</tr>
+<tr>
+<td align="center">dd</td>
+<td align="center">delete</td>
+<td>删除光标所在行，可以 ndd 复制多行</td>
+</tr>
+<tr>
+<td align="center">D</td>
+<td align="center">delete</td>
+<td>删除至行尾</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>提示：如果使用 <strong>可视模式</strong> 已经选中了一段文本，那么无论使用 <code>d</code> 还是 <code>x</code>，都可以删除选中文本</p>
+</blockquote>
+<ul>
+<li>删除命令可以和 <strong>移动命令</strong> 连用，以下是常见的组合命令：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">* dw        # 从光标位置删除到单词末尾</span><br><span class="line">* d0        # 从光标位置删除到一行的起始位置</span><br><span class="line">* d&#125;        # 从光标位置删除到段落结尾</span><br><span class="line">* ndd       # 从光标位置向下连续删除 n 行</span><br><span class="line">* d代码行G   # 从光标所在行 删除到 指定代码行 之间的所有代码</span><br><span class="line">* d&#39;a       # 从光标所在行 删除到 标记a 之间的所有代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-6-复制、粘贴"><a href="#4-6-复制、粘贴" class="headerlink" title="4.6 复制、粘贴"></a>4.6 复制、粘贴</h3><ul>
+<li><code>vi</code> 中提供有一个 <strong>被复制文本的缓冲区</strong><ul>
+<li><strong>复制</strong> 命令会将选中的文字保存在缓冲区 </li>
+<li><strong>删除</strong> 命令删除的文字会被保存在缓冲区</li>
+<li>在需要的位置，使用 <strong>粘贴</strong> 命令可以将缓冲区的文字插入到光标所在位置</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">y(移动命令)</td>
+<td align="center">copy</td>
+<td>复制</td>
+</tr>
+<tr>
+<td align="center">yy</td>
+<td align="center">copy</td>
+<td>复制一行，可以 nyy 复制多行</td>
+</tr>
+<tr>
+<td align="center">p</td>
+<td align="center">paste</td>
+<td>粘贴</td>
+</tr>
+</tbody></table>
+<p><strong>提示</strong></p>
+<ul>
+<li>命令 <code>d</code>、<code>x</code> 类似于图形界面的 <strong>剪切操作</strong> —— <code>CTRL + X</code></li>
+<li>命令 <code>y</code> 类似于图形界面的 <strong>复制操作</strong> —— <code>CTRL + C</code></li>
+<li>命令 <code>p</code> 类似于图形界面的 <strong>粘贴操作</strong> —— <code>CTRL + V</code></li>
+<li><code>vi</code> 中的 <strong>文本缓冲区同样只有一个</strong>，如果后续做过 <strong>复制、剪切</strong> 操作，之前缓冲区中的内容会被替换</li>
+</ul>
+<p><strong>注意</strong></p>
+<ul>
+<li><code>vi</code> 中的 <strong>文本缓冲区</strong> 和系统的 <strong>剪贴板</strong> 不是同一个</li>
+<li>所以在其他软件中使用 <code>CTRL + C</code> 复制的内容，不能在 <code>vi</code> 中通过 <code>P</code> 命令粘贴</li>
+<li>可以在 <strong>编辑模式</strong> 下使用 <strong>鼠标右键粘贴</strong></li>
+</ul>
+<h3 id="4-7-替换"><a href="#4-7-替换" class="headerlink" title="4.7 替换"></a>4.7 替换</h3><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+<th>工作模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">r</td>
+<td align="center">replace</td>
+<td>替换当前字符</td>
+<td>命令模式</td>
+</tr>
+<tr>
+<td align="center">R</td>
+<td align="center">replace</td>
+<td>替换当前行光标后的字符</td>
+<td>替换模式</td>
+</tr>
+</tbody></table>
+<ul>
+<li><code>R</code> 命令可以进入 <strong>替换模式</strong>，替换完成后，按下 <code>ESC</code> 可以回到 <strong>命令模式</strong></li>
+<li><strong>替换命令</strong> 的作用就是不用进入 <strong>编辑模式</strong>，对文件进行 <strong>轻量级的修改</strong></li>
+</ul>
+<h3 id="4-8-缩排和重复执行"><a href="#4-8-缩排和重复执行" class="headerlink" title="4.8 缩排和重复执行"></a>4.8 缩排和重复执行</h3><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">&gt;&gt;</td>
+<td>向右增加缩进</td>
+</tr>
+<tr>
+<td align="center">&lt;&lt;</td>
+<td>向左减少缩进</td>
+</tr>
+<tr>
+<td align="center">.</td>
+<td>重复上次命令</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>缩排命令</strong> 在开发程序时，<strong>统一增加代码的缩进</strong> 比较有用！<ul>
+<li>一次性 <strong>在选中代码前增加 4 个空格</strong>，就叫做 <strong>增加缩进</strong></li>
+<li>一次性 <strong>在选中代码前删除 4 个空格</strong>，就叫做 <strong>减少缩进</strong></li>
+</ul>
+</li>
+<li>在 <strong>可视模式</strong> 下，缩排命令只需要使用 <strong>一个</strong> <code>&gt;</code> 或者 <code>&lt;</code> </li>
+</ul>
+<blockquote>
+<p>在程序中，<strong>缩进</strong> 通常用来表示代码的归属关系</p>
+<ul>
+<li>前面空格越少，代码的级别越高</li>
+<li>前面空格越多，代码的级别越低</li>
+</ul>
+</blockquote>
+<h3 id="4-9-查找"><a href="#4-9-查找" class="headerlink" title="4.9 查找"></a>4.9 查找</h3><h4 id="常规查找"><a href="#常规查找" class="headerlink" title="常规查找"></a>常规查找</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">/str</td>
+<td>查找 str</td>
+</tr>
+</tbody></table>
+<ul>
+<li>查找到指定内容之后，使用 <code>Next</code> 查找下一个出现的位置：<ul>
+<li><code>n</code>: 查找下一个</li>
+<li><code>N</code>: 查找上一个</li>
+</ul>
+</li>
+<li>如果不想看到高亮显示，可以随便查找一个文件中不存在的内容即可</li>
+</ul>
+<h4 id="单词快速匹配"><a href="#单词快速匹配" class="headerlink" title="单词快速匹配"></a>单词快速匹配</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">*</td>
+<td>向后查找当前光标所在单词</td>
+</tr>
+<tr>
+<td align="center">#</td>
+<td>向前查找当前光标所在单词</td>
+</tr>
+</tbody></table>
+<ul>
+<li>在开发中，通过单词快速匹配，可以快速看到这个单词在其他什么位置使用过</li>
+</ul>
+<h3 id="4-10-查找并替换"><a href="#4-10-查找并替换" class="headerlink" title="4.10 查找并替换"></a>4.10 查找并替换</h3><ul>
+<li>在 <code>vi</code> 中查找和替换命令需要在 <strong>末行模式</strong> 下执行</li>
+<li>记忆命令格式：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">:%s&#x2F;&#x2F;&#x2F;g</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-全局替换"><a href="#1-全局替换" class="headerlink" title="1) 全局替换"></a>1) 全局替换</h4><ul>
+<li><strong>一次性</strong>替换文件中的 <strong>所有出现的旧文本</strong></li>
+<li>命令格式如下：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">:%s&#x2F;旧文本&#x2F;新文本&#x2F;g</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-可视区域替换"><a href="#2-可视区域替换" class="headerlink" title="2) 可视区域替换"></a>2) 可视区域替换</h4><ul>
+<li><strong>先选中</strong> 要替换文字的 <strong>范围</strong></li>
+<li>命令格式如下：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">:s&#x2F;旧文本&#x2F;新文本&#x2F;g</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-确认替换"><a href="#3-确认替换" class="headerlink" title="3) 确认替换"></a>3) 确认替换</h4><ul>
+<li>如果把末尾的 <code>g</code> 改成 <code>gc</code> 在替换的时候，会有提示！<strong>推荐使用！</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">:%s&#x2F;旧文本&#x2F;新文本&#x2F;gc</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>y</code> - <code>yes</code> 替换</li>
+<li><code>n</code> - <code>no</code> 不替换</li>
+<li><code>a</code> - <code>all</code> 替换所有</li>
+<li><code>q</code> - <code>quit</code> 退出替换</li>
+<li><code>l</code> - <code>last</code> 最后一个，并把光标移动到行首</li>
+<li><code>^E</code> 向下滚屏</li>
+<li><code>^Y</code> 向上滚屏</li>
+</ol>
+<h3 id="4-11-插入命令"><a href="#4-11-插入命令" class="headerlink" title="4.11 插入命令"></a>4.11 插入命令</h3><ul>
+<li>在 <code>vi</code> 中除了常用的 <code>i</code> 进入 <strong>编辑模式</strong> 外，还提供了以下命令同样可以进入编辑模式：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+<th align="center">常用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">i</td>
+<td align="center">insert</td>
+<td>在当前字符前插入文本</td>
+<td align="center">常用</td>
+</tr>
+<tr>
+<td align="center">I</td>
+<td align="center">insert</td>
+<td>在行首插入文本</td>
+<td align="center">较常用</td>
+</tr>
+<tr>
+<td align="center">a</td>
+<td align="center">append</td>
+<td>在当前字符后添加文本</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">A</td>
+<td align="center">append</td>
+<td>在行末添加文本</td>
+<td align="center">较常用</td>
+</tr>
+<tr>
+<td align="center">o</td>
+<td align="center"></td>
+<td>在当前行后面插入一空行</td>
+<td align="center">常用</td>
+</tr>
+<tr>
+<td align="center">O</td>
+<td align="center"></td>
+<td>在当前行前面插入一空行</td>
+<td align="center">常用</td>
+</tr>
+</tbody></table>
+<p><img src="media/14993340485745/004_%E6%8F%92%E5%85%A5%E5%91%BD%E4%BB%A4.png" alt="004_插入命令-w400"></p>
+<h4 id="演练-1-——-编辑命令和数字连用"><a href="#演练-1-——-编辑命令和数字连用" class="headerlink" title="演练 1 —— 编辑命令和数字连用"></a>演练 1 —— 编辑命令和数字连用</h4><ul>
+<li>在开发中，可能会遇到连续输入 <code>N</code> 个同样的字符</li>
+</ul>
+<blockquote>
+<p>在 <code>Python</code> 中有简单的方法，但是其他语言中通常需要自己输入</p>
+</blockquote>
+<ul>
+<li>例如：<code>**********</code> 连续 10 个星号</li>
+</ul>
+<p>要实现这个效果可以在 <strong>命令模式</strong> 下</p>
+<ol>
+<li>输入 <code>10</code>，表示要重复 10 次</li>
+<li>输入 <code>i</code> 进入 <strong>编辑模式</strong></li>
+<li>输入 <code>*</code> 也就是重复的文字</li>
+<li>按下 <code>ESC</code> 返回到 <strong>命令模式</strong>，返回之后 <code>vi</code> 就会把第 <code>2、3</code> 两步的操作重复 <code>10</code> 次</li>
+</ol>
+<blockquote>
+<p>提示：正常开发时，在 <strong>进入编辑模式之前，不要按数字</strong></p>
+</blockquote>
+<h4 id="演练-2-——-利用-可视块-给多行代码增加注释"><a href="#演练-2-——-利用-可视块-给多行代码增加注释" class="headerlink" title="演练 2 —— 利用 可视块 给多行代码增加注释"></a>演练 2 —— 利用 可视块 给多行代码增加注释</h4><ul>
+<li>在开发中，可能会遇到一次性给多行代码 <strong>增加注释</strong> 的情况</li>
+</ul>
+<blockquote>
+<p>在 <code>Python</code> 中，要给代码增加注释，可以在代码前增加一个 <code>#</code></p>
+</blockquote>
+<p>要实现这个效果可以在 <strong>命令模式</strong> 下</p>
+<ol>
+<li>移动到要添加注释的 <strong>第 1 行代码</strong>，按 <code>^</code> 来到行首</li>
+<li>按 <code>CTRL + v</code> 进入 <strong>可视块</strong> 模式</li>
+<li>使用 <code>j</code> 向下连续选中要添加的代码行</li>
+<li>输入 <code>I</code> 进入 <strong>编辑模式</strong>，并在 <strong>行首插入</strong>，注意：一定要使用 <strong>I</strong></li>
+<li>输入 <code>#</code> 也就是注释符号</li>
+<li>按下 <code>ESC</code> 返回到 <strong>命令模式</strong>，返回之后 <code>vi</code> 会在之前选中的每一行代码 <strong>前</strong> 插入 <code>#</code></li>
+</ol>
+<h2 id="05-分屏命令"><a href="#05-分屏命令" class="headerlink" title="05. 分屏命令"></a>05. 分屏命令</h2><ul>
+<li>属于 <code>vi</code> 的高级命令 —— 可以 <strong>同时编辑和查看多个文件</strong></li>
+</ul>
+<h3 id="5-1-末行命令扩展"><a href="#5-1-末行命令扩展" class="headerlink" title="5.1 末行命令扩展"></a>5.1 末行命令扩展</h3><p><strong>末行命令</strong> 主要是针对文件进行操作的：<strong>保存</strong>、<strong>退出</strong>、<strong>保存&amp;退出</strong>、<strong>搜索&amp;替换</strong>、<strong>另存</strong>、<strong>新建</strong>、<strong>浏览文件</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">:e .</td>
+<td align="center">edit</td>
+<td>会打开内置的文件浏览器，浏览要当前目录下的文件</td>
+</tr>
+<tr>
+<td align="center">:n 文件名</td>
+<td align="center">new</td>
+<td>新建文件</td>
+</tr>
+<tr>
+<td align="center">:w 文件名</td>
+<td align="center">write</td>
+<td>另存为，但是仍然编辑当前文件，并不会切换文件</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>提示：切换文件之前，必须保证当前这个文件已经被保存！</p>
+</blockquote>
+<ul>
+<li>已经学习过的 <strong>末行命令</strong>：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">:w</td>
+<td align="center">write</td>
+<td>保存</td>
+</tr>
+<tr>
+<td align="center">:q</td>
+<td align="center">quit</td>
+<td>退出，如果没有保存，不允许退出</td>
+</tr>
+<tr>
+<td align="center">:q!</td>
+<td align="center">quit</td>
+<td>强行退出，不保存退出</td>
+</tr>
+<tr>
+<td align="center">:wq</td>
+<td align="center">write &amp; quit</td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td align="center">:x</td>
+<td align="center"></td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td align="center">:%s///gc</td>
+<td align="center"></td>
+<td>确认搜索并替换</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>在实际开发中，可以使用 <code>w</code> 命令 <strong>阶段性的备份代码</strong></p>
+</blockquote>
+<h3 id="5-2-分屏命令"><a href="#5-2-分屏命令" class="headerlink" title="5.2 分屏命令"></a>5.2 分屏命令</h3><ul>
+<li>使用 <strong>分屏命令</strong>，可以 <strong>同时编辑和查看多个文件</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">:sp [文件名]</td>
+<td align="center">split</td>
+<td>横向增加分屏</td>
+</tr>
+<tr>
+<td align="center">:vsp [文件名]</td>
+<td align="center">vertical split</td>
+<td>纵向增加分屏</td>
+</tr>
+</tbody></table>
+<h4 id="1-切换分屏窗口"><a href="#1-切换分屏窗口" class="headerlink" title="1) 切换分屏窗口"></a>1) 切换分屏窗口</h4><blockquote>
+<p>分屏窗口都是基于 <code>CTRL + W</code> 这个快捷键的，<code>w</code> 对应的英文单词是 <code>window</code></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">w</td>
+<td align="center">window</td>
+<td>切换到下一个窗口</td>
+</tr>
+<tr>
+<td align="center">r</td>
+<td align="center">reverse</td>
+<td>互换窗口</td>
+</tr>
+<tr>
+<td align="center">c</td>
+<td align="center">close</td>
+<td>关闭当前窗口，但是不能关闭最后一个窗口</td>
+</tr>
+<tr>
+<td align="center">q</td>
+<td align="center">quit</td>
+<td>退出当前窗口，如果是最后一个窗口，则关闭 vi</td>
+</tr>
+<tr>
+<td align="center">o</td>
+<td align="center">other</td>
+<td>关闭其他窗口</td>
+</tr>
+</tbody></table>
+<h4 id="2-调整窗口大小"><a href="#2-调整窗口大小" class="headerlink" title="2) 调整窗口大小"></a>2) 调整窗口大小</h4><blockquote>
+<p>分屏窗口都是基于 <code>CTRL + W</code> 这个快捷键的，<code>w</code> 对应的英文单词是 <code>window</code></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th align="center">英文</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">+</td>
+<td align="center"></td>
+<td>增加窗口高度</td>
+</tr>
+<tr>
+<td align="center">-</td>
+<td align="center"></td>
+<td>减少窗口高度</td>
+</tr>
+<tr>
+<td align="center">&gt;</td>
+<td align="center"></td>
+<td>增加窗口宽度</td>
+</tr>
+<tr>
+<td align="center">&lt;</td>
+<td align="center"></td>
+<td>减少窗口宽度</td>
+</tr>
+<tr>
+<td align="center">=</td>
+<td align="center"></td>
+<td>等分窗口大小</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>调整窗口宽高的命令可以和数字连用，例如：<code>5 CTRL + W +</code> 连续 5 次增加高度</p>
+</blockquote>
+<h2 id="06-常用命令速查图"><a href="#06-常用命令速查图" class="headerlink" title="06. 常用命令速查图"></a>06. 常用命令速查图</h2><p><img src="media/14993340485745/vim.png" alt="vi"></p>
+<h3 id="vimrc"><a href="#vimrc" class="headerlink" title="vimrc"></a>vimrc</h3><ul>
+<li><code>vimrc</code> 是 <code>vim</code> 的配置文件，可以设置 vim 的配置，包括：<strong>热键</strong>、<strong>配色</strong>、<strong>语法高亮</strong>、<strong>插件</strong> 等</li>
+<li><code>Linux</code> 中 <code>vimrc</code> 有两个位置，<strong>家目录下的配置文件优先级更高</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;etc&#x2F;vim&#x2F;vimrc</span><br><span class="line">~&#x2F;.vimrc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>常用的插件有：<ul>
+<li>代码补全</li>
+<li>代码折叠</li>
+<li>搜索</li>
+<li>Git 集成</li>
+<li>……</li>
+</ul>
+</li>
+<li>网上有很多高手已经配置好的针对 <code>python</code> 开发的 <code>vimrc</code> 文件，可以下载过来直接使用，或者等大家多 <code>Linux</code> 比较熟悉后，再行学习！</li>
+</ul>
+]]></content>
       <categories>
-          
-          <category> Android </category>
-          
+        <category>Linux</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Android </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Nexus3.12私服搭建</title>
-      <link href="/2020/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/"/>
-      <url>/2020/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/</url>
-      
-        <content type="html"><![CDATA[<p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1）左shift打开CMD窗口nexus-3.12.1-01-win64\nexus-3.12.1-01\bin目录    </span><br><span class="line">2）nexus.exe &#x2F;install  安装服务  </span><br><span class="line">3）nexus.exe &#x2F;start    启动服务  </span><br><span class="line">4）nexus.exe &#x2F;stop     停止服务</span><br></pre></td></tr></table></figure><p>（3）、使用nexus软件<br>在浏览器中输入<a href="http://localhost:8081/，点击“login" target="_blank" rel="noopener">http://localhost:8081/，点击“login</a> in”，输入admin/admin123即可。<br>（4）、管理目前的仓库<br>将central的远程地址修改如下（即改为aliyun的镜像，主要是速度快一些）：<a href="http://maven.aliyun.com/nexus/content/groups/public/" target="_blank" rel="noopener">http://maven.aliyun.com/nexus/content/groups/public/</a><br>（<a href="https://blog.csdn.net/ytfrdfiw/article/details/78476087" target="_blank" rel="noopener">参考链接</a>）</p><h4 id="多平台Nexus私服搭建"><a href="#多平台Nexus私服搭建" class="headerlink" title="多平台Nexus私服搭建"></a>多平台Nexus私服搭建</h4><p><a href="http://www.10tiao.com/html/227/201703/2650238831/1.html" target="_blank" rel="noopener">Android Studio依赖管理与Nexus私服搭建</a>  </p><p>创建自己的仓库</p><p>创建用户</p><p>首先使用管理员密码登陆到 Nexus私服 并添加用户：</p><p>。。。。</p><p>上传自己的Module到仓库</p><p>1、 在项目级别的 build.gradle 中的 allprojects 下 repositories节点 添加 mavenLocal()：  </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>2、 在 Lib Module 级别的 build.gradle 中添加 maven 插件 apply plugin: ‘maven’：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &#39;com.android.library&#39;</span><br><span class="line">apply plugin: &#39;maven&#39;</span><br></pre></td></tr></table></figure><p>3、 在 Lib Module 级别的 build.gradle 中 android节点 添加上传行为：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">uploadArchives &#123;</span><br><span class="line">    repositories.mavenDeployer &#123;</span><br><span class="line">        repository(url: &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;)&#123;</span><br><span class="line">            authentication(userName: &quot;wz&quot;,password: &quot;123456&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">        pom.groupId &#x3D; &#39;com.hopechart&#39;</span><br><span class="line">        pom.artifactId &#x3D; &#39;PublicTitle&#39;</span><br><span class="line">        pom.version &#x3D; &#39;1.0.1&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>4、使用Gradle插件上传aar到Maven私服，点击 uploadArchives 自动上传：</p><p>5、引用私服中的Module  </p><p>在需要依赖 Module 的 build.gradle 中添加如下节点,其中URL就是上文中创建仓库的ur</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;项目级别的 build.gradle</span><br><span class="line"> allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        ......</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;model级别的 build.gradle</span><br><span class="line"></span><br><span class="line"> compile &#39;com.hopechart:PublicTitle:1.0.0&#39;</span><br></pre></td></tr></table></figure>]]></content>
-      
-      
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>安卓系统签名转keystore</title>
+    <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore%20-%20%E5%89%AF%E6%9C%AC%20(2)/</url>
+    <content><![CDATA[]]></content>
       <categories>
-          
-          <category> Android </category>
-          
+        <category>Android</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Android </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>安卓系统签名转keystore</title>
-      <link href="/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore%20-%20%E5%89%AF%E6%9C%AC%20(2)/"/>
-      <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore%20-%20%E5%89%AF%E6%9C%AC%20(2)/</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-      
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>安卓系统签名转keystore</title>
+    <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/</url>
+    <content><![CDATA[<p> 单独签名解决方案</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">找到平台签名文件“platform.pk8”和“platform.x509.pem”</span><br><span class="line"></span><br><span class="line">文件位置 android&#x2F;build&#x2F;target&#x2F;product&#x2F;security&#x2F;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名工具“signapk.jar”</span><br><span class="line"></span><br><span class="line">位置：android&#x2F;prebuilts&#x2F;sdk&#x2F;tools&#x2F;lib</span><br></pre></td></tr></table></figure>
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名证书“platform.pk8 ”“platform.x509.pem ”，签名工具“signapk.jar ”放置在同一个文件夹；</span><br></pre></td></tr></table></figure>
+
+<p> 下载 keytool-importkeypair 工具，使用sdk的security文件生成对应平台的key：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.&#x2F;keytool-importkeypair -k [jks文件名] -p [jks的密码] -pk8 platform.pk8 -cert platform.x509.pem -alias [jks的别名]</span><br><span class="line"></span><br><span class="line">如：</span><br><span class="line">.&#x2F;keytool-importkeypair -k .&#x2F;SignDemo.jks -p 123456 -pk8 platform.pk8 -cert platform.x509.pem -alias SignDemo</span><br></pre></td></tr></table></figure>
+]]></content>
       <categories>
-          
-          <category> Android </category>
-          
+        <category>Android</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Android </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>安卓系统签名转keystore</title>
-      <link href="/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/"/>
-      <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/</url>
-      
-        <content type="html"><![CDATA[<p> 单独签名解决方案</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">找到平台签名文件“platform.pk8”和“platform.x509.pem”</span><br><span class="line"></span><br><span class="line">文件位置 android&#x2F;build&#x2F;target&#x2F;product&#x2F;security&#x2F;</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">签名工具“signapk.jar”</span><br><span class="line"></span><br><span class="line">位置：android&#x2F;prebuilts&#x2F;sdk&#x2F;tools&#x2F;lib</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">签名证书“platform.pk8 ”“platform.x509.pem ”，签名工具“signapk.jar ”放置在同一个文件夹；</span><br></pre></td></tr></table></figure><p> 下载 keytool-importkeypair 工具，使用sdk的security文件生成对应平台的key：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;keytool-importkeypair -k [jks文件名] -p [jks的密码] -pk8 platform.pk8 -cert platform.x509.pem -alias [jks的别名]</span><br><span class="line"></span><br><span class="line">如：</span><br><span class="line">.&#x2F;keytool-importkeypair -k .&#x2F;SignDemo.jks -p 123456 -pk8 platform.pk8 -cert platform.x509.pem -alias SignDemo</span><br></pre></td></tr></table></figure>]]></content>
-      
-      
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>systemUI</title>
+    <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
+<h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+
+<p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p>
+<h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line">	</span><br><span class="line">	public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">		super(host);</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	public void setListening(boolean listening) &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">		return new BooleanState();</span><br><span class="line">	&#125;</span><br><span class="line">	public void setFmModeUpdate()&#123;</span><br><span class="line">		handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">	@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">	 	return &quot;fm&quot; ;</span><br><span class="line">	 &#125;</span><br><span class="line"> </span><br><span class="line">	 @Override</span><br><span class="line">	protected void handleClick() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected void handleUpdateState(</span><br><span class="line">			com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line">		</span><br><span class="line">		int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		state.visible &#x3D; true ;</span><br><span class="line">		state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">		state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">		if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">			&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;else&#123;</span><br><span class="line">			&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p>
+<h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    	mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">	.....</span><br><span class="line">		</span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			setFmModeUpdate();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p>
+<p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    	</span><br><span class="line">    	mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    	mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    	Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">		return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p>
+<h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p>
+<p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p>
+<p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p>
+<p>首先看一下代码：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().registerContentObserver(</span><br><span class="line">				Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private void unregisterContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">			boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">			if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(true);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">			&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(false);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">			&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p>
+<p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>
+]]></content>
       <categories>
-          
-          <category> Android </category>
-          
+        <category>Android</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Android </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>vi—终端中的编辑器</title>
-      <link href="/2020/03/18/vi%E2%80%94%E7%BB%88%E7%AB%AF%E4%B8%AD%E7%9A%84%E7%BC%96%E8%BE%91%E5%99%A8/"/>
-      <url>/2020/03/18/vi%E2%80%94%E7%BB%88%E7%AB%AF%E4%B8%AD%E7%9A%84%E7%BC%96%E8%BE%91%E5%99%A8/</url>
-      
-        <content type="html"><![CDATA[<h1 id="vi-——-终端中的编辑器"><a href="#vi-——-终端中的编辑器" class="headerlink" title="vi —— 终端中的编辑器"></a><code>vi</code> —— 终端中的编辑器</h1><h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><ul><li><code>vi</code> 简介</li><li>打开和新建文件</li><li>三种工作模式</li><li>常用命令</li><li>分屏命令</li><li>常用命令速查图</li></ul><h2 id="01-vi-简介"><a href="#01-vi-简介" class="headerlink" title="01. vi 简介"></a>01. <code>vi</code> 简介</h2><h3 id="1-1-学习-vi-的目的"><a href="#1-1-学习-vi-的目的" class="headerlink" title="1.1 学习 vi 的目的"></a>1.1 学习 <code>vi</code> 的目的</h3><ul><li>在工作中，要对 <strong>服务器</strong> 上的文件进行 <strong>简单</strong> 的修改，可以使用 <code>ssh</code> 远程登录到服务器上，并且使用 <code>vi</code> 进行快速的编辑即可</li><li>常见需要修改的文件包括：<ul><li><strong>源程序</strong></li><li><strong>配置文件</strong>，例如 <code>ssh</code> 的配置文件 <code>~/.ssh/config</code></li></ul></li></ul><blockquote><ul><li>在没有图形界面的环境下，要编辑文件，<code>vi</code> 是最佳选择！</li><li>每一个要使用 Linux 的程序员，都应该或多或少的学习一些 <code>vi</code> 的常用命令</li></ul></blockquote><h3 id="1-2-vi-和-vim"><a href="#1-2-vi-和-vim" class="headerlink" title="1.2 vi 和 vim"></a>1.2 vi 和 vim</h3><ul><li>在很多 <code>Linux</code> 发行版中，直接把 <code>vi</code> 做成 <code>vim</code> 的软连接</li></ul><h4 id="vi"><a href="#vi" class="headerlink" title="vi"></a>vi</h4><ul><li><code>vi</code> 是 <code>Visual interface</code> 的简称，是 <code>Linux</code> 中 <strong>最经典</strong> 的文本编辑器</li><li><code>vi</code> 的核心设计思想 —— <strong>让程序员的手指始终保持在键盘的核心区域，就能完成所有的编辑操作</strong></li></ul><p><img src="media/14993340485745/001_vi%E9%94%AE%E7%9B%98.png" alt="001_vi键盘-w551"></p><ul><li><code>vi</code> 的特点：<ul><li><strong>没有图形界面</strong> 的 <strong>功能强大</strong> 的编辑器</li><li>只能是编辑 <strong>文本内容</strong>，不能对字体、段落进行排版</li><li><strong>不支持鼠标操作</strong></li><li><strong>没有菜单</strong></li><li><strong>只有命令</strong></li></ul></li><li><code>vi</code> 编辑器在 <strong>系统管理</strong>、<strong>服务器管理</strong> 编辑文件时，<strong>其功能永远不是图形界面的编辑器能比拟的</strong></li></ul><h4 id="vim"><a href="#vim" class="headerlink" title="vim"></a><code>vim</code></h4><p><strong>vim = vi improved</strong></p><ul><li><code>vim</code> 是从 <code>vi</code> 发展出来的一个文本编辑器，支持 <strong>代码补全</strong>、<strong>编译</strong> 及 <strong>错误跳转</strong> 等方便编程的功能特别丰富，在程序员中被广泛使用，被称为 <strong>编辑器之神</strong></li></ul><h4 id="查询软连接命令（知道）"><a href="#查询软连接命令（知道）" class="headerlink" title="查询软连接命令（知道）"></a>查询软连接命令（知道）</h4><ul><li>在很多 <code>Linux</code> 发行版中直接把 <code>vi</code> 做成 <code>vim</code> 的软连接</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查找 vi 的运行文件</span></span><br><span class="line"></span><br><span class="line">$ <span class="built_in">which</span> vi</span><br><span class="line">$ ls -l /usr/bin/vi</span><br><span class="line">$ ls -l /etc/alternatives/vi</span><br><span class="line">$ ls -l /usr/bin/vim.basic</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查找 vim 的运行文件</span></span><br><span class="line">$ <span class="built_in">which</span> vim</span><br><span class="line">$ ls -l /usr/bin/vim</span><br><span class="line">$ ls -l /etc/alternatives/vim</span><br><span class="line">$ ls -l /usr/bin/vim.basic</span><br></pre></td></tr></table></figure><h2 id="02-打开和新建文件"><a href="#02-打开和新建文件" class="headerlink" title="02. 打开和新建文件"></a>02. 打开和新建文件</h2><ul><li>在终端中输入 <code>vi</code> <strong>在后面跟上文件名</strong> 即可</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vi 文件名</span><br></pre></td></tr></table></figure><ul><li>如果文件已经存在，会直接打开该文件</li><li>如果文件不存在，会新建一个文件</li></ul><h3 id="2-1-打开文件并且定位行"><a href="#2-1-打开文件并且定位行" class="headerlink" title="2.1 打开文件并且定位行"></a>2.1 打开文件并且定位行</h3><ul><li><p>在日常工作中，有可能会遇到 <strong>打开一个文件，并定位到指定行</strong> 的情况</p></li><li><p>例如：在开发时，<strong>知道某一行代码有错误</strong>，可以 <strong>快速定位</strong> 到出错代码的位置</p></li><li><p>这个时候，可以使用以下命令打开文件</p></li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vi 文件名 +行数</span><br></pre></td></tr></table></figure><blockquote><p>提示：如果只带上 <code>+</code> 而不指定行号，会直接定位到文件末尾</p></blockquote><h3 id="2-2-异常处理"><a href="#2-2-异常处理" class="headerlink" title="2.2 异常处理"></a>2.2 异常处理</h3><ul><li>如果 <code>vi</code> 异常退出，在磁盘上可能会保存有 <strong>交换文件</strong></li><li>下次再使用 <code>vi</code> 编辑该文件时，会看到以下屏幕信息，按下字母 <code>d</code> 可以 <strong>删除交换文件</strong> 即可</li></ul><blockquote><p>提示：按下键盘时，注意关闭输入法</p></blockquote><p><img src="media/14993340485745/002_%E5%88%A0%E9%99%A4%E4%BA%A4%E6%8D%A2%E6%96%87%E4%BB%B6.png" alt="002_删除交换文件-w1048"></p><h2 id="03-三种工作模式"><a href="#03-三种工作模式" class="headerlink" title="03. 三种工作模式"></a>03. 三种工作模式</h2><ul><li><p><code>vi</code> 有三种基本工作模式：</p><ol><li><strong>命令模式</strong><ul><li><strong>打开文件首先进入命令模式</strong>，是使用 <code>vi</code> 的 <strong>入口</strong></li><li>通过 <strong>命令</strong> 对文件进行常规的编辑操作，例如：<strong>定位</strong>、<strong>翻页</strong>、<strong>复制</strong>、<strong>粘贴</strong>、<strong>删除</strong>……</li><li>在其他图形编辑器下，通过 <strong>快捷键</strong> 或者 <strong>鼠标</strong> 实现的操作，都在 <strong>命令模式</strong> 下实现</li></ul></li><li><strong>末行模式</strong> —— 执行 <strong>保存</strong>、<strong>退出</strong> 等操作 <ul><li>要退出 <code>vi</code> 返回到控制台，需要在末行模式下输入命令</li><li><strong>末行模式</strong> 是 <code>vi</code> 的 <strong>出口</strong></li></ul></li><li><strong>编辑模式</strong> —— 正常的编辑文字</li></ol></li></ul><p><img src="media/14993340485745/003_vi%E7%9A%84%E6%A8%A1%E5%BC%8F.png" alt="003_vi的模式-w500"></p><blockquote><p>提示：在 <code>Touch Bar</code> 的 Mac 电脑上 ，按 <code>ESC</code> 不方便，可以使用 <code>CTRL + [</code> 替代</p></blockquote><h3 id="末行模式命令"><a href="#末行模式命令" class="headerlink" title="末行模式命令"></a>末行模式命令</h3><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">w</td><td align="center">write</td><td>保存</td></tr><tr><td align="center">q</td><td align="center">quit</td><td>退出，如果没有保存，不允许退出</td></tr><tr><td align="center">q!</td><td align="center">quit</td><td>强行退出，不保存退出</td></tr><tr><td align="center">wq</td><td align="center">write &amp; quit</td><td>保存并退出</td></tr><tr><td align="center">x</td><td align="center"></td><td>保存并退出</td></tr></tbody></table><h2 id="04-常用命令"><a href="#04-常用命令" class="headerlink" title="04. 常用命令"></a>04. 常用命令</h2><h3 id="命令线路图"><a href="#命令线路图" class="headerlink" title="命令线路图"></a>命令线路图</h3><ol start="0"><li>重复次数<ul><li>在命令模式下，<strong>先输入一个数字</strong>，<strong>再跟上一个命令</strong>，可以让该命令 <strong>重复执行指定次数</strong> </li></ul></li><li>移动和选择（<strong>多练</strong>）<ul><li><code>vi</code> 之所以快，关键在于 <strong>能够快速定位到要编辑的代码行</strong></li><li><strong>移动命令</strong> 能够 和 <strong>编辑操作</strong> 命令 <strong>组合使用</strong></li></ul></li><li>编辑操作<ul><li><strong>删除</strong>、<strong>复制</strong>、<strong>粘贴</strong>、<strong>替换</strong>、<strong>缩排</strong></li></ul></li><li>撤销和重复</li><li>查找替换</li><li>编辑</li></ol><h4 id="学习提示"><a href="#学习提示" class="headerlink" title="学习提示"></a>学习提示</h4><ol><li><code>vi</code> 的命令较多，<strong>不要期望一下子全部记住</strong>，个别命令忘记了，只是会影响编辑速度而已</li><li>在使用 <code>vi</code> 命令时，注意 <strong>关闭中文输入法</strong></li></ol><h3 id="4-1-移动（基本）"><a href="#4-1-移动（基本）" class="headerlink" title="4.1 移动（基本）"></a>4.1 移动（基本）</h3><ul><li>要熟练使用 <code>vi</code>，首先应该学会怎么在 <strong>命令模式</strong> 下样快速移动光标</li><li><strong>编辑操作命令</strong>，能够和 <strong>移动命令</strong> 结合在一起使用</li></ul><h4 id="1-上、下、左、右"><a href="#1-上、下、左、右" class="headerlink" title="1) 上、下、左、右"></a>1) 上、下、左、右</h4><table><thead><tr><th align="center">命令</th><th>功能</th><th align="center">手指</th></tr></thead><tbody><tr><td align="center">h</td><td>向左</td><td align="center">食指</td></tr><tr><td align="center">j</td><td>向下</td><td align="center">食指</td></tr><tr><td align="center">k</td><td>向上</td><td align="center">中指</td></tr><tr><td align="center">l</td><td>向右</td><td align="center">无名指</td></tr></tbody></table><p><img src="media/14993340485745/005_%E7%A7%BB%E5%8A%A8%E5%85%89%E6%A0%87.png" alt="005_移动光标-w551"></p><h4 id="2-行内移动"><a href="#2-行内移动" class="headerlink" title="2) 行内移动"></a>2) 行内移动</h4><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">w</td><td align="center">word</td><td>向后移动一个单词</td></tr><tr><td align="center">b</td><td align="center">back</td><td>向前移动一个单词</td></tr><tr><td align="center">0</td><td align="center"></td><td>行首</td></tr><tr><td align="center">^</td><td align="center"></td><td>行首，第一个不是空白字符的位置</td></tr><tr><td align="center">$</td><td align="center"></td><td>行尾</td></tr></tbody></table><h4 id="3-行数移动"><a href="#3-行数移动" class="headerlink" title="3) 行数移动"></a>3) 行数移动</h4><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">gg</td><td align="center">go</td><td>文件顶部</td></tr><tr><td align="center">G</td><td align="center">go</td><td>文件末尾</td></tr><tr><td align="center">数字gg</td><td align="center">go</td><td>移动到 数字 对应行数</td></tr><tr><td align="center">数字G</td><td align="center">go</td><td>移动到 数字 对应行数</td></tr><tr><td align="center">:数字</td><td align="center"></td><td>移动到 数字 对应行数</td></tr></tbody></table><h4 id="4-屏幕移动"><a href="#4-屏幕移动" class="headerlink" title="4) 屏幕移动"></a>4) 屏幕移动</h4><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">Ctrl + b</td><td align="center">back</td><td>向上翻页</td></tr><tr><td align="center">Ctrl + f</td><td align="center">forward</td><td>向下翻页</td></tr><tr><td align="center">H</td><td align="center">Head</td><td>屏幕顶部</td></tr><tr><td align="center">M</td><td align="center">Middle</td><td>屏幕中间</td></tr><tr><td align="center">L</td><td align="center">Low</td><td>屏幕底部</td></tr></tbody></table><h3 id="4-2-移动（程序）"><a href="#4-2-移动（程序）" class="headerlink" title="4.2 移动（程序）"></a>4.2 移动（程序）</h3><h4 id="1-段落移动"><a href="#1-段落移动" class="headerlink" title="1) 段落移动"></a>1) 段落移动</h4><ul><li><code>vi</code> 中使用 空行 来区分段落</li><li>在程序开发时，通常 <strong>一段功能相关的代码会写在一起</strong> —— 之间没有空行</li></ul><table><thead><tr><th align="center">命令</th><th>功能</th></tr></thead><tbody><tr><td align="center">{</td><td>上一段</td></tr><tr><td align="center">}</td><td>下一段</td></tr></tbody></table><h4 id="2-括号切换"><a href="#2-括号切换" class="headerlink" title="2) 括号切换"></a>2) 括号切换</h4><ul><li>在程序世界中，<code>()</code>、<code>[]</code>、<code>{}</code> 使用频率很高，而且 <strong>都是成对出现的</strong></li></ul><table><thead><tr><th align="center">命令</th><th>功能</th></tr></thead><tbody><tr><td align="center">%</td><td>括号匹配及切换</td></tr></tbody></table><h4 id="3-标记"><a href="#3-标记" class="headerlink" title="3) 标记"></a>3) 标记</h4><ul><li>在开发时，某一块代码可能<strong>需要稍后处理</strong>，例如：编辑、查看</li><li>此时先使用 <code>m</code> 增加一个标记，这样可以 <strong>在需要时快速地跳转回来</strong> 或者 <strong>执行其他编辑操作</strong></li><li><strong>标记名称</strong> 可以是 <code>a~z</code> 或者 <code>A~Z</code> 之间的任意 <strong>一个</strong> 字母</li><li>添加了标记的 <strong>行如果被删除</strong>，<strong>标记同时被删除</strong></li><li>如果 <strong>在其他行添加了相同名称的标记</strong>，<strong>之前添加的标记也会被替换掉</strong></li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">mx</td><td align="center">mark</td><td>添加标记 x，x 是 a<del>z 或者 A</del>Z 之间的任意一个字母</td></tr><tr><td align="center">‘x</td><td align="center"></td><td>直接定位到标记 x 所在位置</td></tr></tbody></table><h3 id="4-3-选中文本（可视模式）"><a href="#4-3-选中文本（可视模式）" class="headerlink" title="4.3 选中文本（可视模式）"></a>4.3 选中文本（可视模式）</h3><ul><li>学习 <code>复制</code> 命令前，应该先学会 <strong>怎么样选中 要复制的代码</strong></li><li>在 <code>vi</code> 中要选择文本，需要先使用 <code>Visual</code> 命令切换到 <strong>可视模式</strong></li><li><code>vi</code> 中提供了 <strong>三种</strong> 可视模式，可以方便程序员选择 <strong>选中文本的方式</strong></li><li>按 <code>ESC</code> 可以放弃选中，返回到 <strong>命令模式</strong></li></ul><table><thead><tr><th align="center">命令</th><th>模式</th><th>功能</th></tr></thead><tbody><tr><td align="center">v</td><td>可视模式</td><td>从光标位置开始按照正常模式选择文本</td></tr><tr><td align="center">V</td><td>可视行模式</td><td>选中光标经过的完整行</td></tr><tr><td align="center">Ctrl + v</td><td>可视块模式</td><td>垂直方向选中文本</td></tr></tbody></table><ul><li><strong>可视模式</strong>下，可以和 <strong>移动命令</strong> 连用，例如：<code>ggVG</code> 能够选中所有内容</li></ul><h3 id="4-4-撤销和恢复撤销"><a href="#4-4-撤销和恢复撤销" class="headerlink" title="4.4 撤销和恢复撤销"></a>4.4 撤销和恢复撤销</h3><ul><li>在学习编辑命令之前，先要知道怎样撤销之前一次 <strong>错误的</strong> 编辑动作！</li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">u</td><td align="center">undo</td><td>撤销上次命令</td></tr><tr><td align="center">CTRL + r</td><td align="center">redo</td><td>恢复撤销的命令</td></tr></tbody></table><h3 id="4-5-删除文本"><a href="#4-5-删除文本" class="headerlink" title="4.5 删除文本"></a>4.5 删除文本</h3><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">x</td><td align="center">cut</td><td>删除光标所在字符，或者选中文字</td></tr><tr><td align="center">d(移动命令)</td><td align="center">delete</td><td>删除移动命令对应的内容</td></tr><tr><td align="center">dd</td><td align="center">delete</td><td>删除光标所在行，可以 ndd 复制多行</td></tr><tr><td align="center">D</td><td align="center">delete</td><td>删除至行尾</td></tr></tbody></table><blockquote><p>提示：如果使用 <strong>可视模式</strong> 已经选中了一段文本，那么无论使用 <code>d</code> 还是 <code>x</code>，都可以删除选中文本</p></blockquote><ul><li>删除命令可以和 <strong>移动命令</strong> 连用，以下是常见的组合命令：</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">* dw        # 从光标位置删除到单词末尾</span><br><span class="line">* d0        # 从光标位置删除到一行的起始位置</span><br><span class="line">* d&#125;        # 从光标位置删除到段落结尾</span><br><span class="line">* ndd       # 从光标位置向下连续删除 n 行</span><br><span class="line">* d代码行G   # 从光标所在行 删除到 指定代码行 之间的所有代码</span><br><span class="line">* d&#39;a       # 从光标所在行 删除到 标记a 之间的所有代码</span><br></pre></td></tr></table></figure><h3 id="4-6-复制、粘贴"><a href="#4-6-复制、粘贴" class="headerlink" title="4.6 复制、粘贴"></a>4.6 复制、粘贴</h3><ul><li><code>vi</code> 中提供有一个 <strong>被复制文本的缓冲区</strong><ul><li><strong>复制</strong> 命令会将选中的文字保存在缓冲区 </li><li><strong>删除</strong> 命令删除的文字会被保存在缓冲区</li><li>在需要的位置，使用 <strong>粘贴</strong> 命令可以将缓冲区的文字插入到光标所在位置</li></ul></li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">y(移动命令)</td><td align="center">copy</td><td>复制</td></tr><tr><td align="center">yy</td><td align="center">copy</td><td>复制一行，可以 nyy 复制多行</td></tr><tr><td align="center">p</td><td align="center">paste</td><td>粘贴</td></tr></tbody></table><p><strong>提示</strong></p><ul><li>命令 <code>d</code>、<code>x</code> 类似于图形界面的 <strong>剪切操作</strong> —— <code>CTRL + X</code></li><li>命令 <code>y</code> 类似于图形界面的 <strong>复制操作</strong> —— <code>CTRL + C</code></li><li>命令 <code>p</code> 类似于图形界面的 <strong>粘贴操作</strong> —— <code>CTRL + V</code></li><li><code>vi</code> 中的 <strong>文本缓冲区同样只有一个</strong>，如果后续做过 <strong>复制、剪切</strong> 操作，之前缓冲区中的内容会被替换</li></ul><p><strong>注意</strong></p><ul><li><code>vi</code> 中的 <strong>文本缓冲区</strong> 和系统的 <strong>剪贴板</strong> 不是同一个</li><li>所以在其他软件中使用 <code>CTRL + C</code> 复制的内容，不能在 <code>vi</code> 中通过 <code>P</code> 命令粘贴</li><li>可以在 <strong>编辑模式</strong> 下使用 <strong>鼠标右键粘贴</strong></li></ul><h3 id="4-7-替换"><a href="#4-7-替换" class="headerlink" title="4.7 替换"></a>4.7 替换</h3><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th><th>工作模式</th></tr></thead><tbody><tr><td align="center">r</td><td align="center">replace</td><td>替换当前字符</td><td>命令模式</td></tr><tr><td align="center">R</td><td align="center">replace</td><td>替换当前行光标后的字符</td><td>替换模式</td></tr></tbody></table><ul><li><code>R</code> 命令可以进入 <strong>替换模式</strong>，替换完成后，按下 <code>ESC</code> 可以回到 <strong>命令模式</strong></li><li><strong>替换命令</strong> 的作用就是不用进入 <strong>编辑模式</strong>，对文件进行 <strong>轻量级的修改</strong></li></ul><h3 id="4-8-缩排和重复执行"><a href="#4-8-缩排和重复执行" class="headerlink" title="4.8 缩排和重复执行"></a>4.8 缩排和重复执行</h3><table><thead><tr><th align="center">命令</th><th>功能</th></tr></thead><tbody><tr><td align="center">&gt;&gt;</td><td>向右增加缩进</td></tr><tr><td align="center">&lt;&lt;</td><td>向左减少缩进</td></tr><tr><td align="center">.</td><td>重复上次命令</td></tr></tbody></table><ul><li><strong>缩排命令</strong> 在开发程序时，<strong>统一增加代码的缩进</strong> 比较有用！<ul><li>一次性 <strong>在选中代码前增加 4 个空格</strong>，就叫做 <strong>增加缩进</strong></li><li>一次性 <strong>在选中代码前删除 4 个空格</strong>，就叫做 <strong>减少缩进</strong></li></ul></li><li>在 <strong>可视模式</strong> 下，缩排命令只需要使用 <strong>一个</strong> <code>&gt;</code> 或者 <code>&lt;</code> </li></ul><blockquote><p>在程序中，<strong>缩进</strong> 通常用来表示代码的归属关系</p><ul><li>前面空格越少，代码的级别越高</li><li>前面空格越多，代码的级别越低</li></ul></blockquote><h3 id="4-9-查找"><a href="#4-9-查找" class="headerlink" title="4.9 查找"></a>4.9 查找</h3><h4 id="常规查找"><a href="#常规查找" class="headerlink" title="常规查找"></a>常规查找</h4><table><thead><tr><th align="center">命令</th><th>功能</th></tr></thead><tbody><tr><td align="center">/str</td><td>查找 str</td></tr></tbody></table><ul><li>查找到指定内容之后，使用 <code>Next</code> 查找下一个出现的位置：<ul><li><code>n</code>: 查找下一个</li><li><code>N</code>: 查找上一个</li></ul></li><li>如果不想看到高亮显示，可以随便查找一个文件中不存在的内容即可</li></ul><h4 id="单词快速匹配"><a href="#单词快速匹配" class="headerlink" title="单词快速匹配"></a>单词快速匹配</h4><table><thead><tr><th align="center">命令</th><th>功能</th></tr></thead><tbody><tr><td align="center">*</td><td>向后查找当前光标所在单词</td></tr><tr><td align="center">#</td><td>向前查找当前光标所在单词</td></tr></tbody></table><ul><li>在开发中，通过单词快速匹配，可以快速看到这个单词在其他什么位置使用过</li></ul><h3 id="4-10-查找并替换"><a href="#4-10-查找并替换" class="headerlink" title="4.10 查找并替换"></a>4.10 查找并替换</h3><ul><li>在 <code>vi</code> 中查找和替换命令需要在 <strong>末行模式</strong> 下执行</li><li>记忆命令格式：</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s&#x2F;&#x2F;&#x2F;g</span><br></pre></td></tr></table></figure><h4 id="1-全局替换"><a href="#1-全局替换" class="headerlink" title="1) 全局替换"></a>1) 全局替换</h4><ul><li><strong>一次性</strong>替换文件中的 <strong>所有出现的旧文本</strong></li><li>命令格式如下：</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s&#x2F;旧文本&#x2F;新文本&#x2F;g</span><br></pre></td></tr></table></figure><h4 id="2-可视区域替换"><a href="#2-可视区域替换" class="headerlink" title="2) 可视区域替换"></a>2) 可视区域替换</h4><ul><li><strong>先选中</strong> 要替换文字的 <strong>范围</strong></li><li>命令格式如下：</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:s&#x2F;旧文本&#x2F;新文本&#x2F;g</span><br></pre></td></tr></table></figure><h4 id="3-确认替换"><a href="#3-确认替换" class="headerlink" title="3) 确认替换"></a>3) 确认替换</h4><ul><li>如果把末尾的 <code>g</code> 改成 <code>gc</code> 在替换的时候，会有提示！<strong>推荐使用！</strong></li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s&#x2F;旧文本&#x2F;新文本&#x2F;gc</span><br></pre></td></tr></table></figure><ol><li><code>y</code> - <code>yes</code> 替换</li><li><code>n</code> - <code>no</code> 不替换</li><li><code>a</code> - <code>all</code> 替换所有</li><li><code>q</code> - <code>quit</code> 退出替换</li><li><code>l</code> - <code>last</code> 最后一个，并把光标移动到行首</li><li><code>^E</code> 向下滚屏</li><li><code>^Y</code> 向上滚屏</li></ol><h3 id="4-11-插入命令"><a href="#4-11-插入命令" class="headerlink" title="4.11 插入命令"></a>4.11 插入命令</h3><ul><li>在 <code>vi</code> 中除了常用的 <code>i</code> 进入 <strong>编辑模式</strong> 外，还提供了以下命令同样可以进入编辑模式：</li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th><th align="center">常用</th></tr></thead><tbody><tr><td align="center">i</td><td align="center">insert</td><td>在当前字符前插入文本</td><td align="center">常用</td></tr><tr><td align="center">I</td><td align="center">insert</td><td>在行首插入文本</td><td align="center">较常用</td></tr><tr><td align="center">a</td><td align="center">append</td><td>在当前字符后添加文本</td><td align="center"></td></tr><tr><td align="center">A</td><td align="center">append</td><td>在行末添加文本</td><td align="center">较常用</td></tr><tr><td align="center">o</td><td align="center"></td><td>在当前行后面插入一空行</td><td align="center">常用</td></tr><tr><td align="center">O</td><td align="center"></td><td>在当前行前面插入一空行</td><td align="center">常用</td></tr></tbody></table><p><img src="media/14993340485745/004_%E6%8F%92%E5%85%A5%E5%91%BD%E4%BB%A4.png" alt="004_插入命令-w400"></p><h4 id="演练-1-——-编辑命令和数字连用"><a href="#演练-1-——-编辑命令和数字连用" class="headerlink" title="演练 1 —— 编辑命令和数字连用"></a>演练 1 —— 编辑命令和数字连用</h4><ul><li>在开发中，可能会遇到连续输入 <code>N</code> 个同样的字符</li></ul><blockquote><p>在 <code>Python</code> 中有简单的方法，但是其他语言中通常需要自己输入</p></blockquote><ul><li>例如：<code>**********</code> 连续 10 个星号</li></ul><p>要实现这个效果可以在 <strong>命令模式</strong> 下</p><ol><li>输入 <code>10</code>，表示要重复 10 次</li><li>输入 <code>i</code> 进入 <strong>编辑模式</strong></li><li>输入 <code>*</code> 也就是重复的文字</li><li>按下 <code>ESC</code> 返回到 <strong>命令模式</strong>，返回之后 <code>vi</code> 就会把第 <code>2、3</code> 两步的操作重复 <code>10</code> 次</li></ol><blockquote><p>提示：正常开发时，在 <strong>进入编辑模式之前，不要按数字</strong></p></blockquote><h4 id="演练-2-——-利用-可视块-给多行代码增加注释"><a href="#演练-2-——-利用-可视块-给多行代码增加注释" class="headerlink" title="演练 2 —— 利用 可视块 给多行代码增加注释"></a>演练 2 —— 利用 可视块 给多行代码增加注释</h4><ul><li>在开发中，可能会遇到一次性给多行代码 <strong>增加注释</strong> 的情况</li></ul><blockquote><p>在 <code>Python</code> 中，要给代码增加注释，可以在代码前增加一个 <code>#</code></p></blockquote><p>要实现这个效果可以在 <strong>命令模式</strong> 下</p><ol><li>移动到要添加注释的 <strong>第 1 行代码</strong>，按 <code>^</code> 来到行首</li><li>按 <code>CTRL + v</code> 进入 <strong>可视块</strong> 模式</li><li>使用 <code>j</code> 向下连续选中要添加的代码行</li><li>输入 <code>I</code> 进入 <strong>编辑模式</strong>，并在 <strong>行首插入</strong>，注意：一定要使用 <strong>I</strong></li><li>输入 <code>#</code> 也就是注释符号</li><li>按下 <code>ESC</code> 返回到 <strong>命令模式</strong>，返回之后 <code>vi</code> 会在之前选中的每一行代码 <strong>前</strong> 插入 <code>#</code></li></ol><h2 id="05-分屏命令"><a href="#05-分屏命令" class="headerlink" title="05. 分屏命令"></a>05. 分屏命令</h2><ul><li>属于 <code>vi</code> 的高级命令 —— 可以 <strong>同时编辑和查看多个文件</strong></li></ul><h3 id="5-1-末行命令扩展"><a href="#5-1-末行命令扩展" class="headerlink" title="5.1 末行命令扩展"></a>5.1 末行命令扩展</h3><p><strong>末行命令</strong> 主要是针对文件进行操作的：<strong>保存</strong>、<strong>退出</strong>、<strong>保存&amp;退出</strong>、<strong>搜索&amp;替换</strong>、<strong>另存</strong>、<strong>新建</strong>、<strong>浏览文件</strong></p><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">:e .</td><td align="center">edit</td><td>会打开内置的文件浏览器，浏览要当前目录下的文件</td></tr><tr><td align="center">:n 文件名</td><td align="center">new</td><td>新建文件</td></tr><tr><td align="center">:w 文件名</td><td align="center">write</td><td>另存为，但是仍然编辑当前文件，并不会切换文件</td></tr></tbody></table><blockquote><p>提示：切换文件之前，必须保证当前这个文件已经被保存！</p></blockquote><ul><li>已经学习过的 <strong>末行命令</strong>：</li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">:w</td><td align="center">write</td><td>保存</td></tr><tr><td align="center">:q</td><td align="center">quit</td><td>退出，如果没有保存，不允许退出</td></tr><tr><td align="center">:q!</td><td align="center">quit</td><td>强行退出，不保存退出</td></tr><tr><td align="center">:wq</td><td align="center">write &amp; quit</td><td>保存并退出</td></tr><tr><td align="center">:x</td><td align="center"></td><td>保存并退出</td></tr><tr><td align="center">:%s///gc</td><td align="center"></td><td>确认搜索并替换</td></tr></tbody></table><blockquote><p>在实际开发中，可以使用 <code>w</code> 命令 <strong>阶段性的备份代码</strong></p></blockquote><h3 id="5-2-分屏命令"><a href="#5-2-分屏命令" class="headerlink" title="5.2 分屏命令"></a>5.2 分屏命令</h3><ul><li>使用 <strong>分屏命令</strong>，可以 <strong>同时编辑和查看多个文件</strong></li></ul><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">:sp [文件名]</td><td align="center">split</td><td>横向增加分屏</td></tr><tr><td align="center">:vsp [文件名]</td><td align="center">vertical split</td><td>纵向增加分屏</td></tr></tbody></table><h4 id="1-切换分屏窗口"><a href="#1-切换分屏窗口" class="headerlink" title="1) 切换分屏窗口"></a>1) 切换分屏窗口</h4><blockquote><p>分屏窗口都是基于 <code>CTRL + W</code> 这个快捷键的，<code>w</code> 对应的英文单词是 <code>window</code></p></blockquote><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">w</td><td align="center">window</td><td>切换到下一个窗口</td></tr><tr><td align="center">r</td><td align="center">reverse</td><td>互换窗口</td></tr><tr><td align="center">c</td><td align="center">close</td><td>关闭当前窗口，但是不能关闭最后一个窗口</td></tr><tr><td align="center">q</td><td align="center">quit</td><td>退出当前窗口，如果是最后一个窗口，则关闭 vi</td></tr><tr><td align="center">o</td><td align="center">other</td><td>关闭其他窗口</td></tr></tbody></table><h4 id="2-调整窗口大小"><a href="#2-调整窗口大小" class="headerlink" title="2) 调整窗口大小"></a>2) 调整窗口大小</h4><blockquote><p>分屏窗口都是基于 <code>CTRL + W</code> 这个快捷键的，<code>w</code> 对应的英文单词是 <code>window</code></p></blockquote><table><thead><tr><th align="center">命令</th><th align="center">英文</th><th>功能</th></tr></thead><tbody><tr><td align="center">+</td><td align="center"></td><td>增加窗口高度</td></tr><tr><td align="center">-</td><td align="center"></td><td>减少窗口高度</td></tr><tr><td align="center">&gt;</td><td align="center"></td><td>增加窗口宽度</td></tr><tr><td align="center">&lt;</td><td align="center"></td><td>减少窗口宽度</td></tr><tr><td align="center">=</td><td align="center"></td><td>等分窗口大小</td></tr></tbody></table><blockquote><p>调整窗口宽高的命令可以和数字连用，例如：<code>5 CTRL + W +</code> 连续 5 次增加高度</p></blockquote><h2 id="06-常用命令速查图"><a href="#06-常用命令速查图" class="headerlink" title="06. 常用命令速查图"></a>06. 常用命令速查图</h2><p><img src="media/14993340485745/vim.png" alt="vi"></p><h3 id="vimrc"><a href="#vimrc" class="headerlink" title="vimrc"></a>vimrc</h3><ul><li><code>vimrc</code> 是 <code>vim</code> 的配置文件，可以设置 vim 的配置，包括：<strong>热键</strong>、<strong>配色</strong>、<strong>语法高亮</strong>、<strong>插件</strong> 等</li><li><code>Linux</code> 中 <code>vimrc</code> 有两个位置，<strong>家目录下的配置文件优先级更高</strong></li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;vim&#x2F;vimrc</span><br><span class="line">~&#x2F;.vimrc</span><br></pre></td></tr></table></figure><ul><li>常用的插件有：<ul><li>代码补全</li><li>代码折叠</li><li>搜索</li><li>Git 集成</li><li>……</li></ul></li><li>网上有很多高手已经配置好的针对 <code>python</code> 开发的 <code>vimrc</code> 文件，可以下载过来直接使用，或者等大家多 <code>Linux</code> 比较熟悉后，再行学习！</li></ul>]]></content>
-      
-      
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android.mk打包apk</title>
+    <url>/2020/03/18/Android.mk%E6%89%93%E5%8C%85apk/</url>
+    <content><![CDATA[<p>一、新建Android.mk文件 放在app/src/main 目录下</p>
+<p>二、代码中引用的第三方库通过aar包存放在最外层libs目录下，所有app共享这些库文件。</p>
+<p>如何有自己用的第三方开源库，<a href="https://www.jianshu.com/p/59efa895589e" target="_blank" rel="noopener">查找aar的方法</a> </p>
+<p>电脑上rxandroid aar的目录：<br>C:\Users\Lenovo.gradle\caches\modules-2\files-2.1\io.reactivex\rxandroid（各个电脑目录不同）</p>
+<p>Android.mk编写规则<br>（系统设置例子）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#代表mk当前文档路径</span><br><span class="line">LOCAL_PATH :&#x3D; $(call my-dir) </span><br><span class="line"></span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line"></span><br><span class="line">LOCAL_PACKAGE_NAME :&#x3D; HQ_DevSet</span><br><span class="line"></span><br><span class="line">#指该模块在所有版本下都编译</span><br><span class="line">LOCAL_MODULE_TAGS :&#x3D; optional</span><br><span class="line"></span><br><span class="line">#混淆配置</span><br><span class="line">LOCAL_PROGUARD_ENABLED :&#x3D; full obfuscation</span><br><span class="line">LOCAL_PROGUARD_FLAG_FILES :&#x3D; ..&#x2F;..&#x2F;proguard-rules.pro</span><br><span class="line"></span><br><span class="line">#设置不打odex包</span><br><span class="line">LOCAL_DEX_PREOPT :&#x3D; false</span><br><span class="line">DONT_DEXPREOPT_PREBUILTS :&#x3D; true  </span><br><span class="line"></span><br><span class="line">#apk路径</span><br><span class="line">LOCAL_MODULE_PATH :&#x3D; $(TARGET_OUT)&#x2F;app</span><br><span class="line"></span><br><span class="line">#签名配置</span><br><span class="line">LOCAL_CERTIFICATE :&#x3D; platform</span><br><span class="line"></span><br><span class="line">LOCAL_MULTILIB :&#x3D; 32</span><br><span class="line"></span><br><span class="line">#源码文件</span><br><span class="line">#引用当前app的资源</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; $(LOCAL_PATH)&#x2F;res</span><br><span class="line"></span><br><span class="line">#声明当前app的代码目录</span><br><span class="line">src_dirs :&#x3D; java&#x2F;</span><br><span class="line"></span><br><span class="line">#引用当前app的代码</span><br><span class="line">LOCAL_SRC_FILES :&#x3D; $(call all-java-files-under, $(src_dirs))</span><br><span class="line"></span><br><span class="line">#添加aidl源码文件</span><br><span class="line">LOCAL_SRC_FILES +&#x3D; \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxOne.aidl \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxTwo.aidl</span><br><span class="line"></span><br><span class="line"># jar包</span><br><span class="line">#声明多个 jar 包的位置   ----其中\代表换行，后面不能跟任何字符，后面的一样</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES :&#x3D; \</span><br><span class="line"> hqlib:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqlib.jar \</span><br><span class="line"> hqapi:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi.jar \</span><br><span class="line"> hqapi_sq:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi_sq.jar\</span><br><span class="line"> rxjava:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxjava-1.3.7.jar</span><br><span class="line">																			</span><br><span class="line">#引用我们声明的多个 jar 包的变量</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D;  hqlib \</span><br><span class="line">                                hqapi \</span><br><span class="line">                                hqapi_sq \</span><br><span class="line">                                rxjava \</span><br><span class="line">                                android-support-v4</span><br><span class="line">#aar包</span><br><span class="line">#声明aar包</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES +&#x3D; PublicTitle2:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;PublicTitle2.aar\</span><br><span class="line">rxandroid:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxandroid-1.2.1.aar</span><br><span class="line"></span><br><span class="line">#引用aar包</span><br><span class="line">LOCAL_STATIC_JAVA_AAR_LIBRARIES +&#x3D; PublicTitle2 \</span><br><span class="line">								 Rxandroid</span><br><span class="line"></span><br><span class="line">#引入使用的资源 添加包名</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">					--extra-packages com.hopechart.sq.publictitle \</span><br><span class="line">					--extra-packages rx.android </span><br><span class="line"></span><br><span class="line">#设置version版本</span><br><span class="line">#设置版本号和名字，如果不写会默认使用系统api的版本号25 --7.1.1</span><br><span class="line">version_code &#x3D; 24</span><br><span class="line">version_name :&#x3D; 4.0.0.1</span><br><span class="line">						</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-code $(version_code)</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-name $(version_name)    </span><br><span class="line"></span><br><span class="line">#打出来的minSDK和targetSDK version都是19 </span><br><span class="line">LOCAL_SDK_VERSION :&#x3D; 19  </span><br><span class="line">#如果有特殊情况可在清单文件中添加</span><br><span class="line"># 【</span><br><span class="line">#  AndroidManifest.xml清单文件添加sdk版本，优先使用清单文件中</span><br><span class="line"># 的版本号</span><br><span class="line">#  &lt;uses-sdk android:minSdkVersion&#x3D;&quot;19&quot;</span><br><span class="line">#         android:targetSdkVersion&#x3D;&quot;25&quot;&#x2F;&gt;</span><br><span class="line"># 】</span><br><span class="line"></span><br><span class="line">#打apk包</span><br><span class="line">include $(BUILD_PACKAGE)</span><br><span class="line"></span><br><span class="line">#调用子目录的mk文件</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
+
+
+<p>#Android.mk END</p>
+<p>#如果使用的系统的包，需要引入他们使用的资源文件，否则会提示编译资源找不到的错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#RecyclerView例子</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; frameworks&#x2F;support&#x2F;v7&#x2F;recyclerview&#x2F;res</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D; android-support-v7-recyclerview</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">--extra-packages android.support.v7.recyclerview</span><br></pre></td></tr></table></figure>
+
+<p>代码编译<br>1、在源码任意目录下创建一个目录，把改好的代码上传到该目录；<br>2、切换到源码顶层目录，执行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">source build&#x2F;envsetup.sh;</span><br></pre></td></tr></table></figure>
+
+<p>3、编译单个apk , 执行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mmm  [apk mk文件的目录]</span><br></pre></td></tr></table></figure>
+
+<p>需要在全编的情况下才能单独编译</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">make -j32</span><br></pre></td></tr></table></figure>
+<p>编译所有的模块编译所有的模块需要在每个模块的父级目录添加Android.mk文件</p>
+<p>内容【</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">LOCAL_PATH :&#x3D; $(call my-dir)</span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
+
+<p>】<br>这样就可以执行子目录中的Android.mk文件。<br>如下目录执行的命令就是: mmm 代码目录/SQ10Inch,然后就可以在输出目录看到所有打包出来的apk文件。</p>
+<p>参考链接：<br><a href="https://blog.csdn.net/jsn_ze/article/details/72790401" target="_blank" rel="noopener">Android源码编译第三方app如何写Android.mk</a><br><a href="https://www.jianshu.com/p/e19e0d3bf13a" target="_blank" rel="noopener">Android.mk引用jar包、so库、aar包系统签名</a></p>
+]]></content>
       <categories>
-          
-          <category> Linux </category>
-          
+        <category>Android</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> Linux </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-  
-  
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
 </search>
