@@ -82,9 +82,11 @@
 </ul>
 ]]></content>
       <categories>
+        <category>Java</category>
         <category>设计模式</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>设计模式</tag>
       </tags>
   </entry>
@@ -129,9 +131,11 @@
 </ul>
 ]]></content>
       <categories>
+        <category>Java</category>
         <category>设计模式</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>设计模式</tag>
       </tags>
   </entry>
@@ -159,6 +163,7 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private val users: MutableLiveData&lt;List&lt;User&gt;&gt; by lazy &#123;</span><br><span class="line">       MutableLiveData&lt;List&lt;User&gt;&gt;().also &#123;</span><br><span class="line">           uiScope.launch &#123;</span><br><span class="line">               val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">               it.value &#x3D; rst.await()</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fun getUsers(): LiveData&lt;List&lt;User&gt;&gt; &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">       return users</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   fun setUsers() &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123;</span><br><span class="line">               var count &#x3D; App.userDao.queryMaxId()</span><br><span class="line">               App.userDao.insertAll(User(++count, &quot;f$count&quot;, &quot;l$count&quot;))</span><br><span class="line">               App.userDao.getAll()</span><br><span class="line">           &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
+        <category>Android</category>
         <category>JetPack</category>
       </categories>
       <tags>
@@ -197,57 +202,17 @@
 ]]></content>
       <categories>
         <category>Android</category>
+        <category>打包编译</category>
       </categories>
       <tags>
         <tag>Android</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>systemUI</title>
-    <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
-    <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
-<h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-
-<p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p>
-<h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line">	</span><br><span class="line">	public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">		super(host);</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	public void setListening(boolean listening) &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">		return new BooleanState();</span><br><span class="line">	&#125;</span><br><span class="line">	public void setFmModeUpdate()&#123;</span><br><span class="line">		handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">	@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">	 	return &quot;fm&quot; ;</span><br><span class="line">	 &#125;</span><br><span class="line"> </span><br><span class="line">	 @Override</span><br><span class="line">	protected void handleClick() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected void handleUpdateState(</span><br><span class="line">			com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line">		</span><br><span class="line">		int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		state.visible &#x3D; true ;</span><br><span class="line">		state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">		state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">		if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">			&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;else&#123;</span><br><span class="line">			&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p>
-<h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    	mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">	.....</span><br><span class="line">		</span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			setFmModeUpdate();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p>
-<p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    	</span><br><span class="line">    	mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    	mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    	Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">		return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p>
-<h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p>
-<p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p>
-<p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p>
-<p>首先看一下代码：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().registerContentObserver(</span><br><span class="line">				Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private void unregisterContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">			boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">			if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(true);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">			&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(false);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">			&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p>
-<p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>
-]]></content>
-      <categories>
-        <category>Android</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
+        <tag>打包编译</tag>
       </tags>
   </entry>
   <entry>
     <title>Nexus3.12私服搭建</title>
     <url>/2020/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p>
+    <content><![CDATA[<h5 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h5><p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1）左shift打开CMD窗口nexus-3.12.1-01-win64\nexus-3.12.1-01\bin目录    </span><br><span class="line">2）nexus.exe &#x2F;install  安装服务  </span><br><span class="line">3）nexus.exe &#x2F;start    启动服务  </span><br><span class="line">4）nexus.exe &#x2F;stop     停止服务</span><br></pre></td></tr></table></figure>
 <p>（3）、使用nexus软件<br>在浏览器中输入<a href="http://localhost:8081/，点击“login" target="_blank" rel="noopener">http://localhost:8081/，点击“login</a> in”，输入admin/admin123即可。<br>（4）、管理目前的仓库<br>将central的远程地址修改如下（即改为aliyun的镜像，主要是速度快一些）：<a href="http://maven.aliyun.com/nexus/content/groups/public/" target="_blank" rel="noopener">http://maven.aliyun.com/nexus/content/groups/public/</a><br>（<a href="https://blog.csdn.net/ytfrdfiw/article/details/78476087" target="_blank" rel="noopener">参考链接</a>）</p>
 <h4 id="多平台Nexus私服搭建"><a href="#多平台Nexus私服搭建" class="headerlink" title="多平台Nexus私服搭建"></a>多平台Nexus私服搭建</h4><p><a href="http://www.10tiao.com/html/227/201703/2650238831/1.html" target="_blank" rel="noopener">Android Studio依赖管理与Nexus私服搭建</a>  </p>
@@ -276,9 +241,11 @@
 ]]></content>
       <categories>
         <category>Android</category>
+        <category>打包编译</category>
       </categories>
       <tags>
         <tag>Android</tag>
+        <tag>打包编译</tag>
       </tags>
   </entry>
   <entry>
@@ -1194,6 +1161,50 @@
       </tags>
   </entry>
   <entry>
+    <title>systemUI</title>
+    <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
+<h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+
+<p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p>
+<h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line">	</span><br><span class="line">	public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">		super(host);</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	public void setListening(boolean listening) &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">		return new BooleanState();</span><br><span class="line">	&#125;</span><br><span class="line">	public void setFmModeUpdate()&#123;</span><br><span class="line">		handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">	@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">	 	return &quot;fm&quot; ;</span><br><span class="line">	 &#125;</span><br><span class="line"> </span><br><span class="line">	 @Override</span><br><span class="line">	protected void handleClick() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected void handleUpdateState(</span><br><span class="line">			com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line">		</span><br><span class="line">		int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		state.visible &#x3D; true ;</span><br><span class="line">		state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">		state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">		if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">			&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;else&#123;</span><br><span class="line">			&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p>
+<h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    	mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">	.....</span><br><span class="line">		</span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			setFmModeUpdate();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p>
+<p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    	</span><br><span class="line">    	mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    	mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    	Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">		return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p>
+<h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p>
+<p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p>
+<p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p>
+<p>首先看一下代码：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().registerContentObserver(</span><br><span class="line">				Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private void unregisterContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">			boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">			if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(true);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">			&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(false);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">			&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p>
+<p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>安卓系统签名转keystore</title>
     <url>/2020/03/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/</url>
     <content><![CDATA[<p> 单独签名解决方案</p>
@@ -1214,9 +1225,11 @@
 ]]></content>
       <categories>
         <category>Android</category>
+        <category>系统源码</category>
       </categories>
       <tags>
         <tag>Android</tag>
+        <tag>系统源码</tag>
       </tags>
   </entry>
 </search>
