@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Linux服务器共享文件夹Samba</title>
+    <url>/2020/03/21/Linux%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%B1%E4%BA%AB%E6%96%87%E4%BB%B6%E5%A4%B9Samba/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/Utotao/article/details/100848930" target="_blank" rel="noopener">Windows访问Linux服务器共享文件夹–Samba</a></p>
+<h4 id="1、Linux安装Samba及配置"><a href="#1、Linux安装Samba及配置" class="headerlink" title="1、Linux安装Samba及配置"></a>1、Linux安装Samba及配置</h4><h5 id="安装Samba："><a href="#安装Samba：" class="headerlink" title="安装Samba："></a>安装Samba：</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo apt-get install samba</span><br></pre></td></tr></table></figure>
+<h5 id="配置Samba："><a href="#配置Samba：" class="headerlink" title="配置Samba："></a>配置Samba：</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo vi &#x2F;etc&#x2F;samba&#x2F;smb.conf</span><br></pre></td></tr></table></figure>
+<h5 id="配置内容："><a href="#配置内容：" class="headerlink" title="配置内容："></a>配置内容：</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[share]</span><br><span class="line">    #comment &#x3D; Ubuntu File Server Share</span><br><span class="line">    path &#x3D; &#x2F;home&#x2F;ubuntu</span><br><span class="line">    valid users &#x3D; root</span><br><span class="line">    available &#x3D; yes</span><br><span class="line">    browsable &#x3D; yes</span><br><span class="line">    writable &#x3D; yes</span><br></pre></td></tr></table></figure>
+<p>配置用户名密码：（windows访问share文件夹时候使用）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo smbpasswd -a root -&gt; 注意此处的用户名要和上面的valid users保持一致</span><br></pre></td></tr></table></figure>
+
+<p>回车后会让你输入密码<br>设置共享文件夹权限：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo chmod 777 &#x2F;home&#x2F;ubuntu</span><br></pre></td></tr></table></figure>
+
+<p>重启：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo &#x2F;etc&#x2F;init.d&#x2F;samb restart</span><br></pre></td></tr></table></figure>
+<h3 id="2、windows访问共享文件夹"><a href="#2、windows访问共享文件夹" class="headerlink" title="2、windows访问共享文件夹"></a>2、windows访问共享文件夹</h3><p>网络—&gt;右键选择映射网络驱动器，填写IP+Samba配置文件中的[share]之[]里面的字样</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>单例模式</title>
     <url>/2020/03/20/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h4 id="1-定义"><a href="#1-定义" class="headerlink" title="1.定义"></a>1.定义</h4><p>确保某个类只有一个实例,并且自行实例化并向整个系统提供这个实例。</p>
@@ -1161,7 +1185,7 @@
       </tags>
   </entry>
   <entry>
-    <title>systemUI</title>
+    <title>Android下拉状态栏快捷开关的添加</title>
     <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
     <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
 <h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
