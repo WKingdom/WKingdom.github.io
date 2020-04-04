@@ -1,19 +1,278 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>jni无法访问so提示not accessible</title>
+    <url>/2020/04/04/JNI%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AEso%E6%8F%90%E7%A4%BAnot%20accessible/</url>
+    <content><![CDATA[<p>问题：app需要引用系统的so库，当install形式的时候安装时，打开app需要使用/system/lib64目录下的so库时，提示不能访问。<br>原因分析：放到system/app下的app是可以找到的，但是普通的安装形式的app是没有权限访问的，所以需要需要声明公有so库才能使用。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">library &quot;&#x2F;system&#x2F;lib64&#x2F;libserialport.so&quot; (&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot;) needed or</span><br><span class="line">dlopened by&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot; is not accessible for the namespace</span><br><span class="line">&quot;classloader-namespace&quot;</span><br></pre></td></tr></table></figure>
+<p>解决方法：<br>修改system/core/rootdir/etc/public.libraries.txt<br>添加你要使用的的so到此问题件中。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cat public.libraries.txt </span><br><span class="line">....</span><br><span class="line">libz.so</span><br><span class="line">libhqbindcs.so</span><br></pre></td></tr></table></figure>
+
+<p>也可以直接不编译在板子上修改，对应目录/system/etc  </p>
+<p>参考：<br>Framework基础：Android N 公共so库怎么定义呢？<br><a href="https://www.jianshu.com/p/4be3d1dafbec" target="_blank" rel="noopener">https://www.jianshu.com/p/4be3d1dafbec</a></p>
+<p>[Google]原生库的命名空间<br><a href="https://source.android.com/devices/tech/config/namespaces_libraries" target="_blank" rel="noopener">https://source.android.com/devices/tech/config/namespaces_libraries</a></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>system.img打包出错设备上没有空间</title>
+    <url>/2020/04/04/system-img%E6%89%93%E5%8C%85%E5%87%BA%E9%94%99%E8%AE%BE%E5%A4%87%E4%B8%8A%E6%B2%A1%E6%9C%89%E7%A9%BA%E9%97%B4/</url>
+    <content><![CDATA[<p>在打system.img的时候提示出错: 设备上没有空间</p>
+<p>在现有android系统时，用adb工具把程序放入系统中</p>
+<p>cmd </p>
+<p>cd 到adb的目录下</p>
+<p>adb push xxx.xml etc/</p>
+<p>当我们要制作系统镜像时，可以使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mkdir system</span><br><span class="line"></span><br><span class="line">sudo mount -o loop system.img system</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cp -rf xxx.xml system&#x2F;etc</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sudo umount system</span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>执行cp时候，提示设备上没有空间，这时候，可以</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo apt-get install e2fsprogs</span><br><span class="line"></span><br><span class="line">e2fsck -f system.img</span><br><span class="line">resize2fs system.img 1000M</span><br><span class="line">sudo mount -o loop system.img system</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cp xxx</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sudo umount system</span><br><span class="line">e2fsck -f system.img</span><br><span class="line">resize2fs -M system.img</span><br></pre></td></tr></table></figure>
+<p>最后需要修改内存分配配置。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>System.img的查看-处理</title>
+    <url>/2020/04/04/System-img%E7%9A%84%E6%9F%A5%E7%9C%8B-%E5%A4%84%E7%90%86/</url>
+    <content><![CDATA[<p>在服务器上编译完源码之后，有时候需要想要查看打出img的内容是不是自己想要的，比如说添加了一个新的apk文件，如果重新烧写到手机会浪费很多时间，想在服务器上直接查看，可以参考如下方法。<br><a href="https://blog.csdn.net/sir_zeng/article/details/51983432" target="_blank" rel="noopener">System.img的查看/处理</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">file out&#x2F;target&#x2F;product&#x2F;px3&#x2F;system.img</span><br><span class="line"></span><br><span class="line">out&#x2F;host&#x2F;linux-x86&#x2F;bin&#x2F;simg2img out&#x2F;target&#x2F;product&#x2F;px3&#x2F;system.img system.img</span><br><span class="line">file system.img</span><br><span class="line">sudo mount -o loop system.img &#x2F;mnt</span><br><span class="line">ls -lh &#x2F;mnt&#x2F;</span><br></pre></td></tr></table></figure>
+<p>解包system.img<br>simg2img<br>simg2img用于把压缩过/hash过的img文件还原为raw的img文件<br>它通常在编译输出的out/host/linux-x86/bin/simg2img中<br>查询原始system.img文件类型,可以看到是data  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">file out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;system.img</span><br><span class="line">out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;system.img: data</span><br><span class="line">转换命令如下</span><br><span class="line"></span><br><span class="line">Usage: simg2img &lt;sparse_image_files&gt; &lt;raw_image_file&gt;</span><br><span class="line">out&#x2F;host&#x2F;linux-x86&#x2F;bin&#x2F;simg2img out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;system.img out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;systemraw.img</span><br></pre></td></tr></table></figure>
+
+<p>查询下转换后的systemraw.img文件类型  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">file out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;systemraw.img</span><br><span class="line">out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;systemraw.img: Linux rev 1.0 ext4 filesystem data, UUID&#x3D;57f8f4bc-abf4-655f-bf67-946fc0f9f25b (extents) (large files)</span><br></pre></td></tr></table></figure>
+
+<p>[编辑] mount systemraw.img<br>这个systemraw.img就可以任意我们处理了,最好的处理方法是直接mount它,然后进去看/处理内容,如果直接解开,很容易丢失了软链接,甚至会到是selinux的权限错乱</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mkdir aaa</span><br><span class="line">sudo mount -t ext4 -o loop out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;systemraw.img aaa</span><br></pre></td></tr></table></figure>
+
+<p>[编辑] 处理mount的img<br>[编辑] 查看占用的空间<br>df -h<br>输出类似  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">&#x2F;dev&#x2F;loop0      2.0G  450M  1.5G  23% &#x2F;media&#x2F;work_r&#x2F;szgit&#x2F;8909&#x2F;LINUX&#x2F;android&#x2F;aaa</span><br></pre></td></tr></table></figure>
+
+<p>[编辑] 其他处理<br>其他的诸如 chmod rm cp mv   chown想怎样就可以怎样了,随便修改  </p>
+<p>[编辑] 保存处理mount的img<br>umount就ok,自动保存了  </p>
+<p>sudo umount aaa<br>[编辑] 打包为system.img<br>[编辑] img2simg<br>img2simg用于把img文件打包<br>它通常在编译输出的out/host/linux-x86/bin/img2simg中<br>转换命令如下  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Usage: img2simg &lt;raw_image_file&gt; &lt;sparse_image_file&gt; [&lt;block_size&gt;]</span><br><span class="line">out&#x2F;host&#x2F;linux-x86&#x2F;bin&#x2F;img2simg out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;systemraw.img out&#x2F;target&#x2F;product&#x2F;msm8909&#x2F;system.img</span><br></pre></td></tr></table></figure>
+
+<p>转换出来 system.img和之前编译的没有啥区别,直接用fastboot就可以刷机  </p>
+<p>[编辑] 其他<br>如果你找不到img2simg/simg2img,自己编译下,或者从其他项目中copy过来  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mmma system&#x2F;core&#x2F;libsparse&#x2F;   </span><br><span class="line">或者  </span><br><span class="line">mmm system&#x2F;core&#x2F;libsparse&#x2F;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用wpa_supplicant, wpa_cli连接wifi</title>
+    <url>/2020/04/04/%E4%BD%BF%E7%94%A8wpa_supplicant%20wpa_cli%E8%BF%9E%E6%8E%A5wifi/</url>
+    <content><![CDATA[<p>WIFI on:</p>
+<p>adb shell svc wifi enable</p>
+<p>WIFI off:</p>
+<p>adb shell svc wifi disable</p>
+<p><a href="http://blog.sina.com.cn/s/blog_15e89db360102x7qv.html" target="_blank" rel="noopener">使用wpa_supplicant, wpa_cli连接wifi</a></p>
+<p>如果对应的命令没有需要从源码编译后，导入到/system/bin目录下，修改权限755<br>dhcpcd目录 \external\dhcpcd-6.8.2<br>wpa_cli  \external\wpa_supplicant_8 编译后会生成该文件  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wpa_supplicant.conf目录  </span><br><span class="line">&#x2F;data&#x2F;misc&#x2F;wifi&#x2F;wpa_supplicant.conf</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#&#x2F;system&#x2F;bin&#x2F;sh</span><br><span class="line">ssid&#x3D;$&#123;1&#125;</span><br><span class="line">psk&#x3D;$&#123;2&#125;</span><br><span class="line">svc wifi enable</span><br><span class="line">sleep 6</span><br><span class="line">wpa_cli scan</span><br><span class="line">wpa_cli scan_result</span><br><span class="line">addID&#x3D;&#96;wpa_cli add_net | sed -n &#39;2p&#39;&#96;</span><br><span class="line"></span><br><span class="line">echo $addID</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; ssid &quot;\&quot;$&#123;ssid&#125;\&quot;&quot;</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; psk &quot;\&quot;$&#123;psk&#125;\&quot;&quot;</span><br><span class="line">wpa_cli select_net $&#123;addID&#125;</span><br><span class="line">wpa_cli enable_net $&#123;addID&#125;</span><br><span class="line"></span><br><span class="line">dhcpcd wlan0</span><br></pre></td></tr></table></figure>
+
+<p>debug WifiStateMachine 程序需要debug system process进程</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>泛型</title>
+    <url>/2020/04/04/%E6%B3%9B%E5%9E%8B/</url>
+    <content><![CDATA[<h3 id="泛型类"><a href="#泛型类" class="headerlink" title="泛型类"></a>泛型类</h3><p>泛型通配符&lt;? extends T&gt;来接收返回的数据，此写法的泛型集合不能使用 add 方 法，而&lt;? super T&gt;不能使用 get 方法，作为接口调用赋值时易出错。<br>说明：扩展说一下 PECS(Producer Extends Consumer Super)原则：第一、频繁往外读取内<br>容的，适合用&lt;? extends T&gt;。第二、经常往里插入的，适合用&lt;? super T&gt;。</p>
+<h5 id="泛型类的最基本写法"><a href="#泛型类的最基本写法" class="headerlink" title="泛型类的最基本写法"></a>泛型类的最基本写法</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">class 类名称 &lt;泛型标识：可以随便写任意标识号，标识指定的泛型的类型&gt;&#123;</span><br><span class="line">  private 泛型标识 &#x2F;*（成员变量类型）*&#x2F; var; </span><br><span class="line">  .....</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个最普通的泛型类：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;此处T可以随便写为任意标识，常见的如T、E、K、V等形式的参数常用于表示泛型</span><br><span class="line">&#x2F;&#x2F;在实例化泛型类时，必须指定T的具体类型</span><br><span class="line">public class Generic&lt;T&gt;&#123; </span><br><span class="line">    &#x2F;&#x2F;key这个成员变量的类型为T,T的类型由外部指定  </span><br><span class="line">    private T key;</span><br><span class="line"></span><br><span class="line">    public Generic(T key) &#123; &#x2F;&#x2F;泛型构造方法形参key的类型也为T，T的类型由外部指定</span><br><span class="line">        this.key &#x3D; key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public T getKey()&#123; &#x2F;&#x2F;泛型方法getKey的返回值类型为T，T的类型由外部指定</span><br><span class="line">        return key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;泛型的类型参数只能是类类型（包括自定义类），不能是简单类型</span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为Integer.</span><br><span class="line">Generic&lt;Integer&gt; genericInteger &#x3D; new Generic&lt;Integer&gt;(123456);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为String.</span><br><span class="line">Generic&lt;String&gt; genericString &#x3D; new Generic&lt;String&gt;(&quot;key_vlaue&quot;);</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericInteger.getKey());</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericString.getKey());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">注意：</span><br><span class="line"></span><br><span class="line">泛型的类型参数只能是类类型，不能是简单类型。</span><br><span class="line">不能对确切的泛型类型使用instanceof操作。如下面的操作是非法的，编译时会出错。</span><br><span class="line"></span><br><span class="line">if(ex_num instanceof Generic&lt;Number&gt;)&#123;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="泛型接口"><a href="#泛型接口" class="headerlink" title="泛型接口"></a>泛型接口</h4><p>泛型接口与泛型类的定义及使用基本相同。泛型接口常被用在各种类的生产器中，可以看一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;定义一个泛型接口</span><br><span class="line">public interface Generator&lt;T&gt; &#123;</span><br><span class="line">    public T next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当实现泛型接口的类，未传入泛型实参时：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 未传入泛型实参时，与泛型类的定义相同，在声明类的时候，需将泛型的声明也一起加到类中</span><br><span class="line"> * 即：class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line"> * 如果不声明泛型，如：class FruitGenerator implements Generator&lt;T&gt;，编译器会报错：&quot;Unknown class&quot;</span><br><span class="line"> *&#x2F;</span><br><span class="line">class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public T next() &#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当实现泛型接口的类，传入泛型实参时：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 传入泛型实参时：</span><br><span class="line"> * 定义一个生产器实现这个接口,虽然我们只创建了一个泛型接口Generator&lt;T&gt;</span><br><span class="line"> * 但是我们可以为T传入无数个实参，形成无数种类型的Generator接口。</span><br><span class="line"> * 在实现类实现泛型接口时，如已将泛型类型传入实参类型，则所有使用泛型的地方都要替换成传入的实参类型</span><br><span class="line"> * 即：Generator&lt;T&gt;，public T next();中的的T都要替换成传入的String类型。</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class FruitGenerator implements Generator&lt;String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private String[] fruits &#x3D; new String[]&#123;&quot;Apple&quot;, &quot;Banana&quot;, &quot;Pear&quot;&#125;;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String next() &#123;</span><br><span class="line">        Random rand &#x3D; new Random();</span><br><span class="line">        return fruits[rand.nextInt(3)];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="泛型方法"><a href="#泛型方法" class="headerlink" title="泛型方法"></a>泛型方法</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">首先在public与返回值之间的&lt;T&gt;必不可少，这表明这是一个泛型方法，并且声明了一个泛型T这个T可以出现在这个泛型方法的任意位置.</span><br><span class="line">泛型的数量也可以为任意多个如：</span><br><span class="line">public &lt;T,K&gt; K showKeyName(Generic&lt;T&gt; container)&#123;</span><br><span class="line">             ...</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="泛型方法与可变参数"><a href="#泛型方法与可变参数" class="headerlink" title="泛型方法与可变参数"></a>泛型方法与可变参数</h4><p>泛型方法和可变参数的例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">printMsg</span><span class="params">( T... args)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(T t : args)&#123;</span><br><span class="line">        Log.d(<span class="string">"泛型测试"</span>,<span class="string">"t is "</span> + t);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">printMsg(<span class="string">"111"</span>,<span class="number">222</span>,<span class="string">"aaaa"</span>,<span class="string">"2323.4"</span>,<span class="number">55.55</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="静态方法与泛型"><a href="#静态方法与泛型" class="headerlink" title="静态方法与泛型"></a>静态方法与泛型</h4><p>静态方法有一种情况需要注意一下，那就是在类中的静态方法使用泛型：==静态方法无法访问类上定义的泛型==；<br>如果静态方法操作的引用数据类型不确定的时候，必须要将泛型定义在方法上。<br>即：如果静态方法要使用泛型的话，必须将静态方法也定义成泛型方法 。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticGenerator</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 如果在类中定义使用泛型的静态方法，需要添加额外的泛型声明（将这个方法定义成泛型方法）</span></span><br><span class="line"><span class="comment">     * 即使静态方法要使用泛型类中已经声明过的泛型也不行。</span></span><br><span class="line"><span class="comment">     * 如：public static void show(T t)&#123;..&#125;,</span></span><br><span class="line"><span class="comment">     *此时编译器会提示错误信息：</span></span><br><span class="line"><span class="comment">     *  "StaticGenerator cannot be refrenced from *static context"</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">(T t)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="泛型上下边界"><a href="#泛型上下边界" class="headerlink" title="泛型上下边界"></a>泛型上下边界</h3><h5 id="泛型类的例子"><a href="#泛型类的例子" class="headerlink" title="泛型类的例子"></a>泛型类的例子</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Generic</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Number</span>&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T key;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Generic</span><span class="params">(T key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getKey</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="泛型方法的例子："><a href="#泛型方法的例子：" class="headerlink" title="泛型方法的例子："></a>泛型方法的例子：</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//在泛型方法中添加上下边界限制的时候，必须在权限声明与返回值之间的&lt;T&gt;上添加上下边界，即在泛型声明的时候添加</span></span><br><span class="line"><span class="comment">//public &lt;T&gt; T showKeyName(Generic&lt;T extends Number&gt; container)，编译器会报错："Unexpected bound"</span></span><br><span class="line"><span class="keyword">public</span> &lt;T extends Number&gt; <span class="function">T <span class="title">showKeyName</span><span class="params">(Generic&lt;T&gt; container)</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="string">"container key :"</span> + container.getKey());</span><br><span class="line">    T test = container.getKey();</span><br><span class="line">    <span class="keyword">return</span> test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="泛型方法的类型推断"><a href="#泛型方法的类型推断" class="headerlink" title="泛型方法的类型推断"></a>泛型方法的类型推断</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">/**不指定泛型的时候*/</span>  </span><br><span class="line"> <span class="keyword">int</span> i=Test.add(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">//这两个参数都是Integer，所以T替换为Integer类型  </span></span><br><span class="line">Number f=Test.add(<span class="number">1</span>, <span class="number">1.2</span>);<span class="comment">//这两个参数一个是Integer，另一个是Float，所以取同一父类的最小级，为Number  </span></span><br><span class="line">Object o=Test.add(<span class="number">1</span>, <span class="string">"asd"</span>);<span class="comment">//这两个参数一个是Integer，另一个是String，所以取同一父类的最小级，为Object</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">/**指定泛型的时候*/</span>  </span><br><span class="line"><span class="keyword">int</span> a=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2</span>);<span class="comment">//指定了Integer，所以只能为Integer类型或者其子类  </span></span><br><span class="line"><span class="keyword">int</span> b=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2.2</span>);<span class="comment">//编译错误，指定了Integer，不能为Float  </span></span><br><span class="line">Number c=Test.&lt;Number&gt;add(<span class="number">1</span>, <span class="number">2.2</span>); <span class="comment">//指定为Number，所以可以为Integer和Float  </span></span><br><span class="line">      </span><br><span class="line"><span class="comment">//这是一个简单的泛型方法  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">add</span><span class="params">(T x,T y)</span></span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> y;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="类型擦除"><a href="#类型擦除" class="headerlink" title="类型擦除"></a>类型擦除</h3><p>编译期间，所有的泛型信息都会被擦除,List<Integer>和List<String>类型，在编译后都会变成List类型（原始类型）.  </p>
+<h5 id="原始类型"><a href="#原始类型" class="headerlink" title="原始类型"></a>原始类型</h5><p>原始类型就是泛型类型擦除了泛型信息后，在字节码中真正的类型。无论何时定义一个泛型类型，相应的原始类型都会被自动提供。原始类型的名字就是删去类型参数后的泛型类型的类名。擦除类型变量，并替换为限定类型（T为无限定的类型变量，用Object替换）<br><strong>因为在Pair<T>中，T是一个无限定的类型变量，所以用Object替换。<br>如果是Pair<T extends Number>，擦除后，类型变量用Number类型替换</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Integer&gt; array=<span class="keyword">new</span> ArrayList&lt;Integer&gt;();  </span><br><span class="line">array.add(<span class="number">1</span>);<span class="comment">//这样调用add方法只能存储整形，因为泛型类型的实例为Integer  </span></span><br><span class="line">array.getClass().getMethod("add", Object.class).invoke(array, "asd");  </span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;array.size();i++) &#123;  </span><br><span class="line">    System.out.println(array.get(i));  </span><br><span class="line">    &#125;  </span><br><span class="line">输出：</span><br><span class="line"><span class="number">1</span></span><br><span class="line">asd</span><br></pre></td></tr></table></figure>
+
+<h2 id="PECS法则"><a href="#PECS法则" class="headerlink" title="PECS法则"></a>PECS法则</h2><p>PECS法则：生产者（Producer）使用extends，消费者（Consumer）使用super</p>
+<h6 id="1、生产者"><a href="#1、生产者" class="headerlink" title="1、生产者"></a>1、生产者</h6><p>如果你需要一个提供E类型元素的集合，使用泛型通配符&lt;? extends E&gt;。它好比一个生产者，可以提供数据。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? extends Number&gt; list&#x3D;new ArrayList();</span><br><span class="line">list.add(new Integer(1));&#x2F;&#x2F;编译错误</span><br><span class="line">list.add(new Float(1.0));&#x2F;&#x2F;编译错误</span><br><span class="line"></span><br><span class="line">List&lt;? extends Number&gt; list1&#x3D;new ArrayList&lt;Integer&gt;();</span><br><span class="line">List&lt;? extends Number&gt; list2&#x3D;new ArrayList&lt;Float&gt;();</span><br></pre></td></tr></table></figure>
+
+<h5 id="2、消费者"><a href="#2、消费者" class="headerlink" title="2、消费者"></a>2、消费者</h5><p>如果你需要一个只能装入E类型元素的集合，使用泛型通配符&lt;? super E&gt;。它好比一个消费者，可以消费你提供的数据。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? super Number&gt; list&#x3D;new ArrayList(); </span><br><span class="line">list.add(new Integer(1));</span><br><span class="line">list.add(new Float(1.1));</span><br></pre></td></tr></table></figure>
+
+<h5 id="3、既是生产者也是消费者"><a href="#3、既是生产者也是消费者" class="headerlink" title="3、既是生产者也是消费者"></a>3、既是生产者也是消费者</h5><p>既要存储又要读取，那就别使用泛型通配符。</p>
+<h2 id="泛型相关问题"><a href="#泛型相关问题" class="headerlink" title="泛型相关问题"></a>泛型相关问题</h2><h4 id="1、泛型类型引用传递问题"><a href="#1、泛型类型引用传递问题" class="headerlink" title="1、泛型类型引用传递问题"></a>1、泛型类型引用传递问题</h4><p>在Java中，像下面形式的引用传递是不允许的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();<span class="comment">//编译错误  </span></span><br><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
+<h6 id="第一种情况，将第一种情况拓展成下面的形式："><a href="#第一种情况，将第一种情况拓展成下面的形式：" class="headerlink" title="第一种情况，将第一种情况拓展成下面的形式："></a>第一种情况，将第一种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          ArrayList&lt;String&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
+
+<p>在第4行代码处，就会有编译错误。那么，先假设它编译没错。那么当我们使用arrayList2引用用get()方法取值的时候，返回的都是String类型的对象，可是它里面实际上已经存放了Object类型的对象，这样，就会有ClassCastException了。  </p>
+<h6 id="在看第二种情况，将第二种情况拓展成下面的形式："><a href="#在看第二种情况，将第二种情况拓展成下面的形式：" class="headerlink" title="在看第二种情况，将第二种情况拓展成下面的形式："></a>在看第二种情况，将第二种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          ArrayList&lt;Object&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
+<p>这样的情况比第一种情况好的多，最起码，用arrayList2取值的时候不会出现ClassCastException，因为是从String转换为Object。可是，这样做有什么意义呢，泛型出现的原因，就是为了解决类型转换的问题。我们使用了泛型，到头来，还是要自己强转，违背了泛型设计的初衷。所以java不允许这么干。再说，如果又用arrayList2往里面add()新的对象，那么到时候取得时候，我怎么知道我取出来的到底是String类型的，还是Object类型的呢？<br>所以，要格外注意泛型中引用传递问题。</p>
+<h4 id="2、泛型类型变量不能是基本数据类型"><a href="#2、泛型类型变量不能是基本数据类型" class="headerlink" title="2、泛型类型变量不能是基本数据类型"></a>2、泛型类型变量不能是基本数据类型</h4><p>比如，没有ArrayList<double>，只有ArrayList<Double>。因为当类型擦除后，ArrayList的原始类中的类型变量（T）替换为Object，但Object类型不能存储double值.</p>
+<h4 id="3、运行时类型查询"><a href="#3、运行时类型查询" class="headerlink" title="3、运行时类型查询"></a>3、运行时类型查询</h4><p>举个例子:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList=<span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br></pre></td></tr></table></figure>
+<p>因为类型擦除之后，ArrayList<String>只剩下原始类型，泛型信息String不存在了。那么，运行时进行类型查询的时候使用下面的方法是错误的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;String&gt;)</span><br></pre></td></tr></table></figure>
+<p>java限定了这种类型查询的方式，？为通配符，也即非限定符。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;?&gt;)</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>基础语法</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>基础语法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android Studio安装panltUML</title>
+    <url>/2020/04/04/Android%20Studio%E5%AE%89%E8%A3%85panltUML/</url>
+    <content><![CDATA[<h3 id="安装panltUML插件"><a href="#安装panltUML插件" class="headerlink" title="安装panltUML插件"></a>安装panltUML插件</h3><p>1.File-&gt;Settings-&gt;Plugins-&gt;Browse repositories<br>2.在搜索框输入plantUML<br>3.导入插件Install plugin<br>如果以上步骤正确的完成，重启AndroidStudio 右键-&gt;new 的时候你会发现多了这么一堆东西，如果出现了这些说明plantUML已经正确的安装了。</p>
+<h3 id="安装Graphviz"><a href="#安装Graphviz" class="headerlink" title="安装Graphviz"></a>安装Graphviz</h3><p>设置plantUML<br>1.点击右上角的设置按钮或进入File-&gt;Settings-&gt;Other Settings -&gt;PlantUML<br>2.将文件路径填写为刚刚Graphviz的目录下bin目录中dot.exe文件。<br>(我的为：D:/Program/Graphviz/bin/dot.exe)<br>3.点击OK 刷新一下界面就能看到这个了</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>UML</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>UML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>时序图语法</title>
+    <url>/2020/04/04/%E6%97%B6%E5%BA%8F%E5%9B%BE%E8%AF%AD%E6%B3%95/</url>
+    <content><![CDATA[<p><a href="http://archive.3zso.com/archives/plantuml-quickstart.html#sec-5-4-1" target="_blank" rel="noopener">使用Emacs敲出UML，PlantUML快速指南</a><br><a href="https://blog.csdn.net/junhuahouse/article/details/80753374" target="_blank" rel="noopener">PlantUML 之时序图</a>  </p>
+<h3 id="顺序图（Sequence-Diagram）"><a href="#顺序图（Sequence-Diagram）" class="headerlink" title="顺序图（Sequence Diagram）"></a>顺序图（Sequence Diagram）</h3><p>简单示例<br>顺序图用 -&gt; , –&gt;, &lt;-, &lt;– 来绘制参与者（Participants）之 间的消息（Message）。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@startuml</span><br><span class="line">hide footbox</span><br><span class="line">title login by token</span><br><span class="line"></span><br><span class="line">  Alice -&gt; Bob: Authentication Request</span><br><span class="line">  Bob --&gt; Alice: Authentication Response</span><br><span class="line"></span><br><span class="line">  Alice -&gt; Bob: Another atuhentication Request</span><br><span class="line">  Alice &lt;-- Bob: Another authentication Response</span><br><span class="line"></span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s1.png" alt="image"></p>
+<h3 id="注解方式"><a href="#注解方式" class="headerlink" title="注解方式"></a>注解方式</h3><p>分为行注解使用英文符号 ‘+行内容<br>多行注解使用英文符号/‘ + 内容 + ‘/ </p>
+<h3 id="申明参与者"><a href="#申明参与者" class="headerlink" title="申明参与者"></a>申明参与者</h3><p>申明参与者，可以使用 participant 关键词，也可以使用下面的参与者   分类关键词来申明参与者：  </p>
+<ul>
+<li>actor</li>
+<li>boundary</li>
+<li>control</li>
+<li>entity</li>
+<li>database  </li>
+</ul>
+<p><strong>不同的参与者类型，其图标也是不一样的</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@startuml</span><br><span class="line">hide footbox</span><br><span class="line">actor actor #red</span><br><span class="line">boundary boundary #yellow</span><br><span class="line">control control #blue</span><br><span class="line">entity entity #green</span><br><span class="line">database database #EE4000</span><br><span class="line">&quot;学术袁&quot; -&gt; Blog :方形</span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s2.png" alt="image"></p>
+<p>使用 as 关键词可以为参与者起一个别名</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">participant &quot;I have a really\nlong name&quot; as L #99ff99</span><br></pre></td></tr></table></figure>
+<h3 id="改变箭头的样式（Change-arrow-style）"><a href="#改变箭头的样式（Change-arrow-style）" class="headerlink" title="改变箭头的样式（Change arrow style）"></a>改变箭头的样式（Change arrow style）</h3><p>在用例图里可以通过以下方式来改变箭头的样式：</p>
+<p>使用 \ 或 / 来替换 &lt; 或 &gt; 可以让箭头只显示上半部分或下半 部分。<br>重复输入箭头或斜杠（ &gt;&gt; // ），用来绘制空心箭头。<br>使用双横线 – 替代 - 可以用来绘制点线。<br>在箭头后面加个 o 可以在箭头前绘制一个圆圈。<br>使用 &lt;-&gt; 可用来绘制双向箭头。  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Bob -&gt; Alice</span><br><span class="line">Bob -&gt;&gt; Alice</span><br><span class="line">Bob -\ Alice</span><br><span class="line">Bob \\- Alice</span><br><span class="line">Bob &#x2F;&#x2F;-- Alice</span><br><span class="line"></span><br><span class="line">Bob -&gt;o Alice</span><br><span class="line">Bob o\\-- Alice</span><br><span class="line"></span><br><span class="line">Bob &lt;-&gt; Alice</span><br><span class="line">Bob &lt;&lt;-\\o Alice</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s6.png" alt="image"></p>
+<h3 id="改变箭头的颜色（Change-arrow-color）"><a href="#改变箭头的颜色（Change-arrow-color）" class="headerlink" title="改变箭头的颜色（Change arrow color）"></a>改变箭头的颜色（Change arrow color）</h3><p>要改变箭头的颜色，可以使用HTML颜色符号，参看下面的例子：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Bob -[#red]&gt; Alice : hello</span><br><span class="line"> Alice -[#0000FF]-&gt;Bob : ok</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s7.png" alt="image"></p>
+<h3 id="消息序号（Message-sequence-numbering）"><a href="#消息序号（Message-sequence-numbering）" class="headerlink" title="消息序号（Message sequence numbering）"></a>消息序号（Message sequence numbering）</h3><p>关键词 autonumber 用来给自动的给消息添加上序号。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">autonumber</span><br><span class="line"> Bob -&gt; Alice : Authentication Request</span><br><span class="line"> Bob &lt;- Alice : Authentication Response</span><br><span class="line"></span><br><span class="line"> autonumber 15</span><br><span class="line"> Bob -&gt; Alice : Another authentication Request</span><br><span class="line"> Bob &lt;- Alice : Another authentication Response</span><br><span class="line"></span><br><span class="line"> autonumber 40 10</span><br><span class="line"> Bob -&gt; Alice : Yet another authentication Request</span><br><span class="line"> Bob &lt;- Alice : Yet another authentication Response</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s9.png" alt="image"></p>
+<h3 id="标题（Title）"><a href="#标题（Title）" class="headerlink" title="标题（Title）"></a>标题（Title）</h3><p>要给图形加一个标题可以用 title 关键词来设置。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">title Simple Comunication example</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s11.png" alt="image"></p>
+<h3 id="消息分组（Grouping-message）"><a href="#消息分组（Grouping-message）" class="headerlink" title="消息分组（Grouping message）"></a>消息分组（Grouping message）</h3><p>有时候可能需要对消息进行分组，那么可以使用下面的关键词来实现：</p>
+<ul>
+<li>alt/else</li>
+<li>opt</li>
+<li>loop</li>
+<li>par</li>
+<li>break</li>
+<li>critical</li>
+<li>group<br>这个关键词后面的文字会作为组名显示在图形上<br>上面的关键词后可以添加一些文本用来显示在头部（注： group 除外，因 为它后面的文本用来显示在组名称的位置）。在组嵌套组的结构里可以用关 键词 end 来关闭组或者说是表示一个组符号的结束符（类似 if/endif ）。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Alice -&gt; Bob: Authentication Request</span><br><span class="line"></span><br><span class="line"> alt successful case</span><br><span class="line">   Bob -&gt; Alice: Authentication Accepted</span><br><span class="line"> else some kind of failure</span><br><span class="line">   Bob -&gt; Alice: Atuhentication Failue</span><br><span class="line">   group My own label</span><br><span class="line">     Alice -&gt; Log : Log attack start</span><br><span class="line">     loop 1000 times</span><br><span class="line">       Alice -&gt; Bob: DNS Attack</span><br><span class="line">     end</span><br><span class="line">     Alice -&gt; Log : Loag alice end</span><br><span class="line">   end</span><br><span class="line"> else Another type of failue</span><br><span class="line">   Bob -&gt; Alice: Please repeat</span><br><span class="line"> end</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s14.png" alt="image"></p>
+<h3 id="消息注解（Notes-on-messages）"><a href="#消息注解（Notes-on-messages）" class="headerlink" title="消息注解（Notes on messages）"></a>消息注解（Notes on messages）</h3><p>我们可能经常会在消息的左边或右边使用注解，要添加注解，只要使用 note left 或 note right 关键词就可以了。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Alice -&gt; Bob : hello</span><br><span class="line">  note left: this is a first note</span><br><span class="line"></span><br><span class="line">  Bob -&gt; Alice : ok</span><br><span class="line">  note right: this is anther note</span><br><span class="line"></span><br><span class="line">  Bob -&gt; Bob : I am thinking</span><br><span class="line">  note left</span><br><span class="line">       a note</span><br><span class="line">       can also be defined</span><br><span class="line">       on several lines</span><br><span class="line">  end note</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s15.png" alt="image"></p>
+<h3 id="一些其他的注解方式（Some-other-notes）"><a href="#一些其他的注解方式（Some-other-notes）" class="headerlink" title="一些其他的注解方式（Some other notes）"></a>一些其他的注解方式（Some other notes）</h3><p>通过使用关键词 note left of ， note right of 或 note over ， 我们还可以把注解放置在与之相关的参与者的左边或右边，或下方。</p>
+<p>通过改变注解的背景色，我们还可以高亮一个注解文本块。</p>
+<p>如果要使用多行注解，可以使用关键词 end note 来表示注解的结束</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">participant Alice</span><br><span class="line"> participant Bob</span><br><span class="line"> note left of Alice #aqua</span><br><span class="line">      This is displayed</span><br><span class="line">      left of Alice.</span><br><span class="line"> end note</span><br><span class="line"></span><br><span class="line"> note right of Alice: This is displayed right of Alice.</span><br><span class="line"></span><br><span class="line"> note over Alice: This displayed over Alice.</span><br><span class="line"></span><br><span class="line"> note over Alice, Bob #FFAAAA: This is displayed\n over Bob and Alice.</span><br><span class="line"></span><br><span class="line"> note over Bob, Alice</span><br><span class="line">      This is yet another</span><br><span class="line">      example of</span><br><span class="line">      a long note.</span><br><span class="line"> end note</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s16.png" alt="image"></p>
+<h3 id="使用HTML进行格式化（Formatting-using-HTML）"><a href="#使用HTML进行格式化（Formatting-using-HTML）" class="headerlink" title="使用HTML进行格式化（Formatting using HTML）"></a>使用HTML进行格式化（Formatting using HTML）</h3><p>我们可以使用少量的HTML标签来格式化文本：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;b&gt; 加粗文本</span><br><span class="line">&lt;u&gt; 或 &lt;u:#AAAAAA&gt; 或 &lt;u:colorName&gt; 用来加下划线</span><br><span class="line">&lt;i&gt; 斜体</span><br><span class="line">&lt;s&gt; 或 &lt;s:#AAAAAA&gt; 或 &lt;s:colorName&gt; 用来加删除线</span><br><span class="line">&lt;w&gt; 或 &lt;w:#AAAAAA&gt; 或 &lt;w:colorName&gt; 用来加波浪线</span><br><span class="line">&lt;color:#AAAAAA&gt; 或 &lt;color:colorName&gt; 用来设置文本颜色</span><br><span class="line">&lt;back:#AAAAAA&gt; 或 &lt;back:colorName&gt; 用来设置背景色</span><br><span class="line">&lt;size:nn&gt; 设置字体大小</span><br><span class="line">&lt;img src&#x3D;&quot;file&quot;&gt; 或 &lt;img:file&gt; 用来添加图片，图片文件必须 是可以访问得到才行。</span><br><span class="line">&lt;img src&#x3D;&quot;http:&#x2F;&#x2F;url&quot;&gt; 或 &lt;img:http:&#x2F;&#x2F;url&gt; 用来添加一个互 联网图片，同样的图片地址必须是可用的才行。</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">participant Alice</span><br><span class="line"> participant &quot;The &lt;b&gt;Famous&lt;&#x2F;b&gt; Bob&quot; as Bob</span><br><span class="line"></span><br><span class="line"> Alice -&gt; Bob : A &lt;i&gt;well formated&lt;&#x2F;i&gt; message</span><br><span class="line"> note right of Alice</span><br><span class="line">   This is &lt;back:cadetblue&gt;&lt;size:18&gt;displayed&lt;&#x2F;size&gt;&lt;&#x2F;back&gt;</span><br><span class="line">   &lt;u&gt;left of&lt;&#x2F;u&gt; Alice.</span><br><span class="line"> end note</span><br><span class="line"> note left of Bob</span><br><span class="line">   &lt;u:red&gt;This&lt;&#x2F;u&gt; is &lt;color #118888&gt;displayed&lt;&#x2F;color&gt;</span><br><span class="line">   &lt;b&gt;&lt;color purple&gt;left of&lt;&#x2F;color&gt; &lt;s:red&gt;Alice&lt;&#x2F;strike&gt; Bob&lt;&#x2F;b&gt;</span><br><span class="line"> end note</span><br><span class="line"> note over Alice, Bob</span><br><span class="line">   &lt;w:#FF33FF&gt;This is hosted&lt;&#x2F;w&gt; by &lt;img ..&#x2F;img&#x2F;code.png&gt;</span><br><span class="line"> end note</span><br></pre></td></tr></table></figure>
+<p><img src="http://archive.3zso.com/img/plantuml-quickstart-s17.png" alt="image"></p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>UML</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>UML</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>23 种设计模式的分类和功能</title>
     <url>/2020/04/03/23%20%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%88%86%E7%B1%BB%E5%92%8C%E5%8A%9F%E8%83%BD/</url>
-    <content><![CDATA[<p>设计模式有两种分类方法，即根据模式的目的和作用的范围划分</p>
-<h3 id="1、根据目的来划分"><a href="#1、根据目的来划分" class="headerlink" title="1、根据目的来划分"></a>1、根据目的来划分</h3><p>根据模式是用来完成什么工作来划分，这种方式可分为$\color{blue}{创建型模式}$、$\color{blue}{结构型模式}$和$\color{blue}{行为型模式}$ 3 种。</p>
+    <content><![CDATA[<p>设计模式有两种分类方法，即根据模式的<strong>目的和作用的范围</strong>划分</p>
+<h3 id="1、根据目的来划分"><a href="#1、根据目的来划分" class="headerlink" title="1、根据目的来划分"></a>1、根据目的来划分</h3><p>根据模式是用来完成什么工作来划分，这种方式可分为<font color="#FF0000"> 创建型模式</font>、<font color="#FF0000">结构型模式</font>和<font color="#FF0000">行为型模式</font>3 种。</p>
 <ol>
 <li><strong>创建型模式：</strong>用于描述“怎样创建对象”，它的主要特点是“将对象的创建与使用分离”。其中单例、原型、工厂方法、抽象工厂、建造者等 5 种创建型模式。</li>
 <li><strong>结构型模式：</strong>用于描述如何将类或对象按某种布局组成更大的结构，其中代理、适配器、桥接、装饰、外观、享元、组合等 7 种结构型模式。</li>
 <li><strong>行为型模式：</strong>用于描述类或对象之间怎样相互协作共同完成单个对象都无法单独完成的任务，以及怎样分配职责。其中模板方法、策略、命令、职责链、状态、观察者、中介者、迭代器、访问者、备忘录、解释器等 11 种行为型模式。</li>
 </ol>
-<h4 id="2-根据作用范围来分"><a href="#2-根据作用范围来分" class="headerlink" title="2. 根据作用范围来分"></a>2. 根据作用范围来分</h4><p>根据模式是主要用于类上还是主要用于对象上来分，这种方式可分为类模式和对象模式两种。</p>
+<h3 id="2-根据作用范围来划分"><a href="#2-根据作用范围来划分" class="headerlink" title="2. 根据作用范围来划分"></a>2. 根据作用范围来划分</h3><p>根据模式是主要用于类上还是主要用于对象上来分，这种方式可分为类模式和对象模式两种。</p>
 <ol>
-<li><strong>类模式：</strong>用于处理类与子类之间的关系，这些关系通过继承来建立，是静态的，在编译时刻便确定下来了。工厂方法、（类）适配器、模板方法、解释器属于该模式。</li>
-<li><strong>对象模式：</strong>用于处理对象之间的关系，这些关系可以通过组合或聚合来实现，在运行时刻是可以变化的，更具动态性。除了以上 4 种，其他的都是对象模式。</li>
+<li><p><strong>类模式：</strong>用于处理类与子类之间的关系，这些关系通过继承来建立，是静态的，在编译时刻便确定下来了。工厂方法、（类）适配器、模板方法、解释器属于该模式。</p>
+</li>
+<li><p><strong>对象模式：</strong>用于处理对象之间的关系，这些关系可以通过组合或聚合来实现，在运行时刻是可以变化的，更具动态性。除了以上 4 种，其他的都是对象模式。</p>
+<h4 id="23-种设计模式的分类表"><a href="#23-种设计模式的分类表" class="headerlink" title="23 种设计模式的分类表"></a>23 种设计模式的分类表</h4></li>
 </ol>
 <table>
 <thead>
@@ -37,32 +296,30 @@
 <td>策略<br/>命令<br/>职责链<br/>状态<br/>观察者<br/>中介者<br/>迭代器<br/>访问者<br/>备忘录</td>
 </tr>
 </tbody></table>
-<h4 id="3-23种设计模式的功能"><a href="#3-23种设计模式的功能" class="headerlink" title="3. 23种设计模式的功能"></a>3. 23种设计模式的功能</h4><p>前面说明了 23 种设计模式的分类，现在对各个模式的功能进行介绍。</p>
-<ol>
-<li><strong>单例（Singleton）模式：</strong>某个类只能生成一个实例，该类提供了一个全局访问点供外部获取该实例，其拓展是有限多例模式。</li>
-<li><strong>原型（Prototype）模式</strong>：将一个对象作为原型，通过对其进行复制而克隆出多个和原型类似的新实例。</li>
-<li><strong>工厂方法（Factory Method）模式：</strong>定义一个用于创建产品的接口，由子类决定生产什么产品。</li>
-<li><strong>抽象工厂（AbstractFactory）模式：</strong>提供一个创建产品族的接口，其每个子类可以生产一系列相关的产品。</li>
-<li><strong>建造者（Builder）模式：</strong>将一个复杂对象分解成多个相对简单的部分，然后根据不同需要分别创建它们，最后构建成该复杂对象。</li>
-<li><strong>代理（Proxy）模式：</strong>为某对象提供一种代理以控制对该对象的访问。即客户端通过代理间接地访问该对象，从而限制、增强或修改该对象的一些特性。</li>
-<li><strong>适配器（Adapter）模式：</strong>将一个类的接口转换成客户希望的另外一个接口，使得原本由于接口不兼容而不能一起工作的那些类能一起工作。</li>
-<li><strong>桥接（Bridge）模式：</strong>将抽象与实现分离，使它们可以独立变化。它是用组合关系代替继承关系来实现，从而降低了抽象和实现这两个可变维度的耦合度。</li>
-<li><strong>装饰（Decorator）模式：</strong>动态的给对象增加一些职责，即增加其额外的功能。</li>
-<li><strong>外观（Facade）模式：</strong>为多个复杂的子系统提供一个一致的接口，使这些子系统更加容易被访问。</li>
-<li><strong>享元（Flyweight）模式：</strong>运用共享技术来有效地支持大量细粒度对象的复用。</li>
-<li><strong>组合（Composite）模式：</strong>将对象组合成树状层次结构，使用户对单个对象和组合对象具有一致的访问性。</li>
-<li><strong>模板方法（TemplateMethod）模式：</strong>定义一个操作中的算法骨架，而将算法的一些步骤延迟到子类中，使得子类可以不改变该算法结构的情况下重定义该算法的某些特定步骤。</li>
-<li><strong>策略（Strategy）模式：</strong>定义了一系列算法，并将每个算法封装起来，使它们可以相互替换，且算法的改变不会影响使用算法的客户。</li>
-<li><strong>命令（Command）模式</strong>：将一个请求封装为一个对象，使发出请求的责任和执行请求的责任分割开。</li>
-<li><strong>职责链（Chain of Responsibility）模式：</strong>把请求从链中的一个对象传到下一个对象，直到请求被响应为止。通过这种方式去除对象之间的耦合。</li>
-<li><strong>状态（State）模式：</strong>允许一个对象在其内部状态发生改变时改变其行为能力。</li>
-<li><strong>观察者（Observer）模式：</strong>多个对象间存在一对多关系，当一个对象发生改变时，把这种改变通知给其他多个对象，从而影响其他对象的行为。</li>
-<li><strong>中介者（Mediator）模式：</strong>定义一个中介对象来简化原有对象之间的交互关系，降低系统中对象间的耦合度，使原有对象之间不必相互了解。</li>
-<li><strong>迭代器（Iterator）模式：</strong>提供一种方法来顺序访问聚合对象中的一系列数据，而不暴露聚合对象的内部表示。</li>
-<li><strong>访问者（Visitor）模式：</strong>在不改变集合元素的前提下，为一个集合中的每个元素提供多种访问方式，即每个元素有多个访问者对象访问。</li>
-<li><strong>备忘录（Memento）模式：</strong>在不破坏封装性的前提下，获取并保存一个对象的内部状态，以便以后恢复它。</li>
-<li><strong>解释器（Interpreter）模式：</strong>提供如何定义语言的文法，以及对语言句子的解释方法，即解释器。</li>
-</ol>
+<h3 id="3-23种设计模式的功能"><a href="#3-23种设计模式的功能" class="headerlink" title="3. 23种设计模式的功能"></a>3. 23种设计模式的功能</h3><p>前面说明了 23 种设计模式的分类，现在对各个模式的功能进行介绍。</p>
+<h4 id="1-单例（Singleton）模式"><a href="#1-单例（Singleton）模式" class="headerlink" title="1.  单例（Singleton）模式"></a>1.  <strong>单例（Singleton）模式</strong></h4><p>   某个类只能生成一个实例，该类提供了一个全局访问点供外部获取该实例，其拓展是有限多例模式。</p>
+<h4 id="2-原型（Prototype）模式"><a href="#2-原型（Prototype）模式" class="headerlink" title="2. 原型（Prototype）模式"></a>2. <strong>原型（Prototype）模式</strong></h4><p>   将一个对象作为原型，通过对其进行复制而克隆出多个和原型类似的新实例。</p>
+<h4 id="3-工厂方法（Factory-Method）模式"><a href="#3-工厂方法（Factory-Method）模式" class="headerlink" title="3. 工厂方法（Factory Method）模式"></a>3. <strong>工厂方法（Factory Method）模式</strong></h4><p>   定义一个用于创建产品的接口，由子类决定生产什么产品。</p>
+<h4 id="4-抽象工厂（AbstractFactory）模式"><a href="#4-抽象工厂（AbstractFactory）模式" class="headerlink" title="4. 抽象工厂（AbstractFactory）模式"></a>4. <strong>抽象工厂（AbstractFactory）模式</strong></h4><p>   提供一个创建产品族的接口，其每个子类可以生产一系列相关的产品。</p>
+<h4 id="5-建造者（Builder）模式"><a href="#5-建造者（Builder）模式" class="headerlink" title="5. 建造者（Builder）模式"></a>5. <strong>建造者（Builder）模式</strong></h4><p>   将一个复杂对象分解成多个相对简单的部分，然后根据不同需要分别创建它们，最后构建成该复杂对象。</p>
+<h4 id="6-代理（Proxy）模式"><a href="#6-代理（Proxy）模式" class="headerlink" title="6. 代理（Proxy）模式"></a>6. <strong>代理（Proxy）模式</strong></h4><p>   为某对象提供一种代理以控制对该对象的访问。即客户端通过代理间接地访问该对象，从而限制、增强或修改该对象的一些特性。</p>
+<h4 id="7-适配器（Adapter）模式"><a href="#7-适配器（Adapter）模式" class="headerlink" title="7. 适配器（Adapter）模式"></a>7. <strong>适配器（Adapter）模式</strong></h4><p>   将一个类的接口转换成客户希望的另外一个接口，使得原本由于接口不兼容而不能一起工作的那些类能一起工作。</p>
+<h4 id="8-桥接（Bridge）模式"><a href="#8-桥接（Bridge）模式" class="headerlink" title="8. 桥接（Bridge）模式"></a>8. <strong>桥接（Bridge）模式</strong></h4><p>   将抽象与实现分离，使它们可以独立变化。它是用组合关系代替继承关系来实现，从而降低了抽象和实现这两个可变维度的耦合度。</p>
+<h4 id="9-装饰（Decorator）模式"><a href="#9-装饰（Decorator）模式" class="headerlink" title="9. 装饰（Decorator）模式"></a>9. <strong>装饰（Decorator）模式</strong></h4><p>动态的给对象增加一些职责，即增加其额外的功能。</p>
+<h4 id="10-外观（Facade）模式"><a href="#10-外观（Facade）模式" class="headerlink" title="10. 外观（Facade）模式"></a>10. <strong>外观（Facade）模式</strong></h4><p>为多个复杂的子系统提供一个一致的接口，使这些子系统更加容易被访问。</p>
+<h4 id="11-享元（Flyweight）模式"><a href="#11-享元（Flyweight）模式" class="headerlink" title="11. 享元（Flyweight）模式"></a>11. <strong>享元（Flyweight）模式</strong></h4><p>运用共享技术来有效地支持大量细粒度对象的复用。</p>
+<h4 id="12-组合（Composite）模式"><a href="#12-组合（Composite）模式" class="headerlink" title="12. 组合（Composite）模式"></a>12. <strong>组合（Composite）模式</strong></h4><p>将对象组合成树状层次结构，使用户对单个对象和组合对象具有一致的访问性。</p>
+<h4 id="13-模板方法（TemplateMethod）模式"><a href="#13-模板方法（TemplateMethod）模式" class="headerlink" title="13. 模板方法（TemplateMethod）模式"></a>13. <strong>模板方法（TemplateMethod）模式</strong></h4><p>定义一个操作中的算法骨架，而将算法的一些步骤延迟到子类中，使得子类可以不改变该算法结构的情况下重定义该算法的某些特定步骤。</p>
+<h4 id="14-策略（Strategy）模式"><a href="#14-策略（Strategy）模式" class="headerlink" title="14. 策略（Strategy）模式"></a>14. <strong>策略（Strategy）模式</strong></h4><p>定义了一系列算法，并将每个算法封装起来，使它们可以相互替换，且算法的改变不会影响使用算法的客户。</p>
+<h4 id="15-命令（Command）模式"><a href="#15-命令（Command）模式" class="headerlink" title="15. 命令（Command）模式"></a>15. <strong>命令（Command）模式</strong></h4><p>将一个请求封装为一个对象，使发出请求的责任和执行请求的责任分割开。</p>
+<h4 id="16-职责链（Chain-of-Responsibility）模式"><a href="#16-职责链（Chain-of-Responsibility）模式" class="headerlink" title="16. 职责链（Chain of Responsibility）模式"></a>16. <strong>职责链（Chain of Responsibility）模式</strong></h4><p>把请求从链中的一个对象传到下一个对象，直到请求被响应为止。通过这种方式去除对象之间的耦合。</p>
+<h4 id="17-状态（State）模式"><a href="#17-状态（State）模式" class="headerlink" title="17. 状态（State）模式"></a>17. <strong>状态（State）模式</strong></h4><p>允许一个对象在其内部状态发生改变时改变其行为能力。</p>
+<h4 id="18-观察者（Observer）模式"><a href="#18-观察者（Observer）模式" class="headerlink" title="18. 观察者（Observer）模式"></a>18. <strong>观察者（Observer）模式</strong></h4><p>多个对象间存在一对多关系，当一个对象发生改变时，把这种改变通知给其他多个对象，从而影响其他对象的行为。</p>
+<h4 id="19-中介者（Mediator）模式"><a href="#19-中介者（Mediator）模式" class="headerlink" title="19. 中介者（Mediator）模式"></a>19. <strong>中介者（Mediator）模式</strong></h4><p>定义一个中介对象来简化原有对象之间的交互关系，降低系统中对象间的耦合度，使原有对象之间不必相互了解。</p>
+<h4 id="20-迭代器（Iterator）模式"><a href="#20-迭代器（Iterator）模式" class="headerlink" title="20. 迭代器（Iterator）模式"></a>20. <strong>迭代器（Iterator）模式</strong></h4><p>提供一种方法来顺序访问聚合对象中的一系列数据，而不暴露聚合对象的内部表示。</p>
+<h4 id="21-访问者（Visitor）模式"><a href="#21-访问者（Visitor）模式" class="headerlink" title="21. 访问者（Visitor）模式"></a>21. <strong>访问者（Visitor）模式</strong></h4><p>在不改变集合元素的前提下，为一个集合中的每个元素提供多种访问方式，即每个元素有多个访问者对象访问。</p>
+<h4 id="22-备忘录（Memento）模式"><a href="#22-备忘录（Memento）模式" class="headerlink" title="22. 备忘录（Memento）模式"></a>22. <strong>备忘录（Memento）模式</strong></h4><p>在不破坏封装性的前提下，获取并保存一个对象的内部状态，以便以后恢复它。</p>
+<h4 id="23-解释器（Interpreter）模式"><a href="#23-解释器（Interpreter）模式" class="headerlink" title="23. 解释器（Interpreter）模式"></a>23. <strong>解释器（Interpreter）模式</strong></h4><p>提供如何定义语言的文法，以及对语言句子的解释方法，即解释器。</p>
 ]]></content>
       <categories>
         <category>Java</category>
