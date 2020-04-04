@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>编译插桩操纵字节码</title>
+    <url>/2020/04/04/%E7%BC%96%E8%AF%91%E6%8F%92%E6%A1%A9%E6%93%8D%E7%BA%B5%E5%AD%97%E8%8A%82%E7%A0%81/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>Java</category>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>GC回收机制与分代回收策略</title>
     <url>/2020/04/04/GC%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%86%E4%BB%A3%E5%9B%9E%E6%94%B6%E7%AD%96%E7%95%A5/</url>
     <content><![CDATA[<p>堆和方法区考虑回收的问题，一个接口中的多个实现类需要的内存可能不一样，一个方法中的多个分支需要的内存也可能不一样，我们只有在程序处于运行期间时才能知道会创建哪些对象，这部分内存的分配和回收都是动态的，垃圾收集器所关注的就是这部分内存。</p>
