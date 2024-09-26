@@ -1,6 +1,6 @@
 ---
 title: jni无法访问so提示not accessible
-date: 2020-04-04 14:49:37
+date: 2020-09-04 14:49:37
 categories: 
 - Android
 - 系统源码

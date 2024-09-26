@@ -1,6 +1,6 @@
 ﻿---
 title: 安卓系统签名转keystore
-date: 2020-03-18 22:55:00
+date: 2019-10-18 22:55:00
 categories: 
 - Android
 - 系统源码
@@ -32,7 +32,7 @@ tag:
 ```
 签名证书“platform.pk8 ”“platform.x509.pem ”，签名工具“signapk.jar ”放置在同一个文件夹；
 ```
- 
+
  下载 keytool-importkeypair 工具，使用sdk的security文件生成对应平台的key：
 
 
