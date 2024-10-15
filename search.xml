@@ -33,21 +33,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Android Studio安装panltUML</title>
-    <url>/2024/07/13/Android%20Studio%E5%AE%89%E8%A3%85panltUML/</url>
-    <content><![CDATA[<h3 id="安装panltUML插件"><a href="#安装panltUML插件" class="headerlink" title="安装panltUML插件"></a>安装panltUML插件</h3><p>1.File-&gt;Settings-&gt;Plugins-&gt;Browse repositories<br>2.在搜索框输入plantUML<br>3.导入插件Install plugin<br>如果以上步骤正确的完成，重启AndroidStudio 右键-&gt;new 的时候你会发现多了这么一堆东西，如果出现了这些说明plantUML已经正确的安装了。</p>
-<h3 id="安装Graphviz"><a href="#安装Graphviz" class="headerlink" title="安装Graphviz"></a>安装Graphviz</h3><p>设置plantUML<br>1.点击右上角的设置按钮或进入File-&gt;Settings-&gt;Other Settings -&gt;PlantUML<br>2.将文件路径填写为刚刚Graphviz的目录下bin目录中dot.exe文件。<br>(我的为：D:/Program/Graphviz/bin/dot.exe)<br>3.点击OK 刷新一下界面就能看到这个了</p>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>UML</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>UML</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>23 种设计模式的分类和功能</title>
     <url>/2020/04/03/23%20%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%88%86%E7%B1%BB%E5%92%8C%E5%8A%9F%E8%83%BD/</url>
     <content><![CDATA[<p>设计模式有两种分类方法，即根据模式的<strong>目的和作用的范围</strong>划分</p>
@@ -121,78 +106,103 @@
       </tags>
   </entry>
   <entry>
-    <title>Android.mk打包apk</title>
-    <url>/2020/03/18/Android.mk%E6%89%93%E5%8C%85apk/</url>
-    <content><![CDATA[<p>一、新建Android.mk文件 放在app/src/main 目录下</p>
-<p>二、代码中引用的第三方库通过aar包存放在最外层libs目录下，所有app共享这些库文件。</p>
-<p>如何有自己用的第三方开源库，<a href="https://www.jianshu.com/p/59efa895589e" target="_blank" rel="noopener">查找aar的方法</a> </p>
-<p>电脑上rxandroid aar的目录：<br>C:\Users\Lenovo.gradle\caches\modules-2\files-2.1\io.reactivex\rxandroid（各个电脑目录不同）</p>
-<p>Android.mk编写规则<br>（系统设置例子）</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#代表mk当前文档路径</span><br><span class="line">LOCAL_PATH :&#x3D; $(call my-dir) </span><br><span class="line"></span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line"></span><br><span class="line">LOCAL_PACKAGE_NAME :&#x3D; HQ_DevSet</span><br><span class="line"></span><br><span class="line">#指该模块在所有版本下都编译</span><br><span class="line">LOCAL_MODULE_TAGS :&#x3D; optional</span><br><span class="line"></span><br><span class="line">#混淆配置</span><br><span class="line">LOCAL_PROGUARD_ENABLED :&#x3D; full obfuscation</span><br><span class="line">LOCAL_PROGUARD_FLAG_FILES :&#x3D; ..&#x2F;..&#x2F;proguard-rules.pro</span><br><span class="line"></span><br><span class="line">#设置不打odex包</span><br><span class="line">LOCAL_DEX_PREOPT :&#x3D; false</span><br><span class="line">DONT_DEXPREOPT_PREBUILTS :&#x3D; true  </span><br><span class="line"></span><br><span class="line">#apk路径</span><br><span class="line">LOCAL_MODULE_PATH :&#x3D; $(TARGET_OUT)&#x2F;app</span><br><span class="line"></span><br><span class="line">#签名配置</span><br><span class="line">LOCAL_CERTIFICATE :&#x3D; platform</span><br><span class="line"></span><br><span class="line">LOCAL_MULTILIB :&#x3D; 32</span><br><span class="line"></span><br><span class="line">#源码文件</span><br><span class="line">#引用当前app的资源</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; $(LOCAL_PATH)&#x2F;res</span><br><span class="line"></span><br><span class="line">#声明当前app的代码目录</span><br><span class="line">src_dirs :&#x3D; java&#x2F;</span><br><span class="line"></span><br><span class="line">#引用当前app的代码</span><br><span class="line">LOCAL_SRC_FILES :&#x3D; $(call all-java-files-under, $(src_dirs))</span><br><span class="line"></span><br><span class="line">#添加aidl源码文件</span><br><span class="line">LOCAL_SRC_FILES +&#x3D; \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxOne.aidl \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxTwo.aidl</span><br><span class="line"></span><br><span class="line"># jar包</span><br><span class="line">#声明多个 jar 包的位置   ----其中\代表换行，后面不能跟任何字符，后面的一样</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES :&#x3D; \</span><br><span class="line"> hqlib:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqlib.jar \</span><br><span class="line"> hqapi:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi.jar \</span><br><span class="line"> hqapi_sq:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi_sq.jar\</span><br><span class="line"> rxjava:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxjava-1.3.7.jar</span><br><span class="line">																			</span><br><span class="line">#引用我们声明的多个 jar 包的变量</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D;  hqlib \</span><br><span class="line">                                hqapi \</span><br><span class="line">                                hqapi_sq \</span><br><span class="line">                                rxjava \</span><br><span class="line">                                android-support-v4</span><br><span class="line">#aar包</span><br><span class="line">#声明aar包</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES +&#x3D; PublicTitle2:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;PublicTitle2.aar\</span><br><span class="line">rxandroid:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxandroid-1.2.1.aar</span><br><span class="line"></span><br><span class="line">#引用aar包</span><br><span class="line">LOCAL_STATIC_JAVA_AAR_LIBRARIES +&#x3D; PublicTitle2 \</span><br><span class="line">								 Rxandroid</span><br><span class="line"></span><br><span class="line">#引入使用的资源 添加包名</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">					--extra-packages com.hopechart.sq.publictitle \</span><br><span class="line">					--extra-packages rx.android </span><br><span class="line"></span><br><span class="line">#设置version版本</span><br><span class="line">#设置版本号和名字，如果不写会默认使用系统api的版本号25 --7.1.1</span><br><span class="line">version_code &#x3D; 24</span><br><span class="line">version_name :&#x3D; 4.0.0.1</span><br><span class="line">						</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-code $(version_code)</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-name $(version_name)    </span><br><span class="line"></span><br><span class="line">#打出来的minSDK和targetSDK version都是19 </span><br><span class="line">LOCAL_SDK_VERSION :&#x3D; 19  </span><br><span class="line">#如果有特殊情况可在清单文件中添加</span><br><span class="line"># 【</span><br><span class="line">#  AndroidManifest.xml清单文件添加sdk版本，优先使用清单文件中</span><br><span class="line"># 的版本号</span><br><span class="line">#  &lt;uses-sdk android:minSdkVersion&#x3D;&quot;19&quot;</span><br><span class="line">#         android:targetSdkVersion&#x3D;&quot;25&quot;&#x2F;&gt;</span><br><span class="line"># 】</span><br><span class="line"></span><br><span class="line">#打apk包</span><br><span class="line">include $(BUILD_PACKAGE)</span><br><span class="line"></span><br><span class="line">#调用子目录的mk文件</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
-
-
-<p>#Android.mk END</p>
-<p>#如果使用的系统的包，需要引入他们使用的资源文件，否则会提示编译资源找不到的错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#RecyclerView例子</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; frameworks&#x2F;support&#x2F;v7&#x2F;recyclerview&#x2F;res</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D; android-support-v7-recyclerview</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">--extra-packages android.support.v7.recyclerview</span><br></pre></td></tr></table></figure>
-
-<p>代码编译<br>1、在源码任意目录下创建一个目录，把改好的代码上传到该目录；<br>2、切换到源码顶层目录，执行</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">source build&#x2F;envsetup.sh;</span><br></pre></td></tr></table></figure>
-
-<p>3、编译单个apk , 执行</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mmm  [apk mk文件的目录]</span><br></pre></td></tr></table></figure>
-
-<p>需要在全编的情况下才能单独编译</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">make -j32</span><br></pre></td></tr></table></figure>
-<p>编译所有的模块编译所有的模块需要在每个模块的父级目录添加Android.mk文件</p>
-<p>内容【</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">LOCAL_PATH :&#x3D; $(call my-dir)</span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
-
-<p>】<br>这样就可以执行子目录中的Android.mk文件。<br>如下目录执行的命令就是: mmm 代码目录/SQ10Inch,然后就可以在输出目录看到所有打包出来的apk文件。</p>
-<p>参考链接：<br><a href="https://blog.csdn.net/jsn_ze/article/details/72790401" target="_blank" rel="noopener">Android源码编译第三方app如何写Android.mk</a><br><a href="https://www.jianshu.com/p/e19e0d3bf13a" target="_blank" rel="noopener">Android.mk引用jar包、so库、aar包系统签名</a></p>
+    <title>Android Studio安装panltUML</title>
+    <url>/2017/04/03/Android%20Studio%E5%AE%89%E8%A3%85panltUML/</url>
+    <content><![CDATA[<h3 id="安装panltUML插件"><a href="#安装panltUML插件" class="headerlink" title="安装panltUML插件"></a>安装panltUML插件</h3><p>1.File-&gt;Settings-&gt;Plugins-&gt;Browse repositories<br>2.在搜索框输入plantUML<br>3.导入插件Install plugin<br>如果以上步骤正确的完成，重启AndroidStudio 右键-&gt;new 的时候你会发现多了这么一堆东西，如果出现了这些说明plantUML已经正确的安装了。</p>
+<h3 id="安装Graphviz"><a href="#安装Graphviz" class="headerlink" title="安装Graphviz"></a>安装Graphviz</h3><p>设置plantUML<br>1.点击右上角的设置按钮或进入File-&gt;Settings-&gt;Other Settings -&gt;PlantUML<br>2.将文件路径填写为刚刚Graphviz的目录下bin目录中dot.exe文件。<br>(我的为：D:/Program/Graphviz/bin/dot.exe)<br>3.点击OK 刷新一下界面就能看到这个了</p>
 ]]></content>
       <categories>
-        <category>Android</category>
-        <category>打包编译</category>
+        <category>Java</category>
+        <category>UML</category>
       </categories>
       <tags>
-        <tag>Android</tag>
-        <tag>打包编译</tag>
+        <tag>Java</tag>
+        <tag>UML</tag>
       </tags>
   </entry>
   <entry>
-    <title>Android下拉状态栏快捷开关的添加</title>
-    <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
-    <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
-<h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-
-<p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p>
-<h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line">	</span><br><span class="line">	public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">		super(host);</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	public void setListening(boolean listening) &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">		return new BooleanState();</span><br><span class="line">	&#125;</span><br><span class="line">	public void setFmModeUpdate()&#123;</span><br><span class="line">		handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">	@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">	 	return &quot;fm&quot; ;</span><br><span class="line">	 &#125;</span><br><span class="line"> </span><br><span class="line">	 @Override</span><br><span class="line">	protected void handleClick() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected void handleUpdateState(</span><br><span class="line">			com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line">		</span><br><span class="line">		int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		state.visible &#x3D; true ;</span><br><span class="line">		state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">		state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">		if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">			&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;else&#123;</span><br><span class="line">			&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p>
-<h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    	mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">	.....</span><br><span class="line">		</span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			setFmModeUpdate();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p>
-<p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    	</span><br><span class="line">    	mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    	mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    	Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">		return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p>
-<h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p>
-<p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p>
-<p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p>
-<p>首先看一下代码：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().registerContentObserver(</span><br><span class="line">				Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private void unregisterContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">			boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">			if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(true);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">			&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(false);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">			&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p>
-<p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>
+    <title>AndroidR Input子系统总结</title>
+    <url>/2023/10/16/AndroidR%20Input%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[<h4 id="Input子系统的启动"><a href="#Input子系统的启动" class="headerlink" title="Input子系统的启动"></a>Input子系统的启动</h4><ol>
+<li><p>SystemServer创建InputManagerService这个系统服务。</p>
+</li>
+<li><p>InputManagerService构造方法中创建”android.display”线程，调用nativeInit函数，将”android.display”线程的Looper对应的MessageQueue传递到native层。</p>
+</li>
+<li><p>nativeInit函数中创建NativeInputManager对象，并将其指针返回到java层mPtr保存。</p>
+</li>
+<li><p>NativeInputManager构造函数中创建InputManager对象，并将其注册到ServiceManager，其服务名称为：“inputflinger”，InputManager构造函数中创建三个重要对象：InputDispatcher，InputClassifier，InputReader，比较重要的是在构造InputReader是创建了EventHub对象。</p>
+</li>
+<li><p>EventHub构造函数中通过inotify和epoll机制对目录”/dev/input”监听，主要监听此目录下文件的创建和删除，到此nativeInit函数完毕。</p>
+</li>
+<li><p>SystemServer中会接着调用InputManagerService的start方法，此方法中调用nativeStart作进一步初始化，nativeStart函数中调用InputManager的start函数。</p>
+</li>
+<li><p>InputManager的start函数中分别调用了InputDispatcher和InputReader的start函数，即分别启动了其内部线程InputThreadImpl，InputDispatcher内部线程（名字：“InputDispatcher”）启动调用了自己的dispatchOnce()函数，InputReader内部线程（名字：“InputReader”）启动调用了自己的loopOnce()函数。</p>
+</li>
+</ol>
+<h4 id="InputReader线程读取输入事件"><a href="#InputReader线程读取输入事件" class="headerlink" title="InputReader线程读取输入事件"></a>InputReader线程读取输入事件</h4><p>InputReader对input事件处理过程大致可以分为三大步：</p>
+<ol>
+<li>EventHub通过INotify与Epoll监听/dev/input下的事件，在读取到事件之后放入mEventBuffer，此步骤将input_event转换为了RawEvent。</li>
+<li>拿到原始事件RawEvent之后调用processEventsLocked对事件进行加工，不同事件类型有不同的加工厂（InputMapper），此步骤将RawEvent转换为了NotifyKeyArgs。</li>
+<li>通过QueuedListener的flush函数将事件发送到InputDispatcher线程。</li>
+</ol>
+<h4 id="InputDispatcher线程分发输入事件"><a href="#InputDispatcher线程分发输入事件" class="headerlink" title="InputDispatcher线程分发输入事件"></a>InputDispatcher线程分发输入事件</h4><p>InputDispatcher对事件的分发流程是相当复杂的，仅对最简单的按键类型事件进行分析，同时分析过程省略了相当对细节的处理，我们做的是把握整体架构，现在就对这个过程做一个总结：</p>
+<ol>
+<li>InputReader线程将驱动获取的原始输入事件封装为NotifyKeyArgs传递给了InputDispatcher线程，在放入InputDispatcher线程mInboundQueue队列之前会先将事件传递到java层PhoneWindowManager，没有被拦截的情况下才会将NotifyKeyArgs转换为KeyEntry并放入mInboundQueue队列，接着会唤醒InputDispatcher线程。</li>
+<li>InputDispatcher线程启动后就陷入了Looper死循环，等待输入事件的发生，被唤醒之后调用函数dispatchOnceInnerLocked处理事件，此函数在一些列判断之后没有丢弃事件则会进一步调用dispatchKeyLocked函数。</li>
+<li>dispatchKeyLocked函数在分发之前又会首先将按键事件传到java层PhoneWindowManager的interceptKeyBeforeDispatching中给个提前拦截的机会，如果没有被拦截则会通过findFocusedWindowTargetsLocked找到目标焦点窗口。</li>
+<li>findFocusedWindowTargetsLocked函数会从两个容器mFocusedWindowHandlesByDisplay和mFocusedApplicationHandlesByDisplay获得当前的焦点窗口和焦点应用，并且会对可能出现ANR的情况进行ANR timeout即ANR发生窗口的标记。</li>
+<li>如果findFocusedWindowTargetsLocked函数返回结果为成功分发，则调用dispatchEventLocked函数继续分发输入事件，接着会将KeyEntry再转换为DispatchEntry，并存入目标窗口连接connection的outboundQueue队列，然后调用publishKeyEvent继续分发。</li>
+<li>publishKeyEvent函数中构造描述输入事件信息的InputMessage并通过InputChannel向”server”端socket写入数据以唤醒APP进程的socket”client”端，自此输入事件成功从InputDispatcher发送到了APP。</li>
+<li>最后将DispatchEntry从目标窗口连接connection的outboundQueue队列中移除，并转移到目标窗口连接connection的waitQueue队列中。</li>
+</ol>
+<p>整个过程中有三个重要队列，mInboundQueue，outboundQueue，waitQueue。<br>mInboundQueue位于InputDispatcher线程，代表即将分发的输入事件，outboundQueue位于目标窗口的connection，代表即将要分发给目标窗口的输入事件，waitQueue位于目标窗口的connection，代表等待目标窗口处理的输入事件。</p>
+<h3 id="InputChannel注册，建立APP和InputDispatcher的连接"><a href="#InputChannel注册，建立APP和InputDispatcher的连接" class="headerlink" title="InputChannel注册，建立APP和InputDispatcher的连接"></a>InputChannel注册，建立APP和InputDispatcher的连接</h3><ol>
+<li><p>首先当一个APP启动时，会将自己的Window添加到WMS，并传递一个空InputChannel过去。</p>
+</li>
+<li><p>WMS端，通过openInputChannel方法会创建一对InputChannel，是在native层完成的，这对InputChannel被分为“client”端和“server”端，其内部又会创建一对socket，和这对InputChannel一一对应。</p>
+</li>
+<li><p>“server”端InputChannel会被注册到InputDispatcher中去，注册的原理就是将InputChannel内部的socket添加到其Looper进行监听，注册过程中还会创建一个Connection对象，Connection用来描述InputDispatcher与此次注册InputChannel的窗口的连接。</p>
+</li>
+<li><p>“client”端InputChannel会被设置到APP进程中，接着通过InputEventReceiver注册到APP UI线程，同样是将InputChannel内部的socket添加到UI线程的Looper进行监听。</p>
+</li>
+<li><p>对于InputDispatcher线程，在接收到”client”端socket的消息时会回调其handleReceiveCallback函数，对于APP UI线程，在接收到”server”端socket的消息时会回调InputEventReceiver对应的native层对象NativeInputEventReceiver的handleEvent函数。</p>
+</li>
+</ol>
+<h4 id="UI线程对Input事件的分发与结束处理"><a href="#UI线程对Input事件的分发与结束处理" class="headerlink" title="UI线程对Input事件的分发与结束处理"></a>UI线程对Input事件的分发与结束处理</h4><ol>
+<li><p>首先InputDispatcher通过server端InputChannel将输入事件发送给应用程序的client端。</p>
+</li>
+<li><p>client端收到输入事件，会在UI线程中调用向Looper注册的回调handleEvent，handleEvent主要是通过consumeEvents进一步处理事件。</p>
+</li>
+<li><p>输入事件在native层被转换为KeyEvent或者MotionEvent后会发送到java层InputEventReceiver的dispatchInputEvent方法，实际上最终是送到其子类WindowInputEventReceiver的onInputEvent方法来处理。</p>
+</li>
+<li><p>ViewRootImpl作为Android上层事件分发的起点，其中定义了多种InputStage来将事件分类处理，采用责任链模式，将每个InputStage实现类通过mNext变量连接起来，InputStage通过deliver分发事件，通过onProcess处理事件，通过forward向mNext传递事件.</p>
+</li>
+<li><p>当mNext指向null时则会调用finishInputEvent结束事件，之后会调到native层的InputConsumer的sendFinishedSignal函数，最终还是通过client端InputChannel的sendMessage通知InputDispatcher事件已经处理完成。</p>
+</li>
+<li><p>InputDispatcher这边的收尾工作主要就是将此事件从waitQueue移除并重置ANR时间。</p>
+</li>
+</ol>
+<h4 id="View的事件分发机制"><a href="#View的事件分发机制" class="headerlink" title="View的事件分发机制"></a>View的事件分发机制</h4><p>对于View来说主要使用<code>ViewPostImeInputStage</code>这种类型的<code>InputStage</code>来处理触摸事件。</p>
+<p>输入事件从native层到<code>ViewRootImpl</code>之后会经过：<code>DecorView</code>-&gt;<code>Activity</code>-&gt;<code>PhoneWindow</code>-&gt;<code>DecorView</code>-&gt;<code>ViewGroup</code>的流程</p>
+<p>ViewGroup的<code>dispatchTouchEvent</code>方法进行总结：</p>
+<ol>
+<li><p>首先会调用onFilterTouchEventForSecurity方法对此次事件进行初步判断，判断的是ViewGroup是否被遮挡或者隐藏。</p>
+</li>
+<li><p>步骤1的条件判断通过之后，接着对于ACTION_DOWN事件会清空上一个事件序列（一个事件序列通常由一个ACTION_DOWN，N个ACTION_MOVE，一个ACTION_UP组成）留下的各种状态，最主要是清空TouchTarget链表。</p>
+</li>
+<li><p>接着会有两个条件来判断是否走ViewGroup的拦截机制，条件1：此次事件是否为ACTION_DOWN，条件2：mFirstTouchTarget是否为空，这两个条件的意思是对于一个事件序列的ACTION_DOWN事件一定会走ViewGroup的拦截机制，并且同一事件序列的一个事件如果被拦截了，那么后续事件默认都会被拦截而不会再走拦截方法onInterceptTouchEvent，子View可以通过requestDisallowInterceptTouchEvent方法请求父View不要拦截。</p>
+</li>
+<li><p>接着又会两个条件来判断事件事件继续分发，canceled和intercepted，事件被取消和被拦截，其实canceled多半是因为intercepted导致的，这个后面再说。</p>
+</li>
+<li><p>对于没有被取消且没有被拦截，且是ACTION_DOWN的事件就要开始遍历View树找到真正消费事件的子View了，这里为何会单独对ACTION_DOWN进行判断呢？这是因为一个事件序列可能包含多个触摸事件，而触摸事件寻找消费的子View是通过递归遍历View树，为了性能考虑，Android的设计为：当接收到ACTION_DOWN时开始对View树进行遍历，找到最终消费事件的子View之后将其保存，同一事件序列的后续ACTION_MOVE，ACTION_UP则不再需要遍历，直接将事件发送给保存好的子View就行了，对子View的保存就用到了TouchTarget，这是一种链表结构，后面再说。</p>
+</li>
+<li><p>对于目标子View的寻找就比较简单了，首先将当前ViewGroup的所有子View以Z-order的顺序进行重建，保存在一个list中，然后遍历list，从Z-order最大的子View开始，遍历条件有两个：当前遍历的子View可以接收事件，并且触摸区域落在当前子View之内则说明成功找到子View，然后调用dispatchTransformedTouchEvent执行子View事件处理流程，如果事件成功处理则会为此子View构建TouchTarget，并赋值给mFirstTouchTarget。</p>
+</li>
+<li><p>接着对于mFirstTouchTarget不为空的情况会遍历链表，其目的是步骤6已经找到接收事件的目标子View并且保存到了TouchTarget链表，对于一个事件序列的后续事件只需要遍历链表分发事件就行了。</p>
+</li>
+<li><p>对于没有找到消费事件的子View即mFirstTouchTarget为空，以及事件被取消的情况会做一些收尾工作。</p>
+</li>
+</ol>
 ]]></content>
       <categories>
         <category>Android</category>
@@ -243,6 +253,66 @@
 <p>那么，<strong>有了同步屏障消息的控制就能保证每次一接收到屏幕刷新信号就第一时间处理遍历绘制 View 树的工作么？</strong></p>
 <p>只能说，同步屏障是尽可能去做到，但并不能保证一定可以第一时间处理。因为，同步屏障是在 <code>scheduleTraversals()</code> 被调用时才发送到消息队列里的，也就是说，只有当某个 View 发起了刷新请求时，在这个时刻后面的同步消息才会被拦截掉。如果在 <code>scheduleTraversals()</code> 之前就发送到消息队列里的工作仍然会按顺序依次被取出来执行。</p>
 <p><a href="https://juejin.cn/post/6893791473121280013" target="_blank" rel="noopener">https://juejin.cn/post/6893791473121280013</a></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android.mk打包apk</title>
+    <url>/2020/03/18/Android.mk%E6%89%93%E5%8C%85apk/</url>
+    <content><![CDATA[<p>一、新建Android.mk文件 放在app/src/main 目录下</p>
+<p>二、代码中引用的第三方库通过aar包存放在最外层libs目录下，所有app共享这些库文件。</p>
+<p>如何有自己用的第三方开源库，<a href="https://www.jianshu.com/p/59efa895589e" target="_blank" rel="noopener">查找aar的方法</a> </p>
+<p>电脑上rxandroid aar的目录：<br>C:\Users\Lenovo.gradle\caches\modules-2\files-2.1\io.reactivex\rxandroid（各个电脑目录不同）</p>
+<p>Android.mk编写规则<br>（系统设置例子）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#代表mk当前文档路径</span><br><span class="line">LOCAL_PATH :&#x3D; $(call my-dir) </span><br><span class="line"></span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line"></span><br><span class="line">LOCAL_PACKAGE_NAME :&#x3D; HQ_DevSet</span><br><span class="line"></span><br><span class="line">#指该模块在所有版本下都编译</span><br><span class="line">LOCAL_MODULE_TAGS :&#x3D; optional</span><br><span class="line"></span><br><span class="line">#混淆配置</span><br><span class="line">LOCAL_PROGUARD_ENABLED :&#x3D; full obfuscation</span><br><span class="line">LOCAL_PROGUARD_FLAG_FILES :&#x3D; ..&#x2F;..&#x2F;proguard-rules.pro</span><br><span class="line"></span><br><span class="line">#设置不打odex包</span><br><span class="line">LOCAL_DEX_PREOPT :&#x3D; false</span><br><span class="line">DONT_DEXPREOPT_PREBUILTS :&#x3D; true  </span><br><span class="line"></span><br><span class="line">#apk路径</span><br><span class="line">LOCAL_MODULE_PATH :&#x3D; $(TARGET_OUT)&#x2F;app</span><br><span class="line"></span><br><span class="line">#签名配置</span><br><span class="line">LOCAL_CERTIFICATE :&#x3D; platform</span><br><span class="line"></span><br><span class="line">LOCAL_MULTILIB :&#x3D; 32</span><br><span class="line"></span><br><span class="line">#源码文件</span><br><span class="line">#引用当前app的资源</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; $(LOCAL_PATH)&#x2F;res</span><br><span class="line"></span><br><span class="line">#声明当前app的代码目录</span><br><span class="line">src_dirs :&#x3D; java&#x2F;</span><br><span class="line"></span><br><span class="line">#引用当前app的代码</span><br><span class="line">LOCAL_SRC_FILES :&#x3D; $(call all-java-files-under, $(src_dirs))</span><br><span class="line"></span><br><span class="line">#添加aidl源码文件</span><br><span class="line">LOCAL_SRC_FILES +&#x3D; \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxOne.aidl \</span><br><span class="line">src&#x2F;xx&#x2F;xx&#x2F;xx&#x2F;XxxTwo.aidl</span><br><span class="line"></span><br><span class="line"># jar包</span><br><span class="line">#声明多个 jar 包的位置   ----其中\代表换行，后面不能跟任何字符，后面的一样</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES :&#x3D; \</span><br><span class="line"> hqlib:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqlib.jar \</span><br><span class="line"> hqapi:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi.jar \</span><br><span class="line"> hqapi_sq:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;hqapi_sq.jar\</span><br><span class="line"> rxjava:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxjava-1.3.7.jar</span><br><span class="line">																			</span><br><span class="line">#引用我们声明的多个 jar 包的变量</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D;  hqlib \</span><br><span class="line">                                hqapi \</span><br><span class="line">                                hqapi_sq \</span><br><span class="line">                                rxjava \</span><br><span class="line">                                android-support-v4</span><br><span class="line">#aar包</span><br><span class="line">#声明aar包</span><br><span class="line">LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES +&#x3D; PublicTitle2:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;PublicTitle2.aar\</span><br><span class="line">rxandroid:..&#x2F;..&#x2F;..&#x2F;libs&#x2F;rxandroid-1.2.1.aar</span><br><span class="line"></span><br><span class="line">#引用aar包</span><br><span class="line">LOCAL_STATIC_JAVA_AAR_LIBRARIES +&#x3D; PublicTitle2 \</span><br><span class="line">								 Rxandroid</span><br><span class="line"></span><br><span class="line">#引入使用的资源 添加包名</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">					--extra-packages com.hopechart.sq.publictitle \</span><br><span class="line">					--extra-packages rx.android </span><br><span class="line"></span><br><span class="line">#设置version版本</span><br><span class="line">#设置版本号和名字，如果不写会默认使用系统api的版本号25 --7.1.1</span><br><span class="line">version_code &#x3D; 24</span><br><span class="line">version_name :&#x3D; 4.0.0.1</span><br><span class="line">						</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-code $(version_code)</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --version-name $(version_name)    </span><br><span class="line"></span><br><span class="line">#打出来的minSDK和targetSDK version都是19 </span><br><span class="line">LOCAL_SDK_VERSION :&#x3D; 19  </span><br><span class="line">#如果有特殊情况可在清单文件中添加</span><br><span class="line"># 【</span><br><span class="line">#  AndroidManifest.xml清单文件添加sdk版本，优先使用清单文件中</span><br><span class="line"># 的版本号</span><br><span class="line">#  &lt;uses-sdk android:minSdkVersion&#x3D;&quot;19&quot;</span><br><span class="line">#         android:targetSdkVersion&#x3D;&quot;25&quot;&#x2F;&gt;</span><br><span class="line"># 】</span><br><span class="line"></span><br><span class="line">#打apk包</span><br><span class="line">include $(BUILD_PACKAGE)</span><br><span class="line"></span><br><span class="line">#调用子目录的mk文件</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
+
+
+<p>#Android.mk END</p>
+<p>#如果使用的系统的包，需要引入他们使用的资源文件，否则会提示编译资源找不到的错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#RecyclerView例子</span><br><span class="line">LOCAL_RESOURCE_DIR +&#x3D; frameworks&#x2F;support&#x2F;v7&#x2F;recyclerview&#x2F;res</span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES +&#x3D; android-support-v7-recyclerview</span><br><span class="line">LOCAL_AAPT_FLAGS +&#x3D; --auto-add-overlay \</span><br><span class="line">--extra-packages android.support.v7.recyclerview</span><br></pre></td></tr></table></figure>
+
+<p>代码编译<br>1、在源码任意目录下创建一个目录，把改好的代码上传到该目录；<br>2、切换到源码顶层目录，执行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">source build&#x2F;envsetup.sh;</span><br></pre></td></tr></table></figure>
+
+<p>3、编译单个apk , 执行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mmm  [apk mk文件的目录]</span><br></pre></td></tr></table></figure>
+
+<p>需要在全编的情况下才能单独编译</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">make -j32</span><br></pre></td></tr></table></figure>
+<p>编译所有的模块编译所有的模块需要在每个模块的父级目录添加Android.mk文件</p>
+<p>内容【</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">LOCAL_PATH :&#x3D; $(call my-dir)</span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line">include $(call all-makefiles-under,$(LOCAL_PATH))</span><br></pre></td></tr></table></figure>
+
+<p>】<br>这样就可以执行子目录中的Android.mk文件。<br>如下目录执行的命令就是: mmm 代码目录/SQ10Inch,然后就可以在输出目录看到所有打包出来的apk文件。</p>
+<p>参考链接：<br><a href="https://blog.csdn.net/jsn_ze/article/details/72790401" target="_blank" rel="noopener">Android源码编译第三方app如何写Android.mk</a><br><a href="https://www.jianshu.com/p/e19e0d3bf13a" target="_blank" rel="noopener">Android.mk引用jar包、so库、aar包系统签名</a></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>打包编译</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>打包编译</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>jni无法访问so提示not accessible</title>
+    <url>/2020/09/04/JNI%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AEso%E6%8F%90%E7%A4%BAnot%20accessible/</url>
+    <content><![CDATA[<p>问题：app需要引用系统的so库，当install形式的时候安装时，打开app需要使用/system/lib64目录下的so库时，提示不能访问。<br>原因分析：放到system/app下的app是可以找到的，但是普通的安装形式的app是没有权限访问的，所以需要需要声明公有so库才能使用。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">library &quot;&#x2F;system&#x2F;lib64&#x2F;libserialport.so&quot; (&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot;) needed or</span><br><span class="line">dlopened by&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot; is not accessible for the namespace</span><br><span class="line">&quot;classloader-namespace&quot;</span><br></pre></td></tr></table></figure>
+<p>解决方法：<br>修改system/core/rootdir/etc/public.libraries.txt<br>添加你要使用的的so到此问题件中。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cat public.libraries.txt </span><br><span class="line">....</span><br><span class="line">libz.so</span><br><span class="line">libhqbindcs.so</span><br></pre></td></tr></table></figure>
+
+<p>也可以直接不编译在板子上修改，对应目录/system/etc  </p>
+<p>参考：<br>Framework基础：Android N 公共so库怎么定义呢？<br><a href="https://www.jianshu.com/p/4be3d1dafbec" target="_blank" rel="noopener">https://www.jianshu.com/p/4be3d1dafbec</a></p>
+<p>[Google]原生库的命名空间<br><a href="https://source.android.com/devices/tech/config/namespaces_libraries" target="_blank" rel="noopener">https://source.android.com/devices/tech/config/namespaces_libraries</a></p>
 ]]></content>
       <categories>
         <category>Android</category>
@@ -309,16 +379,39 @@
       </tags>
   </entry>
   <entry>
-    <title>jni无法访问so提示not accessible</title>
-    <url>/2020/09/04/JNI%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AEso%E6%8F%90%E7%A4%BAnot%20accessible/</url>
-    <content><![CDATA[<p>问题：app需要引用系统的so库，当install形式的时候安装时，打开app需要使用/system/lib64目录下的so库时，提示不能访问。<br>原因分析：放到system/app下的app是可以找到的，但是普通的安装形式的app是没有权限访问的，所以需要需要声明公有so库才能使用。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">library &quot;&#x2F;system&#x2F;lib64&#x2F;libserialport.so&quot; (&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot;) needed or</span><br><span class="line">dlopened by&quot;&#x2F;system&#x2F;lib64&#x2F;libhqbindcs.so&quot; is not accessible for the namespace</span><br><span class="line">&quot;classloader-namespace&quot;</span><br></pre></td></tr></table></figure>
-<p>解决方法：<br>修改system/core/rootdir/etc/public.libraries.txt<br>添加你要使用的的so到此问题件中。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cat public.libraries.txt </span><br><span class="line">....</span><br><span class="line">libz.so</span><br><span class="line">libhqbindcs.so</span><br></pre></td></tr></table></figure>
+    <title>Android下拉状态栏快捷开关的添加</title>
+    <url>/2020/03/18/Android%E4%B8%8B%E6%8B%89%E7%8A%B6%E6%80%81%E6%A0%8F%E5%BF%AB%E6%8D%B7%E5%BC%80%E5%85%B3%E7%9A%84%E6%B7%BB%E5%8A%A0/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/lyjit/article/details/51579067" target="_blank" rel="noopener">下拉通知栏快捷开关的添加</a>  </p>
+<h3 id="一：快捷开关功能以及开关状态的实现"><a href="#一：快捷开关功能以及开关状态的实现" class="headerlink" title="一：快捷开关功能以及开关状态的实现"></a>一：快捷开关功能以及开关状态的实现</h3><h4 id="第一步："><a href="#第一步：" class="headerlink" title="第一步："></a>第一步：</h4><p>首先看一下原生的下拉菜单按键的布局在哪里。打开这个路径的文件：frameworks/base/packages/SystemUI/res/values/config.xml</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">   wifi,bt,inversion,cell,airplane,rotation,flashlight,settings,dataconnection,location,screenshot,cast,hotspot,hotknot,audioprofile</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
 
-<p>也可以直接不编译在板子上修改，对应目录/system/etc  </p>
-<p>参考：<br>Framework基础：Android N 公共so库怎么定义呢？<br><a href="https://www.jianshu.com/p/4be3d1dafbec" target="_blank" rel="noopener">https://www.jianshu.com/p/4be3d1dafbec</a></p>
-<p>[Google]原生库的命名空间<br><a href="https://source.android.com/devices/tech/config/namespaces_libraries" target="_blank" rel="noopener">https://source.android.com/devices/tech/config/namespaces_libraries</a></p>
+<p>对！自适应的布局，这些快捷按键的定义都在这里。要是想换成自己定义的按键开关，只要在这里替换就行，但这只是第一步。<br>我这里暂且换成自己定义的布局：wifi,蓝牙,无线麦克,FM</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;string name&#x3D;&quot;quick_settings_tiles_default&quot; translatable&#x3D;&quot;false&quot;&gt;</span><br><span class="line">        wifi,bluetooth,wirelessmic,fm</span><br><span class="line">&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h4><p>在config.xml文件中定义我们想要的开关名称之后，还需要打开如下路径来添加相关的内容：<br>frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/QSTileHost.java<br>在如下方法里面添加：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">     * 获取到预定义好的各快捷图标的QSTile</span><br><span class="line">     * *&#x2F;</span><br><span class="line">    private QSTile&lt;?&gt; createTile(String tileSpec) &#123;</span><br><span class="line">        IQuickSettingsPlugin quickSettingsPlugin &#x3D; PluginFactory</span><br><span class="line">                .getQuickSettingsPlugin(mContext);</span><br><span class="line">        if (tileSpec.equals(&quot;wifi&quot;)) return new WifiTile(this);</span><br><span class="line">        &#x2F;&#x2F;add by lyj</span><br><span class="line">        else if (tileSpec.equals(&quot;bluetooth&quot;)) return new CallBluetoothTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;wirelessmic&quot;)) return new WirelessMicTile(this);</span><br><span class="line">        else if (tileSpec.equals(&quot;fm&quot;)) return new FMTile(this); &#x2F;&#x2F;要添加的FM</span><br><span class="line"> </span><br><span class="line">        ......</span><br><span class="line"> </span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要是获取到预定义好的各个快捷图标的QSTile。其中FMTile文件是什么的，接着往下看</p>
+<h4 id="第三步："><a href="#第三步：" class="headerlink" title="第三步："></a>第三步：</h4><p>这一步很重要，首先看一下这个路径：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles<br>这个路径下面就是你定义的开关实现功能的地方，这里新添加的FM在原有的快捷开关里面是没有的，所以要在这里新添加一个文件，咱们这里暂且起名为FMTile.java，也就是之前所说的FMTile文件。<br>新建好类之后要继承 QSTile&lt;QSTile.BooleanState&gt;<br>这样会生成一些方法，下面就来看一下这个文件各个方法的作用：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class FMTile extends QSTile&lt;QSTile.BooleanState&gt;&#123;</span><br><span class="line">	</span><br><span class="line">	public FMTile(com.android.systemui.qs.QSTile.Host host) &#123;</span><br><span class="line">		super(host);</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	public void setListening(boolean listening) &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected com.android.systemui.qs.QSTile.BooleanState newTileState() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">		return new BooleanState();</span><br><span class="line">	&#125;</span><br><span class="line">	public void setFmModeUpdate()&#123;</span><br><span class="line">		handleRefreshState(null);</span><br><span class="line">        &#125;</span><br><span class="line">	@Override</span><br><span class="line">       protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">	 	return &quot;fm&quot; ;</span><br><span class="line">	 &#125;</span><br><span class="line"> </span><br><span class="line">	 @Override</span><br><span class="line">	protected void handleClick() &#123;</span><br><span class="line">		&#x2F;&#x2F; TODO Auto-generated method stub</span><br><span class="line">                &#x2F;&#x2F;开关默认关闭</span><br><span class="line">                int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		Settings.System.putInt(mContext.getContentResolver(),Settings.System.FM_SYSTEMUI, mCloseState ? 1 : 0);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	@Override</span><br><span class="line">	protected void handleUpdateState(</span><br><span class="line">			com.android.systemui.qs.QSTile.BooleanState state, Object arg) &#123;</span><br><span class="line">		</span><br><span class="line">		int mState &#x3D; Settings.System.getInt(mContext.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);</span><br><span class="line">		boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">		state.visible &#x3D; true ;</span><br><span class="line">		state.label &#x3D; mContext.getString(R.string.quick_settings_fm_title);</span><br><span class="line">		state.icon &#x3D; ResourceIcon.get(mCloseState ? R.drawable.ic_settings_fm_on : R.drawable.ic_settings_fm_off);&#x2F;&#x2F;图片状态</span><br><span class="line">		if(mCloseState)&#123;&#x2F;&#x2F;open</span><br><span class="line">			&#x2F;&#x2F;开关打开相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;else&#123;</span><br><span class="line">			&#x2F;&#x2F;开关关闭相关功能的操作</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中Settings.System.FM_SYSTEMUI 是我们在settingProvader中定义的值，主要是控制与外界开关同步的问题，这个我们后面会有详细的介绍，这些方法中最重要的是handleClick()和handleUpdateState(…),每次点击开关会先走handleclick()方法，然后去刷新页面，刷新页面的处理就是在handleUpdateState(..)中处理。<br>这个方法里面有图片状态的改变，以及功能的实现。这个时候开关默认的是关闭，要是默认打开的话只要在两个方法中把mstate = Settings.System.getInt(*, *, 1);  把1改为0即可。<br>这里还要注意的方法首先是FMTile(..)这个方法是初始化用的，也就是开机之后只走一次，也就相当我Activity里面的Oncreate()方法,如果你有什么要初始化的东西可以在这里面定义。还有特别注意的两个方法setFmModeUpdate()和getQSTileViewMarkBit()。这两个方法不是文件自动生成的，需要你手动添加，那么这两个方法有什么作用呢，其实这两个方法也很重要，要是没有这两个方法的话点击开关是没有作用的，也就是没有起到刷新页面的作用，那这两个方法在那实现的呢，来接着看下面的解释：</p>
+<h4 id="第四步："><a href="#第四步：" class="headerlink" title="第四步："></a>第四步：</h4><p>结合第三步最后的疑问我们来看一下这个文件：frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">protected QSTile(Host host) &#123;</span><br><span class="line">        mHost &#x3D; host;</span><br><span class="line">        mContext &#x3D; host.getContext();</span><br><span class="line">        mHandler &#x3D; new H(host.getLooper());</span><br><span class="line">        setChangeObserver();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setChangeObserver()&#123; &#x2F;&#x2F;实时监听状态的变化</span><br><span class="line">    	mContext.getContentResolver().registerContentObserver(</span><br><span class="line">                Settings.System.getUriFor(Settings.System.FM_SYSTEMUI),</span><br><span class="line">                true, mFmModeChangeObserver);</span><br><span class="line">	.....</span><br><span class="line">		</span><br><span class="line">    &#125;</span><br><span class="line">    private ContentObserver mFmModeChangeObserver &#x3D; new ContentObserver(new Handler()) &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			setFmModeUpdate();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">    public void setFmModeUpdate()&#123;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>这些添加之后你的开关状态就能其作用了，但到这里如果你编译工程的时候会发现编译报错，如下图：</code></pre><p>这是怎么回事呢，这是因为你添加的FMTile.java文件里面的方法是从一个超类型实现的。</p>
+<p>这个时候你还需有在QSTile.java文件中添加getQSTileViewMarkBit()方法，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;</span><br><span class="line">    protected QSTileView mQSTileView ;</span><br><span class="line">    public QSTileView createTileView(Context context) &#123;</span><br><span class="line">    	</span><br><span class="line">    	mQSTileView &#x3D; new QSTileView(context) ;</span><br><span class="line">    	mQSTileView.setMarkBit(getQSTileViewMarkBit());&#x2F;&#x2F;add </span><br><span class="line">    	Log.i(&quot;lyj_create&quot;, &quot;mQSTileView &#x3D; &quot;+mQSTileView);</span><br><span class="line">        return mQSTileView;</span><br><span class="line">    &#125;</span><br><span class="line">    protected String getQSTileViewMarkBit()&#123;</span><br><span class="line">		return null ;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>到这里FM开关的添加就结束了。同样的方法添加其它快捷按键开关原理都是一样的。</p>
+<h3 id="二：下拉FM开关与外界开关同步"><a href="#二：下拉FM开关与外界开关同步" class="headerlink" title="二：下拉FM开关与外界开关同步"></a>二：下拉FM开关与外界开关同步</h3><p>   其实刚才我们已经有所了解了，主要就是Settings值的作用，但这里面还涉及到一个重要的知识点，先不着急，我们先打开FM的应用代码，看怎么实现同步更新：</p>
+<p>   首先在你应用里面控制开关的地方加上Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 0);  //0代表打开 关闭的时候调用Settings.System.putInt(MainActivity.this.getContentResolver(), Settings.System.FM_SYSTEMUI, 1);  //1代表关闭</p>
+<p>   关键的代码来了：也就是我们之前说的实现同步更新的 ContentObserver 内容观察者</p>
+<p>首先看一下代码：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private void registerContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().registerContentObserver(</span><br><span class="line">				Settings.System.getUriFor(Settings.System.FM_SYSTEMU), true, mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private void unregisterContentObserver() &#123;</span><br><span class="line">		this.getContentResolver().unregisterContentObserver(mFmcContentObserver);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	private ContentObserver mFmcContentObserver&#x3D;new ContentObserver(new Handler()) &#123;</span><br><span class="line"> </span><br><span class="line">		@Override</span><br><span class="line">		public void onChange(boolean selfChange) &#123;</span><br><span class="line">			int mState &#x3D; Settings.System.getInt(getActivity().getContentResolver(), Settings.System.FM_SYSTEMU, 0);</span><br><span class="line">			boolean mCloseState &#x3D; (mState &#x3D;&#x3D; 0);</span><br><span class="line">			if(mCloseState)&#123;&#x2F;&#x2F;打开的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(true);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;mikeState: &#x3D; &quot;+mikeState);</span><br><span class="line">			&#125;else&#123;&#x2F;&#x2F;关闭的相关操作</span><br><span class="line">				mSwitchPreference.setChecked(false);</span><br><span class="line">				Log.i(&quot;lyj_wire&quot;,&quot;11mikeState:&quot;+mikeState);</span><br><span class="line">			&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在onChange方法里面主要是观察Settings值的变化，然后根据值的变化控制你应用的开关。我们定义的这个值在状态栏快捷开关里面也有所控制，这个刚才已经介绍。那么这个时候你会问，我们在应用里面添加观察者可是没有在下拉状态栏里添加，这样能同步吗？其实SystemUi里面已经添加过了,你只需要在你的应用里添加内容观察者即可。注意在初始化的地方要注册registerContentObserver() ，在退出的时候调用unregisterContentObserver()方法即可。这样以来就能实现应用开关和状态栏下拉快捷开关的同步。<br>这里还涉及到一个知识点：就是打开开关，不管是在你的应用里还是在状态栏快捷开关里，打开FM后在状态栏顶部需要有一个图标显示你打开了FM，关闭时图片消失。这个功能的实现我会在后续的文章中介绍。这里就不做说明了。</p>
+<p>  相信看到这里你会对SystemUi状态栏的开发有新的帮助。</p>
 ]]></content>
       <categories>
         <category>Android</category>
@@ -354,76 +447,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Nexus3.12私服搭建</title>
-    <url>/2019/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h5 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h5><p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1）左shift打开CMD窗口nexus-3.12.1-01-win64\nexus-3.12.1-01\bin目录    </span><br><span class="line">2）nexus.exe &#x2F;install  安装服务  </span><br><span class="line">3）nexus.exe &#x2F;start    启动服务  </span><br><span class="line">4）nexus.exe &#x2F;stop     停止服务</span><br></pre></td></tr></table></figure>
-<p>（3）、使用nexus软件<br>在浏览器中输入<a href="http://localhost:8081/，点击“login" target="_blank" rel="noopener">http://localhost:8081/，点击“login</a> in”，输入admin/admin123即可。<br>（4）、管理目前的仓库<br>将central的远程地址修改如下（即改为aliyun的镜像，主要是速度快一些）：<a href="http://maven.aliyun.com/nexus/content/groups/public/" target="_blank" rel="noopener">http://maven.aliyun.com/nexus/content/groups/public/</a><br>（<a href="https://blog.csdn.net/ytfrdfiw/article/details/78476087" target="_blank" rel="noopener">参考链接</a>）</p>
-<h4 id="多平台Nexus私服搭建"><a href="#多平台Nexus私服搭建" class="headerlink" title="多平台Nexus私服搭建"></a>多平台Nexus私服搭建</h4><p><a href="http://www.10tiao.com/html/227/201703/2650238831/1.html" target="_blank" rel="noopener">Android Studio依赖管理与Nexus私服搭建</a>  </p>
-<p>创建自己的仓库</p>
-<p>创建用户</p>
-<p>首先使用管理员密码登陆到 Nexus私服 并添加用户：</p>
-<p>。。。。</p>
-<p>上传自己的Module到仓库</p>
-<p>1、 在项目级别的 build.gradle 中的 allprojects 下 repositories节点 添加 mavenLocal()：  </p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<p>2、 在 Lib Module 级别的 build.gradle 中添加 maven 插件 apply plugin: ‘maven’：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">apply plugin: &#39;com.android.library&#39;</span><br><span class="line">apply plugin: &#39;maven&#39;</span><br></pre></td></tr></table></figure>
-
-<p>3、 在 Lib Module 级别的 build.gradle 中 android节点 添加上传行为：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">uploadArchives &#123;</span><br><span class="line">    repositories.mavenDeployer &#123;</span><br><span class="line">        repository(url: &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;)&#123;</span><br><span class="line">            authentication(userName: &quot;wz&quot;,password: &quot;123456&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">        pom.groupId &#x3D; &#39;com.hopechart&#39;</span><br><span class="line">        pom.artifactId &#x3D; &#39;PublicTitle&#39;</span><br><span class="line">        pom.version &#x3D; &#39;1.0.1&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>4、使用Gradle插件上传aar到Maven私服，点击 uploadArchives 自动上传：</p>
-<p>5、引用私服中的Module  </p>
-<p>在需要依赖 Module 的 build.gradle 中添加如下节点,其中URL就是上文中创建仓库的ur</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;项目级别的 build.gradle</span><br><span class="line"> allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        ......</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;model级别的 build.gradle</span><br><span class="line"></span><br><span class="line"> compile &#39;com.hopechart:PublicTitle:1.0.0&#39;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>打包编译</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>打包编译</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ROOM</title>
-    <url>/2020/03/20/ROOM/</url>
-    <content><![CDATA[<p>不使用AndroidX的依赖</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">def room_version &#x3D; &quot;1.1.1&quot;</span><br><span class="line"></span><br><span class="line">    implementation &quot;android.arch.persistence.room:runtime:$room_version&quot;</span><br><span class="line">    kapt &quot;android.arch.persistence.room:compiler:$room_version&quot; &#x2F;&#x2F; use kapt for Kotlin</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@Entity</span><br><span class="line">data class User(</span><br><span class="line">        @PrimaryKey val uid: Int,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;first_name&quot;) val firstName: String?,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;last_name&quot;) val lastName: String?)</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Database(entities &#x3D; [User::class], version &#x3D; 1)</span><br><span class="line">abstract class AppDatabase : RoomDatabase() &#123;</span><br><span class="line">    abstract fun userDao(): UserDao</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface UserDao &#123;</span><br><span class="line">    @Query(&quot;SELECT * FROM user&quot;)</span><br><span class="line">    fun getAll(): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE uid IN (:userIds)&quot;)</span><br><span class="line">    fun loadAllByIds(userIds: IntArray): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE first_name LIKE :first AND &quot; +</span><br><span class="line">            &quot;last_name LIKE :last LIMIT 1&quot;)</span><br><span class="line">    fun findByName(first: String, last: String): User</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertAll(vararg users: User)</span><br><span class="line"></span><br><span class="line">    @Delete</span><br><span class="line">    fun delete(user: User)</span><br><span class="line"></span><br><span class="line">    @Query(&quot;select max(uid) from user &quot;)</span><br><span class="line">    fun queryMaxId(): Int</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">val userDao: UserDao by lazy &#123;</span><br><span class="line">           Room.databaseBuilder(</span><br><span class="line">                   appContext,</span><br><span class="line">                   AppDatabase::class.java, &quot;database-name&quot;</span><br><span class="line">           ).build().userDao()</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-<h4 id="监控数据变化"><a href="#监控数据变化" class="headerlink" title="监控数据变化"></a>监控数据变化</h4><p>使用RoomDatabase.getInvalidationTracker获取InvalidationTracker对象来监听表数据的改变。一般推荐直接在DAO方法中返回LiveData或者Observable对象。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Query(&quot;SELECT * FROM ConsumeInfo where timeStr LIKE :month ORDER BY time ASC&quot;)</span><br><span class="line">  fun getDataWithMonth(month: String): LiveData&lt;List&lt;ConsumeInfo&gt;&gt;</span><br><span class="line">  </span><br><span class="line">  ViewModel中监听，也可以放在界面上监听，下面的代码只能在Model中监听</span><br><span class="line">  </span><br><span class="line">   val liveLists &#x3D; DaoUtil.instance.getConsumeInfoList(month)</span><br><span class="line">          &#x2F;&#x2F; 添加数据监听，当数据变化时自动更新数据</span><br><span class="line">          liveLists.observe(owner, Observer&lt;List&lt;ConsumeInfo&gt;&gt; &#123;</span><br><span class="line">              Logger.e(&quot;getHistoryConsume observe change&quot;)</span><br><span class="line">              getAverageConsume(it)</span><br><span class="line">          &#125;)</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private val users: MutableLiveData&lt;List&lt;User&gt;&gt; by lazy &#123;</span><br><span class="line">       MutableLiveData&lt;List&lt;User&gt;&gt;().also &#123;</span><br><span class="line">           uiScope.launch &#123;</span><br><span class="line">               val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">               it.value &#x3D; rst.await()</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fun getUsers(): LiveData&lt;List&lt;User&gt;&gt; &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">       return users</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   fun setUsers() &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123;</span><br><span class="line">               var count &#x3D; App.userDao.queryMaxId()</span><br><span class="line">               App.userDao.insertAll(User(++count, &quot;f$count&quot;, &quot;l$count&quot;))</span><br><span class="line">               App.userDao.getAll()</span><br><span class="line">           &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>JetPack</category>
-      </categories>
-      <tags>
-        <tag>JetPack</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>System.img的查看-处理</title>
     <url>/2020/06/04/System-img%E7%9A%84%E6%9F%A5%E7%9C%8B-%E5%A4%84%E7%90%86/</url>
     <content><![CDATA[<p>在服务器上编译完源码之后，有时候需要想要查看打出img的内容是不是自己想要的，比如说添加了一个新的apk文件，如果重新烧写到手机会浪费很多时间，想在服务器上直接查看，可以参考如下方法。<br><a href="https://blog.csdn.net/sir_zeng/article/details/51983432" target="_blank" rel="noopener">System.img的查看/处理</a></p>
@@ -456,6 +479,37 @@
       <tags>
         <tag>Android</tag>
         <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ROOM</title>
+    <url>/2020/03/20/ROOM/</url>
+    <content><![CDATA[<p>不使用AndroidX的依赖</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">def room_version &#x3D; &quot;1.1.1&quot;</span><br><span class="line"></span><br><span class="line">    implementation &quot;android.arch.persistence.room:runtime:$room_version&quot;</span><br><span class="line">    kapt &quot;android.arch.persistence.room:compiler:$room_version&quot; &#x2F;&#x2F; use kapt for Kotlin</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@Entity</span><br><span class="line">data class User(</span><br><span class="line">        @PrimaryKey val uid: Int,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;first_name&quot;) val firstName: String?,</span><br><span class="line">        @ColumnInfo(name &#x3D; &quot;last_name&quot;) val lastName: String?)</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Database(entities &#x3D; [User::class], version &#x3D; 1)</span><br><span class="line">abstract class AppDatabase : RoomDatabase() &#123;</span><br><span class="line">    abstract fun userDao(): UserDao</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface UserDao &#123;</span><br><span class="line">    @Query(&quot;SELECT * FROM user&quot;)</span><br><span class="line">    fun getAll(): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE uid IN (:userIds)&quot;)</span><br><span class="line">    fun loadAllByIds(userIds: IntArray): List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Query(&quot;SELECT * FROM user WHERE first_name LIKE :first AND &quot; +</span><br><span class="line">            &quot;last_name LIKE :last LIMIT 1&quot;)</span><br><span class="line">    fun findByName(first: String, last: String): User</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertAll(vararg users: User)</span><br><span class="line"></span><br><span class="line">    @Delete</span><br><span class="line">    fun delete(user: User)</span><br><span class="line"></span><br><span class="line">    @Query(&quot;select max(uid) from user &quot;)</span><br><span class="line">    fun queryMaxId(): Int</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">val userDao: UserDao by lazy &#123;</span><br><span class="line">           Room.databaseBuilder(</span><br><span class="line">                   appContext,</span><br><span class="line">                   AppDatabase::class.java, &quot;database-name&quot;</span><br><span class="line">           ).build().userDao()</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="监控数据变化"><a href="#监控数据变化" class="headerlink" title="监控数据变化"></a>监控数据变化</h4><p>使用RoomDatabase.getInvalidationTracker获取InvalidationTracker对象来监听表数据的改变。一般推荐直接在DAO方法中返回LiveData或者Observable对象。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Query(&quot;SELECT * FROM ConsumeInfo where timeStr LIKE :month ORDER BY time ASC&quot;)</span><br><span class="line">  fun getDataWithMonth(month: String): LiveData&lt;List&lt;ConsumeInfo&gt;&gt;</span><br><span class="line">  </span><br><span class="line">  ViewModel中监听，也可以放在界面上监听，下面的代码只能在Model中监听</span><br><span class="line">  </span><br><span class="line">   val liveLists &#x3D; DaoUtil.instance.getConsumeInfoList(month)</span><br><span class="line">          &#x2F;&#x2F; 添加数据监听，当数据变化时自动更新数据</span><br><span class="line">          liveLists.observe(owner, Observer&lt;List&lt;ConsumeInfo&gt;&gt; &#123;</span><br><span class="line">              Logger.e(&quot;getHistoryConsume observe change&quot;)</span><br><span class="line">              getAverageConsume(it)</span><br><span class="line">          &#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">private val users: MutableLiveData&lt;List&lt;User&gt;&gt; by lazy &#123;</span><br><span class="line">       MutableLiveData&lt;List&lt;User&gt;&gt;().also &#123;</span><br><span class="line">           uiScope.launch &#123;</span><br><span class="line">               val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">               it.value &#x3D; rst.await()</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fun getUsers(): LiveData&lt;List&lt;User&gt;&gt; &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123; App.userDao.getAll() &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">       return users</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   fun setUsers() &#123;</span><br><span class="line">       uiScope.launch &#123;</span><br><span class="line">           val rst &#x3D; async(Dispatchers.IO) &#123;</span><br><span class="line">               var count &#x3D; App.userDao.queryMaxId()</span><br><span class="line">               App.userDao.insertAll(User(++count, &quot;f$count&quot;, &quot;l$count&quot;))</span><br><span class="line">               App.userDao.getAll()</span><br><span class="line">           &#125;</span><br><span class="line">           users.value &#x3D; rst.await()</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>JetPack</category>
+      </categories>
+      <tags>
+        <tag>JetPack</tag>
       </tags>
   </entry>
   <entry>
@@ -509,6 +563,118 @@
       <tags>
         <tag>Android</tag>
         <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nexus3.12私服搭建</title>
+    <url>/2019/03/18/Nexus3.12%E7%A7%81%E6%9C%8D%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h5 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h5><p>（1）、<a href="https://www.sonatype.com/download-oss-sonatype" target="_blank" rel="noopener">nexus最新版本下载</a>（Nexus Repository Manager OSS 3.x - Windows）<br>（2）、解压后，安装服务，启动服务  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1）左shift打开CMD窗口nexus-3.12.1-01-win64\nexus-3.12.1-01\bin目录    </span><br><span class="line">2）nexus.exe &#x2F;install  安装服务  </span><br><span class="line">3）nexus.exe &#x2F;start    启动服务  </span><br><span class="line">4）nexus.exe &#x2F;stop     停止服务</span><br></pre></td></tr></table></figure>
+<p>（3）、使用nexus软件<br>在浏览器中输入<a href="http://localhost:8081/，点击“login" target="_blank" rel="noopener">http://localhost:8081/，点击“login</a> in”，输入admin/admin123即可。<br>（4）、管理目前的仓库<br>将central的远程地址修改如下（即改为aliyun的镜像，主要是速度快一些）：<a href="http://maven.aliyun.com/nexus/content/groups/public/" target="_blank" rel="noopener">http://maven.aliyun.com/nexus/content/groups/public/</a><br>（<a href="https://blog.csdn.net/ytfrdfiw/article/details/78476087" target="_blank" rel="noopener">参考链接</a>）</p>
+<h4 id="多平台Nexus私服搭建"><a href="#多平台Nexus私服搭建" class="headerlink" title="多平台Nexus私服搭建"></a>多平台Nexus私服搭建</h4><p><a href="http://www.10tiao.com/html/227/201703/2650238831/1.html" target="_blank" rel="noopener">Android Studio依赖管理与Nexus私服搭建</a>  </p>
+<p>创建自己的仓库</p>
+<p>创建用户</p>
+<p>首先使用管理员密码登陆到 Nexus私服 并添加用户：</p>
+<p>。。。。</p>
+<p>上传自己的Module到仓库</p>
+<p>1、 在项目级别的 build.gradle 中的 allprojects 下 repositories节点 添加 mavenLocal()：  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>2、 在 Lib Module 级别的 build.gradle 中添加 maven 插件 apply plugin: ‘maven’：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">apply plugin: &#39;com.android.library&#39;</span><br><span class="line">apply plugin: &#39;maven&#39;</span><br></pre></td></tr></table></figure>
+
+<p>3、 在 Lib Module 级别的 build.gradle 中 android节点 添加上传行为：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">uploadArchives &#123;</span><br><span class="line">    repositories.mavenDeployer &#123;</span><br><span class="line">        repository(url: &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;)&#123;</span><br><span class="line">            authentication(userName: &quot;wz&quot;,password: &quot;123456&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">        pom.groupId &#x3D; &#39;com.hopechart&#39;</span><br><span class="line">        pom.artifactId &#x3D; &#39;PublicTitle&#39;</span><br><span class="line">        pom.version &#x3D; &#39;1.0.1&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>4、使用Gradle插件上传aar到Maven私服，点击 uploadArchives 自动上传：</p>
+<p>5、引用私服中的Module  </p>
+<p>在需要依赖 Module 的 build.gradle 中添加如下节点,其中URL就是上文中创建仓库的ur</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;项目级别的 build.gradle</span><br><span class="line"> allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        ......</span><br><span class="line">        maven&#123;</span><br><span class="line">            url &quot;http:&#x2F;&#x2F;localhost:8081&#x2F;repository&#x2F;PublicTitle&#x2F;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;model级别的 build.gradle</span><br><span class="line"></span><br><span class="line"> compile &#39;com.hopechart:PublicTitle:1.0.0&#39;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>打包编译</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>打包编译</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用wpa_supplicant, wpa_cli连接wifi</title>
+    <url>/2020/01/04/%E4%BD%BF%E7%94%A8wpa_supplicant%20wpa_cli%E8%BF%9E%E6%8E%A5wifi/</url>
+    <content><![CDATA[<p>WIFI on:</p>
+<p>adb shell svc wifi enable</p>
+<p>WIFI off:</p>
+<p>adb shell svc wifi disable</p>
+<p><a href="http://blog.sina.com.cn/s/blog_15e89db360102x7qv.html" target="_blank" rel="noopener">使用wpa_supplicant, wpa_cli连接wifi</a></p>
+<p>如果对应的命令没有需要从源码编译后，导入到/system/bin目录下，修改权限755<br>dhcpcd目录 \external\dhcpcd-6.8.2<br>wpa_cli  \external\wpa_supplicant_8 编译后会生成该文件  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wpa_supplicant.conf目录  </span><br><span class="line">&#x2F;data&#x2F;misc&#x2F;wifi&#x2F;wpa_supplicant.conf</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#&#x2F;system&#x2F;bin&#x2F;sh</span><br><span class="line">ssid&#x3D;$&#123;1&#125;</span><br><span class="line">psk&#x3D;$&#123;2&#125;</span><br><span class="line">svc wifi enable</span><br><span class="line">sleep 6</span><br><span class="line">wpa_cli scan</span><br><span class="line">wpa_cli scan_result</span><br><span class="line">addID&#x3D;&#96;wpa_cli add_net | sed -n &#39;2p&#39;&#96;</span><br><span class="line"></span><br><span class="line">echo $addID</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; ssid &quot;\&quot;$&#123;ssid&#125;\&quot;&quot;</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; psk &quot;\&quot;$&#123;psk&#125;\&quot;&quot;</span><br><span class="line">wpa_cli select_net $&#123;addID&#125;</span><br><span class="line">wpa_cli enable_net $&#123;addID&#125;</span><br><span class="line"></span><br><span class="line">dhcpcd wlan0</span><br></pre></td></tr></table></figure>
+
+<p>debug WifiStateMachine 程序需要debug system process进程</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>六大原则</title>
+    <url>/2019/03/20/%E5%85%AD%E5%A4%A7%E5%8E%9F%E5%88%99/</url>
+    <content><![CDATA[<p><a href="https://www.jianshu.com/p/bf92927c9d22" target="_blank" rel="noopener">https://www.jianshu.com/p/bf92927c9d22</a></p>
+<h4 id="面向对象的六大原则"><a href="#面向对象的六大原则" class="headerlink" title="面向对象的六大原则"></a>面向对象的六大原则</h4><h5 id="1-单一职责原则（Single-Responsibility-Principle-SRP）"><a href="#1-单一职责原则（Single-Responsibility-Principle-SRP）" class="headerlink" title="1.单一职责原则（Single Responsibility Principle, SRP）"></a>1.单一职责原则（Single Responsibility Principle, SRP）</h5><p>定义：一个类应只包含单一的职责。</p>
+<ul>
+<li>一个类职责过大的话，首先引起的问题就是这个类比较大，显得过于臃肿，同时其复用性是比较差的。</li>
+<li>其次就是如果修改某个职责，有可能引起另一个职责发生错误。这是我们极力所避免的，因此设计一个类时我们应当去遵循单一职责原则。</li>
+</ul>
+<h5 id="2-开放封闭原则-Open-ClosedPrinciple-OCP"><a href="#2-开放封闭原则-Open-ClosedPrinciple-OCP" class="headerlink" title="2.开放封闭原则(Open - ClosedPrinciple ,OCP)"></a>2.开放封闭原则(Open - ClosedPrinciple ,OCP)</h5><p>定义：一个模块、类、函数应当是对修改关闭，扩展开放。</p>
+<ul>
+<li>修改原有的代码可能会导致原本正常的功能出现问题。</li>
+<li>因此，当需求有变化时，最好是通过扩展来实现，增加新的方法满足需求，而不是去修改原有代码。</li>
+</ul>
+<h5 id="3-里氏代换原则-Liskov-Substitution-Principle-LSP"><a href="#3-里氏代换原则-Liskov-Substitution-Principle-LSP" class="headerlink" title="3.里氏代换原则( Liskov Substitution Principle ,LSP )"></a>3.里氏代换原则( Liskov Substitution Principle ,LSP )</h5><p>定义：使用父类的地方能够使用子类来替换，反过来，则不行。</p>
+<ul>
+<li>使用子类对象去替换父类对象，程序将不会产生错误</li>
+<li>因此在程序中尽量使用基类类型来对对象进行定义，而在运行时再确定其子类类型，用子类对象来替换父类对象。</li>
+<li>需要注意的是：</li>
+</ul>
+<ol>
+<li>子类的所有方法必须在父类中声明，或子类必须实现父类中声明的所有方法。如果一个方法只存在子类中，没有在父类中声明，则无法在以父类定义的对象中使用该方法。</li>
+<li>父类应当被尽量设计为抽象类或者接口，让子类继承父类或实现父接口，并实现在父类中声明的方法，运行时，子类实例替换父类实例，我们可以很方便地扩展系统的功能，同时无须修改原有子类的代码，增加新的功能可以通过增加一个新的子类来实现</li>
+</ol>
+<h5 id="4-依赖倒置原则-Dependence-Inversion-Principle-DIP"><a href="#4-依赖倒置原则-Dependence-Inversion-Principle-DIP" class="headerlink" title="4.依赖倒置原则( Dependence Inversion Principle ,DIP )"></a>4.依赖倒置原则( Dependence Inversion Principle ,DIP )</h5><p>定义：抽象不应该依赖于细节，细节应当依赖于抽象。</p>
+<ul>
+<li>即要面向接口编程，而不是面向具体实现去编程。</li>
+<li>高层模块不应该依赖低层模块，应该去依赖抽象。</li>
+</ul>
+<h5 id="5-接口隔离原则-Interface-Segregation-Principle，ISL）"><a href="#5-接口隔离原则-Interface-Segregation-Principle，ISL）" class="headerlink" title="5.接口隔离原则(Interface Segregation Principle，ISL）"></a>5.接口隔离原则(Interface Segregation Principle，ISL）</h5><p>定义：一个类对另一个类的依赖应该建立在最小的接口上。</p>
+<ul>
+<li>一个类不应该依赖他不需要的接口。</li>
+<li>接口的粒度要尽可能小，如果一个接口的方法过多，可以拆成多个接口。</li>
+</ul>
+<h5 id="6-迪米特原则-Law-of-Demeter-LoD"><a href="#6-迪米特原则-Law-of-Demeter-LoD" class="headerlink" title="6.迪米特原则(Law of  Demeter, LoD)"></a>6.迪米特原则(Law of  Demeter, LoD)</h5><p>定义：一个类尽量不要与其他类发生关系</p>
+<ul>
+<li>一个类对其他类知道的越少，耦合越小。</li>
+<li>当修改一个类时，其他类的影响就越小，发生错误的可能性就越小。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>设计模式</tag>
       </tags>
   </entry>
   <entry>
@@ -1424,43 +1590,6 @@
       </tags>
   </entry>
   <entry>
-    <title>使用wpa_supplicant, wpa_cli连接wifi</title>
-    <url>/2020/01/04/%E4%BD%BF%E7%94%A8wpa_supplicant%20wpa_cli%E8%BF%9E%E6%8E%A5wifi/</url>
-    <content><![CDATA[<p>WIFI on:</p>
-<p>adb shell svc wifi enable</p>
-<p>WIFI off:</p>
-<p>adb shell svc wifi disable</p>
-<p><a href="http://blog.sina.com.cn/s/blog_15e89db360102x7qv.html" target="_blank" rel="noopener">使用wpa_supplicant, wpa_cli连接wifi</a></p>
-<p>如果对应的命令没有需要从源码编译后，导入到/system/bin目录下，修改权限755<br>dhcpcd目录 \external\dhcpcd-6.8.2<br>wpa_cli  \external\wpa_supplicant_8 编译后会生成该文件  </p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wpa_supplicant.conf目录  </span><br><span class="line">&#x2F;data&#x2F;misc&#x2F;wifi&#x2F;wpa_supplicant.conf</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#&#x2F;system&#x2F;bin&#x2F;sh</span><br><span class="line">ssid&#x3D;$&#123;1&#125;</span><br><span class="line">psk&#x3D;$&#123;2&#125;</span><br><span class="line">svc wifi enable</span><br><span class="line">sleep 6</span><br><span class="line">wpa_cli scan</span><br><span class="line">wpa_cli scan_result</span><br><span class="line">addID&#x3D;&#96;wpa_cli add_net | sed -n &#39;2p&#39;&#96;</span><br><span class="line"></span><br><span class="line">echo $addID</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; ssid &quot;\&quot;$&#123;ssid&#125;\&quot;&quot;</span><br><span class="line">wpa_cli set_net $&#123;addID&#125; psk &quot;\&quot;$&#123;psk&#125;\&quot;&quot;</span><br><span class="line">wpa_cli select_net $&#123;addID&#125;</span><br><span class="line">wpa_cli enable_net $&#123;addID&#125;</span><br><span class="line"></span><br><span class="line">dhcpcd wlan0</span><br></pre></td></tr></table></figure>
-
-<p>debug WifiStateMachine 程序需要debug system process进程</p>
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>系统源码</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>系统源码</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>wz</title>
-    <url>/2017/10/04/wz/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>Android</category>
-        <category>系统源码</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>系统源码</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>单例模式</title>
     <url>/2019/03/20/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h4 id="1-定义"><a href="#1-定义" class="headerlink" title="1.定义"></a>1.定义</h4><p>确保某个类只有一个实例,并且自行实例化并向整个系统提供这个实例。</p>
@@ -1551,80 +1680,118 @@
       </tags>
   </entry>
   <entry>
-    <title>六大原则</title>
-    <url>/2019/03/20/%E5%85%AD%E5%A4%A7%E5%8E%9F%E5%88%99/</url>
-    <content><![CDATA[<p><a href="https://www.jianshu.com/p/bf92927c9d22" target="_blank" rel="noopener">https://www.jianshu.com/p/bf92927c9d22</a></p>
-<h4 id="面向对象的六大原则"><a href="#面向对象的六大原则" class="headerlink" title="面向对象的六大原则"></a>面向对象的六大原则</h4><h5 id="1-单一职责原则（Single-Responsibility-Principle-SRP）"><a href="#1-单一职责原则（Single-Responsibility-Principle-SRP）" class="headerlink" title="1.单一职责原则（Single Responsibility Principle, SRP）"></a>1.单一职责原则（Single Responsibility Principle, SRP）</h5><p>定义：一个类应只包含单一的职责。</p>
-<ul>
-<li>一个类职责过大的话，首先引起的问题就是这个类比较大，显得过于臃肿，同时其复用性是比较差的。</li>
-<li>其次就是如果修改某个职责，有可能引起另一个职责发生错误。这是我们极力所避免的，因此设计一个类时我们应当去遵循单一职责原则。</li>
-</ul>
-<h5 id="2-开放封闭原则-Open-ClosedPrinciple-OCP"><a href="#2-开放封闭原则-Open-ClosedPrinciple-OCP" class="headerlink" title="2.开放封闭原则(Open - ClosedPrinciple ,OCP)"></a>2.开放封闭原则(Open - ClosedPrinciple ,OCP)</h5><p>定义：一个模块、类、函数应当是对修改关闭，扩展开放。</p>
-<ul>
-<li>修改原有的代码可能会导致原本正常的功能出现问题。</li>
-<li>因此，当需求有变化时，最好是通过扩展来实现，增加新的方法满足需求，而不是去修改原有代码。</li>
-</ul>
-<h5 id="3-里氏代换原则-Liskov-Substitution-Principle-LSP"><a href="#3-里氏代换原则-Liskov-Substitution-Principle-LSP" class="headerlink" title="3.里氏代换原则( Liskov Substitution Principle ,LSP )"></a>3.里氏代换原则( Liskov Substitution Principle ,LSP )</h5><p>定义：使用父类的地方能够使用子类来替换，反过来，则不行。</p>
-<ul>
-<li>使用子类对象去替换父类对象，程序将不会产生错误</li>
-<li>因此在程序中尽量使用基类类型来对对象进行定义，而在运行时再确定其子类类型，用子类对象来替换父类对象。</li>
-<li>需要注意的是：</li>
-</ul>
+    <title>程序运行时，内存到底是如何进行分配的</title>
+    <url>/2019/04/04/%E7%A8%8B%E5%BA%8F%E8%BF%90%E8%A1%8C%E6%97%B6%EF%BC%8C%E5%86%85%E5%AD%98%E5%88%B0%E5%BA%95%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E5%88%86%E9%85%8D%E7%9A%84/</url>
+    <content><![CDATA[<h3 id="JVM-中的内存划分"><a href="#JVM-中的内存划分" class="headerlink" title="JVM 中的内存划分"></a>JVM 中的内存划分</h3><p>JVM 中的内存可以划分为若干个不同的数据区域，主要分为：程序计数器、虚拟机栈、本地方法栈、堆、方法区。</p>
+<p>线程私有数据区：程序计数器、虚拟机栈、本地方法栈；</p>
+<p>线程共有数据区：堆、方法区；</p>
+<p>下面的图可以概况本章内容</p>
+<p><img src="https://s0.lgstatic.com/i/image3/M01/02/8D/Ciqah157GD2AYLFtAADxheNgCA0454.png" alt=""></p>
+<h4 id="程序计数器（ProgramCounterRegister）"><a href="#程序计数器（ProgramCounterRegister）" class="headerlink" title="程序计数器（ProgramCounterRegister）"></a>程序计数器（ProgramCounterRegister）</h4><p>Java程序是多线程的，CPU可以在多个线程中分配执行时间片段。当某一个线程被CPU挂起时，需要记录代码已经执行到的位置，方便 CPU 重新执行此线程时，知道从哪行指令开始执行。这就是程序计数器的作用。</p>
+<p>程序计数器”是虚拟机中一块较小的内存空间，主要用于记录当前线程执行的位置。</p>
+<p>关于程序计数器还有几点<strong>需要格外注意</strong>：</p>
+<p>在 Java 虚拟机规范中，对程序计数器这一区域没有规定任何 OutOfMemoryError 情况（或许是感觉没有必要吧）。</p>
+<p>程序计数器是线程私有的，每条线程内部都有一个私有程序计数器。它的生命周期随着线程的创建而创建，随着线程的结束而死亡。</p>
+<p>当一个线程正在执行一个 Java 方法的时候，这个计数器记录的是正在执行的虚拟机字节码指令的地址。如果正在执行的是 Native 方法，这个计数器值则为空（Undefined）。</p>
+<h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>虚拟机栈也是线程私有的，与线程的生命周期同步。在 Java 虚拟机规范中，对这个区域规定了两种异常状况：</p>
 <ol>
-<li>子类的所有方法必须在父类中声明，或子类必须实现父类中声明的所有方法。如果一个方法只存在子类中，没有在父类中声明，则无法在以父类定义的对象中使用该方法。</li>
-<li>父类应当被尽量设计为抽象类或者接口，让子类继承父类或实现父接口，并实现在父类中声明的方法，运行时，子类实例替换父类实例，我们可以很方便地扩展系统的功能，同时无须修改原有子类的代码，增加新的功能可以通过增加一个新的子类来实现</li>
+<li>StackOverflowError：当线程请求栈深度超出虚拟机栈所允许的深度时抛出</li>
+<li>OutOfMemoryError：当Java虚拟机动态扩展到无法申请足够内存时抛出。</li>
 </ol>
-<h5 id="4-依赖倒置原则-Dependence-Inversion-Principle-DIP"><a href="#4-依赖倒置原则-Dependence-Inversion-Principle-DIP" class="headerlink" title="4.依赖倒置原则( Dependence Inversion Principle ,DIP )"></a>4.依赖倒置原则( Dependence Inversion Principle ,DIP )</h5><p>定义：抽象不应该依赖于细节，细节应当依赖于抽象。</p>
+<p>JVM 是基于栈的解释器执行的，DVM 是基于寄存器解释器执行的。</p>
+<p>上面这句话里的“基于栈”指的就是虚拟机栈。虚拟机栈的初衷是用来描述 Java 方法执行的内存模型，每个方法被执行的时候，JVM 都会在虚拟机栈中创建一个栈帧。</p>
+<h5 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h5><p>栈帧（Stack Frame）是用于支持虚拟机进行方法调用和方法执行的数据结构，每一个线程在执行某个方法时，都会为这个方法创建一个栈帧。一个线程包含多个栈帧，而每个栈帧内部包含局部变量表、操作数栈、动态连接、返回地址等。</p>
+<h5 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h5><p>本地方法栈和上面介绍的虚拟栈基本相同，只不过是针对本地（native）方法。在开发中如果涉及JNI可能接触本地方法栈多一些。</p>
+<h4 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h4><p>Java堆（Heap）是JVM所管理的内存中最大的一块，该区域唯一目的就是存放对象实例，几乎所有对象的实例都在堆里面分配，因此它也是Java垃圾收集器（GC）管理的主要区域，有时候也叫作“GC 堆”（关于堆的 GC 回收机制将会在后续课时中做详细介绍）。同时它也是所有线程共享的内存区域，因此被分配在此区域的对象如果被多个线程访问的话，需要考虑线程安全问题。</p>
+<p>按照对象存储时间的不同，堆中的内存可以划分为新生代（Young）和老年代（Old），其中新生代又被划分为 Eden 和 Survivor 区。</p>
+<h4 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h4><p>方法区（MethodArea）也是JVM规范里规定的一块运行时数据区。方法区主要是存储已经被JVM加载的类信息（版本、字段、方法、接口）、常量、静态变量、即时编译器编译后的代码和数据。该区域同堆一样，也是被各个线程共享的内存区域。</p>
+<p><strong>注意：关于方法区，很多开发者会将其跟“永久区”混淆。</strong></p>
+<p>所以我在这里对这两个概念进行一下对比：</p>
 <ul>
-<li>即要面向接口编程，而不是面向具体实现去编程。</li>
-<li>高层模块不应该依赖低层模块，应该去依赖抽象。</li>
+<li><p>方法区是JVM规范中规定的一块区域，但是并不是实际实现，切忌将规范跟实现混为一谈。不同的JVM厂商可以有不同版本的“方法区”的实现。</p>
+</li>
+<li><p>HotSpot在JDK1.7以前使用“永久区”（或者叫Perm区）来实现方法区，在JDK1.8之后“永久区”就已经被移除了，取而代之的是一个叫作“元空间（metaspace）”的实现方式。</p>
+<p><strong>总结一下就是：</strong></p>
+<p>方法区是规范层面的东西，规定了这一个区域要存放哪些数据。永久区或者是metaspace是对方法区的不同实现，是实现层面的东西。</p>
+</li>
 </ul>
-<h5 id="5-接口隔离原则-Interface-Segregation-Principle，ISL）"><a href="#5-接口隔离原则-Interface-Segregation-Principle，ISL）" class="headerlink" title="5.接口隔离原则(Interface Segregation Principle，ISL）"></a>5.接口隔离原则(Interface Segregation Principle，ISL）</h5><p>定义：一个类对另一个类的依赖应该建立在最小的接口上。</p>
-<ul>
-<li>一个类不应该依赖他不需要的接口。</li>
-<li>接口的粒度要尽可能小，如果一个接口的方法过多，可以拆成多个接口。</li>
-</ul>
-<h5 id="6-迪米特原则-Law-of-Demeter-LoD"><a href="#6-迪米特原则-Law-of-Demeter-LoD" class="headerlink" title="6.迪米特原则(Law of  Demeter, LoD)"></a>6.迪米特原则(Law of  Demeter, LoD)</h5><p>定义：一个类尽量不要与其他类发生关系</p>
-<ul>
-<li>一个类对其他类知道的越少，耦合越小。</li>
-<li>当修改一个类时，其他类的影响就越小，发生错误的可能性就越小。</li>
-</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>对于JVM运行时内存布局，我们需要始终记住一点：上面介绍的这5块内容都是在Java虚拟机规范中定义的规则，这些规则只是描述了各个区域是负责做什么事情、存储什么样的数据、如何处理异常、是否允许线程间共享等。千万不要将它们理解为虚拟机的“具体实现”，虚拟机的具体实现有很多，比如Sun公司的HotSpot、JRocket、IBMJ9、以及我们非常熟悉的 Android Dalvik 和 ART 等。这些具体实现在符合上面 5 种运行时数据区的前提下，又各自有不同的实现方式。</p>
+<p>总结来说，JVM的运行时内存结构中一共有两个“栈”和一个“堆”，分别是：Java虚拟机栈和本地方法栈，以及“GC堆”和方法区。除此之外还有一个程序计数器，但是我们开发者几乎不会用到这一部分，所以并不是重点学习内容。JVM内存中只有堆和方法区是线程共享的数据区域，其它区域都是线程私有的。并且程序计数器是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。 </p>
+<p>参考链接：<a href="https://kaiwu.lagou.com/course/courseInfo.htm?courseId=67" target="_blank" rel="noopener">https://kaiwu.lagou.com/course/courseInfo.htm?courseId=67</a></p>
 ]]></content>
       <categories>
         <category>Java</category>
-        <category>设计模式</category>
+        <category>JVM</category>
       </categories>
       <tags>
         <tag>Java</tag>
-        <tag>设计模式</tag>
+        <tag>JVM</tag>
       </tags>
   </entry>
   <entry>
-    <title>安卓系统签名转keystore</title>
-    <url>/2019/10/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/</url>
-    <content><![CDATA[<p> 单独签名解决方案</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">找到平台签名文件“platform.pk8”和“platform.x509.pem”</span><br><span class="line"></span><br><span class="line">文件位置 android&#x2F;build&#x2F;target&#x2F;product&#x2F;security&#x2F;</span><br></pre></td></tr></table></figure>
+    <title>泛型</title>
+    <url>/2019/07/16/%E6%B3%9B%E5%9E%8B/</url>
+    <content><![CDATA[<h3 id="泛型类"><a href="#泛型类" class="headerlink" title="泛型类"></a>泛型类</h3><p>泛型通配符&lt;? extends T&gt;来接收返回的数据，此写法的泛型集合不能使用 add 方 法，而&lt;? super T&gt;不能使用 get 方法，作为接口调用赋值时易出错。<br>说明：扩展说一下 PECS(Producer Extends Consumer Super)原则：第一、频繁往外读取内<br>容的，适合用&lt;? extends T&gt;。第二、经常往里插入的，适合用&lt;? super T&gt;。</p>
+<h5 id="泛型类的最基本写法"><a href="#泛型类的最基本写法" class="headerlink" title="泛型类的最基本写法"></a>泛型类的最基本写法</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">class 类名称 &lt;泛型标识：可以随便写任意标识号，标识指定的泛型的类型&gt;&#123;</span><br><span class="line">  private 泛型标识 &#x2F;*（成员变量类型）*&#x2F; var; </span><br><span class="line">  .....</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个最普通的泛型类：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;此处T可以随便写为任意标识，常见的如T、E、K、V等形式的参数常用于表示泛型</span><br><span class="line">&#x2F;&#x2F;在实例化泛型类时，必须指定T的具体类型</span><br><span class="line">public class Generic&lt;T&gt;&#123; </span><br><span class="line">    &#x2F;&#x2F;key这个成员变量的类型为T,T的类型由外部指定  </span><br><span class="line">    private T key;</span><br><span class="line"></span><br><span class="line">    public Generic(T key) &#123; &#x2F;&#x2F;泛型构造方法形参key的类型也为T，T的类型由外部指定</span><br><span class="line">        this.key &#x3D; key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public T getKey()&#123; &#x2F;&#x2F;泛型方法getKey的返回值类型为T，T的类型由外部指定</span><br><span class="line">        return key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;泛型的类型参数只能是类类型（包括自定义类），不能是简单类型</span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为Integer.</span><br><span class="line">Generic&lt;Integer&gt; genericInteger &#x3D; new Generic&lt;Integer&gt;(123456);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为String.</span><br><span class="line">Generic&lt;String&gt; genericString &#x3D; new Generic&lt;String&gt;(&quot;key_vlaue&quot;);</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericInteger.getKey());</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericString.getKey());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">注意：</span><br><span class="line"></span><br><span class="line">泛型的类型参数只能是类类型，不能是简单类型。</span><br><span class="line">不能对确切的泛型类型使用instanceof操作。如下面的操作是非法的，编译时会出错。</span><br><span class="line"></span><br><span class="line">if(ex_num instanceof Generic&lt;Number&gt;)&#123;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="泛型接口"><a href="#泛型接口" class="headerlink" title="泛型接口"></a>泛型接口</h4><p>泛型接口与泛型类的定义及使用基本相同。泛型接口常被用在各种类的生产器中，可以看一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;定义一个泛型接口</span><br><span class="line">public interface Generator&lt;T&gt; &#123;</span><br><span class="line">    public T next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当实现泛型接口的类，未传入泛型实参时：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 未传入泛型实参时，与泛型类的定义相同，在声明类的时候，需将泛型的声明也一起加到类中</span><br><span class="line"> * 即：class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line"> * 如果不声明泛型，如：class FruitGenerator implements Generator&lt;T&gt;，编译器会报错：&quot;Unknown class&quot;</span><br><span class="line"> *&#x2F;</span><br><span class="line">class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public T next() &#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当实现泛型接口的类，传入泛型实参时：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 传入泛型实参时：</span><br><span class="line"> * 定义一个生产器实现这个接口,虽然我们只创建了一个泛型接口Generator&lt;T&gt;</span><br><span class="line"> * 但是我们可以为T传入无数个实参，形成无数种类型的Generator接口。</span><br><span class="line"> * 在实现类实现泛型接口时，如已将泛型类型传入实参类型，则所有使用泛型的地方都要替换成传入的实参类型</span><br><span class="line"> * 即：Generator&lt;T&gt;，public T next();中的的T都要替换成传入的String类型。</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class FruitGenerator implements Generator&lt;String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private String[] fruits &#x3D; new String[]&#123;&quot;Apple&quot;, &quot;Banana&quot;, &quot;Pear&quot;&#125;;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String next() &#123;</span><br><span class="line">        Random rand &#x3D; new Random();</span><br><span class="line">        return fruits[rand.nextInt(3)];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="泛型方法"><a href="#泛型方法" class="headerlink" title="泛型方法"></a>泛型方法</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">首先在public与返回值之间的&lt;T&gt;必不可少，这表明这是一个泛型方法，并且声明了一个泛型T这个T可以出现在这个泛型方法的任意位置.</span><br><span class="line">泛型的数量也可以为任意多个如：</span><br><span class="line">public &lt;T,K&gt; K showKeyName(Generic&lt;T&gt; container)&#123;</span><br><span class="line">             ...</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="泛型方法与可变参数"><a href="#泛型方法与可变参数" class="headerlink" title="泛型方法与可变参数"></a>泛型方法与可变参数</h4><p>泛型方法和可变参数的例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">printMsg</span><span class="params">( T... args)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(T t : args)&#123;</span><br><span class="line">        Log.d(<span class="string">"泛型测试"</span>,<span class="string">"t is "</span> + t);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">printMsg(<span class="string">"111"</span>,<span class="number">222</span>,<span class="string">"aaaa"</span>,<span class="string">"2323.4"</span>,<span class="number">55.55</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="静态方法与泛型"><a href="#静态方法与泛型" class="headerlink" title="静态方法与泛型"></a>静态方法与泛型</h4><p>静态方法有一种情况需要注意一下，那就是在类中的静态方法使用泛型：==静态方法无法访问类上定义的泛型==；<br>如果静态方法操作的引用数据类型不确定的时候，必须要将泛型定义在方法上。<br>即：如果静态方法要使用泛型的话，必须将静态方法也定义成泛型方法 。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticGenerator</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 如果在类中定义使用泛型的静态方法，需要添加额外的泛型声明（将这个方法定义成泛型方法）</span></span><br><span class="line"><span class="comment">     * 即使静态方法要使用泛型类中已经声明过的泛型也不行。</span></span><br><span class="line"><span class="comment">     * 如：public static void show(T t)&#123;..&#125;,</span></span><br><span class="line"><span class="comment">     *此时编译器会提示错误信息：</span></span><br><span class="line"><span class="comment">     *  "StaticGenerator cannot be refrenced from *static context"</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">(T t)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="泛型上下边界"><a href="#泛型上下边界" class="headerlink" title="泛型上下边界"></a>泛型上下边界</h3><h5 id="泛型类的例子"><a href="#泛型类的例子" class="headerlink" title="泛型类的例子"></a>泛型类的例子</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Generic</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Number</span>&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T key;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Generic</span><span class="params">(T key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getKey</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="泛型方法的例子："><a href="#泛型方法的例子：" class="headerlink" title="泛型方法的例子："></a>泛型方法的例子：</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//在泛型方法中添加上下边界限制的时候，必须在权限声明与返回值之间的&lt;T&gt;上添加上下边界，即在泛型声明的时候添加</span></span><br><span class="line"><span class="comment">//public &lt;T&gt; T showKeyName(Generic&lt;T extends Number&gt; container)，编译器会报错："Unexpected bound"</span></span><br><span class="line"><span class="keyword">public</span> &lt;T extends Number&gt; <span class="function">T <span class="title">showKeyName</span><span class="params">(Generic&lt;T&gt; container)</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="string">"container key :"</span> + container.getKey());</span><br><span class="line">    T test = container.getKey();</span><br><span class="line">    <span class="keyword">return</span> test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="泛型方法的类型推断"><a href="#泛型方法的类型推断" class="headerlink" title="泛型方法的类型推断"></a>泛型方法的类型推断</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">/**不指定泛型的时候*/</span>  </span><br><span class="line"> <span class="keyword">int</span> i=Test.add(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">//这两个参数都是Integer，所以T替换为Integer类型  </span></span><br><span class="line">Number f=Test.add(<span class="number">1</span>, <span class="number">1.2</span>);<span class="comment">//这两个参数一个是Integer，另一个是Float，所以取同一父类的最小级，为Number  </span></span><br><span class="line">Object o=Test.add(<span class="number">1</span>, <span class="string">"asd"</span>);<span class="comment">//这两个参数一个是Integer，另一个是String，所以取同一父类的最小级，为Object</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">/**指定泛型的时候*/</span>  </span><br><span class="line"><span class="keyword">int</span> a=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2</span>);<span class="comment">//指定了Integer，所以只能为Integer类型或者其子类  </span></span><br><span class="line"><span class="keyword">int</span> b=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2.2</span>);<span class="comment">//编译错误，指定了Integer，不能为Float  </span></span><br><span class="line">Number c=Test.&lt;Number&gt;add(<span class="number">1</span>, <span class="number">2.2</span>); <span class="comment">//指定为Number，所以可以为Integer和Float  </span></span><br><span class="line">      </span><br><span class="line"><span class="comment">//这是一个简单的泛型方法  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">add</span><span class="params">(T x,T y)</span></span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> y;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
+<h3 id="类型擦除"><a href="#类型擦除" class="headerlink" title="类型擦除"></a>类型擦除</h3><p>编译期间，所有的泛型信息都会被擦除,List<Integer>和List<String>类型，在编译后都会变成List类型（原始类型）.  </p>
+<h5 id="原始类型"><a href="#原始类型" class="headerlink" title="原始类型"></a>原始类型</h5><p>原始类型就是泛型类型擦除了泛型信息后，在字节码中真正的类型。无论何时定义一个泛型类型，相应的原始类型都会被自动提供。原始类型的名字就是删去类型参数后的泛型类型的类名。擦除类型变量，并替换为限定类型（T为无限定的类型变量，用Object替换）<br><strong>因为在Pair<T>中，T是一个无限定的类型变量，所以用Object替换。<br>如果是Pair<T extends Number>，擦除后，类型变量用Number类型替换</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Integer&gt; array=<span class="keyword">new</span> ArrayList&lt;Integer&gt;();  </span><br><span class="line">array.add(<span class="number">1</span>);<span class="comment">//这样调用add方法只能存储整形，因为泛型类型的实例为Integer  </span></span><br><span class="line">array.getClass().getMethod("add", Object.class).invoke(array, "asd");  </span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;array.size();i++) &#123;  </span><br><span class="line">    System.out.println(array.get(i));  </span><br><span class="line">    &#125;  </span><br><span class="line">输出：</span><br><span class="line"><span class="number">1</span></span><br><span class="line">asd</span><br></pre></td></tr></table></figure>
 
+<h2 id="PECS法则"><a href="#PECS法则" class="headerlink" title="PECS法则"></a>PECS法则</h2><p>PECS法则：生产者（Producer）使用extends，消费者（Consumer）使用super</p>
+<h6 id="1、生产者"><a href="#1、生产者" class="headerlink" title="1、生产者"></a>1、生产者</h6><p>如果你需要一个提供E类型元素的集合，使用泛型通配符&lt;? extends E&gt;。它好比一个生产者，可以提供数据。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? extends Number&gt; list&#x3D;new ArrayList();</span><br><span class="line">list.add(new Integer(1));&#x2F;&#x2F;编译错误</span><br><span class="line">list.add(new Float(1.0));&#x2F;&#x2F;编译错误</span><br><span class="line"></span><br><span class="line">List&lt;? extends Number&gt; list1&#x3D;new ArrayList&lt;Integer&gt;();</span><br><span class="line">List&lt;? extends Number&gt; list2&#x3D;new ArrayList&lt;Float&gt;();</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名工具“signapk.jar”</span><br><span class="line"></span><br><span class="line">位置：android&#x2F;prebuilts&#x2F;sdk&#x2F;tools&#x2F;lib</span><br></pre></td></tr></table></figure>
+<h5 id="2、消费者"><a href="#2、消费者" class="headerlink" title="2、消费者"></a>2、消费者</h5><p>如果你需要一个只能装入E类型元素的集合，使用泛型通配符&lt;? super E&gt;。它好比一个消费者，可以消费你提供的数据。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? super Number&gt; list&#x3D;new ArrayList(); </span><br><span class="line">list.add(new Integer(1));</span><br><span class="line">list.add(new Float(1.1));</span><br></pre></td></tr></table></figure>
 
+<h5 id="3、既是生产者也是消费者"><a href="#3、既是生产者也是消费者" class="headerlink" title="3、既是生产者也是消费者"></a>3、既是生产者也是消费者</h5><p>既要存储又要读取，那就别使用泛型通配符。</p>
+<h2 id="泛型相关问题"><a href="#泛型相关问题" class="headerlink" title="泛型相关问题"></a>泛型相关问题</h2><h4 id="1、泛型类型引用传递问题"><a href="#1、泛型类型引用传递问题" class="headerlink" title="1、泛型类型引用传递问题"></a>1、泛型类型引用传递问题</h4><p>在Java中，像下面形式的引用传递是不允许的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();<span class="comment">//编译错误  </span></span><br><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
+<h6 id="第一种情况，将第一种情况拓展成下面的形式："><a href="#第一种情况，将第一种情况拓展成下面的形式：" class="headerlink" title="第一种情况，将第一种情况拓展成下面的形式："></a>第一种情况，将第一种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          ArrayList&lt;String&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
 
+<p>在第4行代码处，就会有编译错误。那么，先假设它编译没错。那么当我们使用arrayList2引用用get()方法取值的时候，返回的都是String类型的对象，可是它里面实际上已经存放了Object类型的对象，这样，就会有ClassCastException了。  </p>
+<h6 id="在看第二种情况，将第二种情况拓展成下面的形式："><a href="#在看第二种情况，将第二种情况拓展成下面的形式：" class="headerlink" title="在看第二种情况，将第二种情况拓展成下面的形式："></a>在看第二种情况，将第二种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          ArrayList&lt;Object&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
+<p>这样的情况比第一种情况好的多，最起码，用arrayList2取值的时候不会出现ClassCastException，因为是从String转换为Object。可是，这样做有什么意义呢，泛型出现的原因，就是为了解决类型转换的问题。我们使用了泛型，到头来，还是要自己强转，违背了泛型设计的初衷。所以java不允许这么干。再说，如果又用arrayList2往里面add()新的对象，那么到时候取得时候，我怎么知道我取出来的到底是String类型的，还是Object类型的呢？<br>所以，要格外注意泛型中引用传递问题。</p>
+<h4 id="2、泛型类型变量不能是基本数据类型"><a href="#2、泛型类型变量不能是基本数据类型" class="headerlink" title="2、泛型类型变量不能是基本数据类型"></a>2、泛型类型变量不能是基本数据类型</h4><p>比如，没有ArrayList<double>，只有ArrayList<Double>。因为当类型擦除后，ArrayList的原始类中的类型变量（T）替换为Object，但Object类型不能存储double值.</p>
+<h4 id="3、运行时类型查询"><a href="#3、运行时类型查询" class="headerlink" title="3、运行时类型查询"></a>3、运行时类型查询</h4><p>举个例子:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList=<span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br></pre></td></tr></table></figure>
+<p>因为类型擦除之后，ArrayList<String>只剩下原始类型，泛型信息String不存在了。那么，运行时进行类型查询的时候使用下面的方法是错误的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;String&gt;)</span><br></pre></td></tr></table></figure>
+<p>java限定了这种类型查询的方式，？为通配符，也即非限定符。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;?&gt;)</span><br></pre></td></tr></table></figure>
 
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名证书“platform.pk8 ”“platform.x509.pem ”，签名工具“signapk.jar ”放置在同一个文件夹；</span><br></pre></td></tr></table></figure>
-
-<p> 下载 keytool-importkeypair 工具，使用sdk的security文件生成对应平台的key：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.&#x2F;keytool-importkeypair -k [jks文件名] -p [jks的密码] -pk8 platform.pk8 -cert platform.x509.pem -alias [jks的别名]</span><br><span class="line"></span><br><span class="line">如：</span><br><span class="line">.&#x2F;keytool-importkeypair -k .&#x2F;SignDemo.jks -p 123456 -pk8 platform.pk8 -cert platform.x509.pem -alias SignDemo</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>Android</category>
-        <category>系统源码</category>
+        <category>Java</category>
+        <category>基础语法</category>
       </categories>
       <tags>
-        <tag>Android</tag>
-        <tag>系统源码</tag>
+        <tag>Java</tag>
+        <tag>基础语法</tag>
       </tags>
   </entry>
   <entry>
@@ -1697,121 +1864,6 @@
       </tags>
   </entry>
   <entry>
-    <title>泛型</title>
-    <url>/2018/03/16/%E6%B3%9B%E5%9E%8B/</url>
-    <content><![CDATA[<h3 id="泛型类"><a href="#泛型类" class="headerlink" title="泛型类"></a>泛型类</h3><p>泛型通配符&lt;? extends T&gt;来接收返回的数据，此写法的泛型集合不能使用 add 方 法，而&lt;? super T&gt;不能使用 get 方法，作为接口调用赋值时易出错。<br>说明：扩展说一下 PECS(Producer Extends Consumer Super)原则：第一、频繁往外读取内<br>容的，适合用&lt;? extends T&gt;。第二、经常往里插入的，适合用&lt;? super T&gt;。</p>
-<h5 id="泛型类的最基本写法"><a href="#泛型类的最基本写法" class="headerlink" title="泛型类的最基本写法"></a>泛型类的最基本写法</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">class 类名称 &lt;泛型标识：可以随便写任意标识号，标识指定的泛型的类型&gt;&#123;</span><br><span class="line">  private 泛型标识 &#x2F;*（成员变量类型）*&#x2F; var; </span><br><span class="line">  .....</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>一个最普通的泛型类：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;此处T可以随便写为任意标识，常见的如T、E、K、V等形式的参数常用于表示泛型</span><br><span class="line">&#x2F;&#x2F;在实例化泛型类时，必须指定T的具体类型</span><br><span class="line">public class Generic&lt;T&gt;&#123; </span><br><span class="line">    &#x2F;&#x2F;key这个成员变量的类型为T,T的类型由外部指定  </span><br><span class="line">    private T key;</span><br><span class="line"></span><br><span class="line">    public Generic(T key) &#123; &#x2F;&#x2F;泛型构造方法形参key的类型也为T，T的类型由外部指定</span><br><span class="line">        this.key &#x3D; key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public T getKey()&#123; &#x2F;&#x2F;泛型方法getKey的返回值类型为T，T的类型由外部指定</span><br><span class="line">        return key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;泛型的类型参数只能是类类型（包括自定义类），不能是简单类型</span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为Integer.</span><br><span class="line">Generic&lt;Integer&gt; genericInteger &#x3D; new Generic&lt;Integer&gt;(123456);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;传入的实参类型需与泛型的类型参数类型相同，即为String.</span><br><span class="line">Generic&lt;String&gt; genericString &#x3D; new Generic&lt;String&gt;(&quot;key_vlaue&quot;);</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericInteger.getKey());</span><br><span class="line">Log.d(&quot;泛型测试&quot;,&quot;key is &quot; + genericString.getKey());</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">注意：</span><br><span class="line"></span><br><span class="line">泛型的类型参数只能是类类型，不能是简单类型。</span><br><span class="line">不能对确切的泛型类型使用instanceof操作。如下面的操作是非法的，编译时会出错。</span><br><span class="line"></span><br><span class="line">if(ex_num instanceof Generic&lt;Number&gt;)&#123;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h4 id="泛型接口"><a href="#泛型接口" class="headerlink" title="泛型接口"></a>泛型接口</h4><p>泛型接口与泛型类的定义及使用基本相同。泛型接口常被用在各种类的生产器中，可以看一个例子：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;定义一个泛型接口</span><br><span class="line">public interface Generator&lt;T&gt; &#123;</span><br><span class="line">    public T next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当实现泛型接口的类，未传入泛型实参时：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 未传入泛型实参时，与泛型类的定义相同，在声明类的时候，需将泛型的声明也一起加到类中</span><br><span class="line"> * 即：class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line"> * 如果不声明泛型，如：class FruitGenerator implements Generator&lt;T&gt;，编译器会报错：&quot;Unknown class&quot;</span><br><span class="line"> *&#x2F;</span><br><span class="line">class FruitGenerator&lt;T&gt; implements Generator&lt;T&gt;&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public T next() &#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当实现泛型接口的类，传入泛型实参时：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * 传入泛型实参时：</span><br><span class="line"> * 定义一个生产器实现这个接口,虽然我们只创建了一个泛型接口Generator&lt;T&gt;</span><br><span class="line"> * 但是我们可以为T传入无数个实参，形成无数种类型的Generator接口。</span><br><span class="line"> * 在实现类实现泛型接口时，如已将泛型类型传入实参类型，则所有使用泛型的地方都要替换成传入的实参类型</span><br><span class="line"> * 即：Generator&lt;T&gt;，public T next();中的的T都要替换成传入的String类型。</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class FruitGenerator implements Generator&lt;String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private String[] fruits &#x3D; new String[]&#123;&quot;Apple&quot;, &quot;Banana&quot;, &quot;Pear&quot;&#125;;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String next() &#123;</span><br><span class="line">        Random rand &#x3D; new Random();</span><br><span class="line">        return fruits[rand.nextInt(3)];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="泛型方法"><a href="#泛型方法" class="headerlink" title="泛型方法"></a>泛型方法</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">首先在public与返回值之间的&lt;T&gt;必不可少，这表明这是一个泛型方法，并且声明了一个泛型T这个T可以出现在这个泛型方法的任意位置.</span><br><span class="line">泛型的数量也可以为任意多个如：</span><br><span class="line">public &lt;T,K&gt; K showKeyName(Generic&lt;T&gt; container)&#123;</span><br><span class="line">             ...</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
-<h4 id="泛型方法与可变参数"><a href="#泛型方法与可变参数" class="headerlink" title="泛型方法与可变参数"></a>泛型方法与可变参数</h4><p>泛型方法和可变参数的例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">printMsg</span><span class="params">( T... args)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(T t : args)&#123;</span><br><span class="line">        Log.d(<span class="string">"泛型测试"</span>,<span class="string">"t is "</span> + t);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">printMsg(<span class="string">"111"</span>,<span class="number">222</span>,<span class="string">"aaaa"</span>,<span class="string">"2323.4"</span>,<span class="number">55.55</span>);</span><br></pre></td></tr></table></figure>
-<h4 id="静态方法与泛型"><a href="#静态方法与泛型" class="headerlink" title="静态方法与泛型"></a>静态方法与泛型</h4><p>静态方法有一种情况需要注意一下，那就是在类中的静态方法使用泛型：==静态方法无法访问类上定义的泛型==；<br>如果静态方法操作的引用数据类型不确定的时候，必须要将泛型定义在方法上。<br>即：如果静态方法要使用泛型的话，必须将静态方法也定义成泛型方法 。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticGenerator</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 如果在类中定义使用泛型的静态方法，需要添加额外的泛型声明（将这个方法定义成泛型方法）</span></span><br><span class="line"><span class="comment">     * 即使静态方法要使用泛型类中已经声明过的泛型也不行。</span></span><br><span class="line"><span class="comment">     * 如：public static void show(T t)&#123;..&#125;,</span></span><br><span class="line"><span class="comment">     *此时编译器会提示错误信息：</span></span><br><span class="line"><span class="comment">     *  "StaticGenerator cannot be refrenced from *static context"</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">(T t)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="泛型上下边界"><a href="#泛型上下边界" class="headerlink" title="泛型上下边界"></a>泛型上下边界</h3><h5 id="泛型类的例子"><a href="#泛型类的例子" class="headerlink" title="泛型类的例子"></a>泛型类的例子</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Generic</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Number</span>&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T key;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Generic</span><span class="params">(T key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getKey</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h5 id="泛型方法的例子："><a href="#泛型方法的例子：" class="headerlink" title="泛型方法的例子："></a>泛型方法的例子：</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//在泛型方法中添加上下边界限制的时候，必须在权限声明与返回值之间的&lt;T&gt;上添加上下边界，即在泛型声明的时候添加</span></span><br><span class="line"><span class="comment">//public &lt;T&gt; T showKeyName(Generic&lt;T extends Number&gt; container)，编译器会报错："Unexpected bound"</span></span><br><span class="line"><span class="keyword">public</span> &lt;T extends Number&gt; <span class="function">T <span class="title">showKeyName</span><span class="params">(Generic&lt;T&gt; container)</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="string">"container key :"</span> + container.getKey());</span><br><span class="line">    T test = container.getKey();</span><br><span class="line">    <span class="keyword">return</span> test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="泛型方法的类型推断"><a href="#泛型方法的类型推断" class="headerlink" title="泛型方法的类型推断"></a>泛型方法的类型推断</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">/**不指定泛型的时候*/</span>  </span><br><span class="line"> <span class="keyword">int</span> i=Test.add(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">//这两个参数都是Integer，所以T替换为Integer类型  </span></span><br><span class="line">Number f=Test.add(<span class="number">1</span>, <span class="number">1.2</span>);<span class="comment">//这两个参数一个是Integer，另一个是Float，所以取同一父类的最小级，为Number  </span></span><br><span class="line">Object o=Test.add(<span class="number">1</span>, <span class="string">"asd"</span>);<span class="comment">//这两个参数一个是Integer，另一个是String，所以取同一父类的最小级，为Object</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">/**指定泛型的时候*/</span>  </span><br><span class="line"><span class="keyword">int</span> a=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2</span>);<span class="comment">//指定了Integer，所以只能为Integer类型或者其子类  </span></span><br><span class="line"><span class="keyword">int</span> b=Test.&lt;Integer&gt;add(<span class="number">1</span>, <span class="number">2.2</span>);<span class="comment">//编译错误，指定了Integer，不能为Float  </span></span><br><span class="line">Number c=Test.&lt;Number&gt;add(<span class="number">1</span>, <span class="number">2.2</span>); <span class="comment">//指定为Number，所以可以为Integer和Float  </span></span><br><span class="line">      </span><br><span class="line"><span class="comment">//这是一个简单的泛型方法  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">add</span><span class="params">(T x,T y)</span></span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> y;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h3 id="类型擦除"><a href="#类型擦除" class="headerlink" title="类型擦除"></a>类型擦除</h3><p>编译期间，所有的泛型信息都会被擦除,List<Integer>和List<String>类型，在编译后都会变成List类型（原始类型）.  </p>
-<h5 id="原始类型"><a href="#原始类型" class="headerlink" title="原始类型"></a>原始类型</h5><p>原始类型就是泛型类型擦除了泛型信息后，在字节码中真正的类型。无论何时定义一个泛型类型，相应的原始类型都会被自动提供。原始类型的名字就是删去类型参数后的泛型类型的类名。擦除类型变量，并替换为限定类型（T为无限定的类型变量，用Object替换）<br><strong>因为在Pair<T>中，T是一个无限定的类型变量，所以用Object替换。<br>如果是Pair<T extends Number>，擦除后，类型变量用Number类型替换</strong>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Integer&gt; array=<span class="keyword">new</span> ArrayList&lt;Integer&gt;();  </span><br><span class="line">array.add(<span class="number">1</span>);<span class="comment">//这样调用add方法只能存储整形，因为泛型类型的实例为Integer  </span></span><br><span class="line">array.getClass().getMethod("add", Object.class).invoke(array, "asd");  </span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;array.size();i++) &#123;  </span><br><span class="line">    System.out.println(array.get(i));  </span><br><span class="line">    &#125;  </span><br><span class="line">输出：</span><br><span class="line"><span class="number">1</span></span><br><span class="line">asd</span><br></pre></td></tr></table></figure>
-
-<h2 id="PECS法则"><a href="#PECS法则" class="headerlink" title="PECS法则"></a>PECS法则</h2><p>PECS法则：生产者（Producer）使用extends，消费者（Consumer）使用super</p>
-<h6 id="1、生产者"><a href="#1、生产者" class="headerlink" title="1、生产者"></a>1、生产者</h6><p>如果你需要一个提供E类型元素的集合，使用泛型通配符&lt;? extends E&gt;。它好比一个生产者，可以提供数据。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? extends Number&gt; list&#x3D;new ArrayList();</span><br><span class="line">list.add(new Integer(1));&#x2F;&#x2F;编译错误</span><br><span class="line">list.add(new Float(1.0));&#x2F;&#x2F;编译错误</span><br><span class="line"></span><br><span class="line">List&lt;? extends Number&gt; list1&#x3D;new ArrayList&lt;Integer&gt;();</span><br><span class="line">List&lt;? extends Number&gt; list2&#x3D;new ArrayList&lt;Float&gt;();</span><br></pre></td></tr></table></figure>
-
-<h5 id="2、消费者"><a href="#2、消费者" class="headerlink" title="2、消费者"></a>2、消费者</h5><p>如果你需要一个只能装入E类型元素的集合，使用泛型通配符&lt;? super E&gt;。它好比一个消费者，可以消费你提供的数据。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">List&lt;? super Number&gt; list&#x3D;new ArrayList(); </span><br><span class="line">list.add(new Integer(1));</span><br><span class="line">list.add(new Float(1.1));</span><br></pre></td></tr></table></figure>
-
-<h5 id="3、既是生产者也是消费者"><a href="#3、既是生产者也是消费者" class="headerlink" title="3、既是生产者也是消费者"></a>3、既是生产者也是消费者</h5><p>既要存储又要读取，那就别使用泛型通配符。</p>
-<h2 id="泛型相关问题"><a href="#泛型相关问题" class="headerlink" title="泛型相关问题"></a>泛型相关问题</h2><h4 id="1、泛型类型引用传递问题"><a href="#1、泛型类型引用传递问题" class="headerlink" title="1、泛型类型引用传递问题"></a>1、泛型类型引用传递问题</h4><p>在Java中，像下面形式的引用传递是不允许的：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();<span class="comment">//编译错误  </span></span><br><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
-<h6 id="第一种情况，将第一种情况拓展成下面的形式："><a href="#第一种情况，将第一种情况拓展成下面的形式：" class="headerlink" title="第一种情况，将第一种情况拓展成下面的形式："></a>第一种情况，将第一种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Object&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;Object&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> Object());  </span><br><span class="line">          ArrayList&lt;String&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
-
-<p>在第4行代码处，就会有编译错误。那么，先假设它编译没错。那么当我们使用arrayList2引用用get()方法取值的时候，返回的都是String类型的对象，可是它里面实际上已经存放了Object类型的对象，这样，就会有ClassCastException了。  </p>
-<h6 id="在看第二种情况，将第二种情况拓展成下面的形式："><a href="#在看第二种情况，将第二种情况拓展成下面的形式：" class="headerlink" title="在看第二种情况，将第二种情况拓展成下面的形式："></a>在看第二种情况，将第二种情况拓展成下面的形式：</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList1=<span class="keyword">new</span> ArrayList&lt;String&gt;();  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          arrayList1.add(<span class="keyword">new</span> String());  </span><br><span class="line">          ArrayList&lt;Object&gt; arrayList2=arrayList1;<span class="comment">//编译错误</span></span><br></pre></td></tr></table></figure>
-<p>这样的情况比第一种情况好的多，最起码，用arrayList2取值的时候不会出现ClassCastException，因为是从String转换为Object。可是，这样做有什么意义呢，泛型出现的原因，就是为了解决类型转换的问题。我们使用了泛型，到头来，还是要自己强转，违背了泛型设计的初衷。所以java不允许这么干。再说，如果又用arrayList2往里面add()新的对象，那么到时候取得时候，我怎么知道我取出来的到底是String类型的，还是Object类型的呢？<br>所以，要格外注意泛型中引用传递问题。</p>
-<h4 id="2、泛型类型变量不能是基本数据类型"><a href="#2、泛型类型变量不能是基本数据类型" class="headerlink" title="2、泛型类型变量不能是基本数据类型"></a>2、泛型类型变量不能是基本数据类型</h4><p>比如，没有ArrayList<double>，只有ArrayList<Double>。因为当类型擦除后，ArrayList的原始类中的类型变量（T）替换为Object，但Object类型不能存储double值.</p>
-<h4 id="3、运行时类型查询"><a href="#3、运行时类型查询" class="headerlink" title="3、运行时类型查询"></a>3、运行时类型查询</h4><p>举个例子:</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;String&gt; arrayList=<span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br></pre></td></tr></table></figure>
-<p>因为类型擦除之后，ArrayList<String>只剩下原始类型，泛型信息String不存在了。那么，运行时进行类型查询的时候使用下面的方法是错误的</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;String&gt;)</span><br></pre></td></tr></table></figure>
-<p>java限定了这种类型查询的方式，？为通配符，也即非限定符。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( arrayList <span class="keyword">instanceof</span> ArrayList&lt;?&gt;)</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>基础语法</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>基础语法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>程序运行时，内存到底是如何进行分配的</title>
-    <url>/2019/04/04/%E7%A8%8B%E5%BA%8F%E8%BF%90%E8%A1%8C%E6%97%B6%EF%BC%8C%E5%86%85%E5%AD%98%E5%88%B0%E5%BA%95%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E5%88%86%E9%85%8D%E7%9A%84/</url>
-    <content><![CDATA[<h3 id="JVM-中的内存划分"><a href="#JVM-中的内存划分" class="headerlink" title="JVM 中的内存划分"></a>JVM 中的内存划分</h3><p>JVM 中的内存可以划分为若干个不同的数据区域，主要分为：程序计数器、虚拟机栈、本地方法栈、堆、方法区。</p>
-<p>线程私有数据区：程序计数器、虚拟机栈、本地方法栈；</p>
-<p>线程共有数据区：堆、方法区；</p>
-<p>下面的图可以概况本章内容</p>
-<p><img src="https://s0.lgstatic.com/i/image3/M01/02/8D/Ciqah157GD2AYLFtAADxheNgCA0454.png" alt=""></p>
-<h4 id="程序计数器（ProgramCounterRegister）"><a href="#程序计数器（ProgramCounterRegister）" class="headerlink" title="程序计数器（ProgramCounterRegister）"></a>程序计数器（ProgramCounterRegister）</h4><p>Java程序是多线程的，CPU可以在多个线程中分配执行时间片段。当某一个线程被CPU挂起时，需要记录代码已经执行到的位置，方便 CPU 重新执行此线程时，知道从哪行指令开始执行。这就是程序计数器的作用。</p>
-<p>程序计数器”是虚拟机中一块较小的内存空间，主要用于记录当前线程执行的位置。</p>
-<p>关于程序计数器还有几点<strong>需要格外注意</strong>：</p>
-<p>在 Java 虚拟机规范中，对程序计数器这一区域没有规定任何 OutOfMemoryError 情况（或许是感觉没有必要吧）。</p>
-<p>程序计数器是线程私有的，每条线程内部都有一个私有程序计数器。它的生命周期随着线程的创建而创建，随着线程的结束而死亡。</p>
-<p>当一个线程正在执行一个 Java 方法的时候，这个计数器记录的是正在执行的虚拟机字节码指令的地址。如果正在执行的是 Native 方法，这个计数器值则为空（Undefined）。</p>
-<h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>虚拟机栈也是线程私有的，与线程的生命周期同步。在 Java 虚拟机规范中，对这个区域规定了两种异常状况：</p>
-<ol>
-<li>StackOverflowError：当线程请求栈深度超出虚拟机栈所允许的深度时抛出</li>
-<li>OutOfMemoryError：当Java虚拟机动态扩展到无法申请足够内存时抛出。</li>
-</ol>
-<p>JVM 是基于栈的解释器执行的，DVM 是基于寄存器解释器执行的。</p>
-<p>上面这句话里的“基于栈”指的就是虚拟机栈。虚拟机栈的初衷是用来描述 Java 方法执行的内存模型，每个方法被执行的时候，JVM 都会在虚拟机栈中创建一个栈帧。</p>
-<h5 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h5><p>栈帧（Stack Frame）是用于支持虚拟机进行方法调用和方法执行的数据结构，每一个线程在执行某个方法时，都会为这个方法创建一个栈帧。一个线程包含多个栈帧，而每个栈帧内部包含局部变量表、操作数栈、动态连接、返回地址等。</p>
-<h5 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h5><p>本地方法栈和上面介绍的虚拟栈基本相同，只不过是针对本地（native）方法。在开发中如果涉及JNI可能接触本地方法栈多一些。</p>
-<h4 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h4><p>Java堆（Heap）是JVM所管理的内存中最大的一块，该区域唯一目的就是存放对象实例，几乎所有对象的实例都在堆里面分配，因此它也是Java垃圾收集器（GC）管理的主要区域，有时候也叫作“GC 堆”（关于堆的 GC 回收机制将会在后续课时中做详细介绍）。同时它也是所有线程共享的内存区域，因此被分配在此区域的对象如果被多个线程访问的话，需要考虑线程安全问题。</p>
-<p>按照对象存储时间的不同，堆中的内存可以划分为新生代（Young）和老年代（Old），其中新生代又被划分为 Eden 和 Survivor 区。</p>
-<h4 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h4><p>方法区（MethodArea）也是JVM规范里规定的一块运行时数据区。方法区主要是存储已经被JVM加载的类信息（版本、字段、方法、接口）、常量、静态变量、即时编译器编译后的代码和数据。该区域同堆一样，也是被各个线程共享的内存区域。</p>
-<p><strong>注意：关于方法区，很多开发者会将其跟“永久区”混淆。</strong></p>
-<p>所以我在这里对这两个概念进行一下对比：</p>
-<ul>
-<li><p>方法区是JVM规范中规定的一块区域，但是并不是实际实现，切忌将规范跟实现混为一谈。不同的JVM厂商可以有不同版本的“方法区”的实现。</p>
-</li>
-<li><p>HotSpot在JDK1.7以前使用“永久区”（或者叫Perm区）来实现方法区，在JDK1.8之后“永久区”就已经被移除了，取而代之的是一个叫作“元空间（metaspace）”的实现方式。</p>
-<p><strong>总结一下就是：</strong></p>
-<p>方法区是规范层面的东西，规定了这一个区域要存放哪些数据。永久区或者是metaspace是对方法区的不同实现，是实现层面的东西。</p>
-</li>
-</ul>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>对于JVM运行时内存布局，我们需要始终记住一点：上面介绍的这5块内容都是在Java虚拟机规范中定义的规则，这些规则只是描述了各个区域是负责做什么事情、存储什么样的数据、如何处理异常、是否允许线程间共享等。千万不要将它们理解为虚拟机的“具体实现”，虚拟机的具体实现有很多，比如Sun公司的HotSpot、JRocket、IBMJ9、以及我们非常熟悉的 Android Dalvik 和 ART 等。这些具体实现在符合上面 5 种运行时数据区的前提下，又各自有不同的实现方式。</p>
-<p>总结来说，JVM的运行时内存结构中一共有两个“栈”和一个“堆”，分别是：Java虚拟机栈和本地方法栈，以及“GC堆”和方法区。除此之外还有一个程序计数器，但是我们开发者几乎不会用到这一部分，所以并不是重点学习内容。JVM内存中只有堆和方法区是线程共享的数据区域，其它区域都是线程私有的。并且程序计数器是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。 </p>
-<p>参考链接：<a href="https://kaiwu.lagou.com/course/courseInfo.htm?courseId=67" target="_blank" rel="noopener">https://kaiwu.lagou.com/course/courseInfo.htm?courseId=67</a></p>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>JVM</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>编译插桩操纵字节码</title>
     <url>/2020/04/13/%E7%BC%96%E8%AF%91%E6%8F%92%E6%A1%A9%E6%93%8D%E7%BA%B5%E5%AD%97%E8%8A%82%E7%A0%81/</url>
     <content><![CDATA[<h4 id="编译插桩是什么"><a href="#编译插桩是什么" class="headerlink" title="编译插桩是什么"></a>编译插桩是什么</h4><p>编译插桩就是在代码编译期间修改已有的代码或者生成新代码。Dagger、ButterKnife甚至是Kotlin语言，它们都用到了编译插桩的技术。</p>
@@ -1880,6 +1932,78 @@
       <tags>
         <tag>Java</tag>
         <tag>JVM</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>安卓系统签名转keystore</title>
+    <url>/2019/10/18/%E5%AE%89%E5%8D%93%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E8%BD%ACkeystore/</url>
+    <content><![CDATA[<p> 单独签名解决方案</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">找到平台签名文件“platform.pk8”和“platform.x509.pem”</span><br><span class="line"></span><br><span class="line">文件位置 android&#x2F;build&#x2F;target&#x2F;product&#x2F;security&#x2F;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名工具“signapk.jar”</span><br><span class="line"></span><br><span class="line">位置：android&#x2F;prebuilts&#x2F;sdk&#x2F;tools&#x2F;lib</span><br></pre></td></tr></table></figure>
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">签名证书“platform.pk8 ”“platform.x509.pem ”，签名工具“signapk.jar ”放置在同一个文件夹；</span><br></pre></td></tr></table></figure>
+
+<p> 下载 keytool-importkeypair 工具，使用sdk的security文件生成对应平台的key：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.&#x2F;keytool-importkeypair -k [jks文件名] -p [jks的密码] -pk8 platform.pk8 -cert platform.x509.pem -alias [jks的别名]</span><br><span class="line"></span><br><span class="line">如：</span><br><span class="line">.&#x2F;keytool-importkeypair -k .&#x2F;SignDemo.jks -p 123456 -pk8 platform.pk8 -cert platform.x509.pem -alias SignDemo</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MSM8953 7.1预装可卸载第三方应用</title>
+    <url>/2021/08/16/MSM8953%207.1%E9%A2%84%E8%A3%85%E5%8F%AF%E5%8D%B8%E8%BD%BD%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%94%E7%94%A8/</url>
+    <content><![CDATA[<h4 id="1、vendor-qcom-proprietary-qrdplus-Extension-config-copy-apps-sh"><a href="#1、vendor-qcom-proprietary-qrdplus-Extension-config-copy-apps-sh" class="headerlink" title="1、vendor/qcom/proprietary/qrdplus/Extension/config/copy_apps.sh"></a>1、vendor/qcom/proprietary/qrdplus/Extension/config/copy_apps.sh</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;system&#x2F;bin&#x2F;sh</span><br><span class="line">if [ ! -f &#x2F;data&#x2F;app&#x2F;did ]; then</span><br><span class="line">	path_pre_install&#x3D;&#x2F;system&#x2F;pre_install</span><br><span class="line">	flist&#x3D;&#96;ls $&#123;path_pre_install&#125;&#96;</span><br><span class="line">	for file in $flist</span><br><span class="line">	do</span><br><span class="line">		echo $&#123;path_pre_install&#125;&#x2F;$file</span><br><span class="line">		pm install -r $&#123;path_pre_install&#125;&#x2F;$file</span><br><span class="line">	done</span><br><span class="line">	echo 1 &gt; &#x2F;data&#x2F;app&#x2F;did</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+<h4 id="2、同目录下的Android-mk实现把脚本复制到system-bin"><a href="#2、同目录下的Android-mk实现把脚本复制到system-bin" class="headerlink" title="2、同目录下的Android.mk实现把脚本复制到system/bin"></a>2、同目录下的Android.mk实现把脚本复制到system/bin</h4><p>出现的问题，编译不通过，原因分析：<br>system/bin这个目录可能还不存在，先创建，然后cp的时候加个/</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## add by ben for third app</span><br><span class="line">#################################################</span><br><span class="line">COPY_APPS_SH :&#x3D; copy_apps.sh</span><br><span class="line">$(shell mkdir -p $(TARGET_OUT)&#x2F;bin&#x2F;)</span><br><span class="line">$(shell cp -r $(LOCAL_PATH)&#x2F;$(COPY_APPS_SH)  $(TARGET_OUT)&#x2F;bin&#x2F;)</span><br><span class="line">$(shell chmod 755 $(TARGET_OUT)&#x2F;bin&#x2F;$(COPY_APPS_SH))</span><br></pre></td></tr></table></figure>
+
+<h4 id="3、在init-target-rc添加以下服务-路径device-qcom-msm8953-64-init-target-rc"><a href="#3、在init-target-rc添加以下服务-路径device-qcom-msm8953-64-init-target-rc" class="headerlink" title="3、在init.target.rc添加以下服务,路径device/qcom/msm8953_64/init.target.rc"></a>3、在init.target.rc添加以下服务,路径device/qcom/msm8953_64/init.target.rc</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">service copy_apps &#x2F;system&#x2F;bin&#x2F;sh &#x2F;system&#x2F;bin&#x2F;copy_apps.sh</span><br><span class="line">    class core</span><br><span class="line">    user root</span><br><span class="line">    group root</span><br><span class="line">    disable #创建但先不执行</span><br><span class="line">    oneshot  #运行一次</span><br><span class="line">    seclabel u:r:copy_apps:s0 #这句是为加selinux权限添加的，android5.1以后不加则无法启动该服务</span><br><span class="line">    </span><br><span class="line">	#必须在开机完成后再启动</span><br><span class="line">on property:sys.boot_completed&#x3D;1</span><br><span class="line">    start copy_apps</span><br></pre></td></tr></table></figure>
+<h4 id="4-device-qcom-sepolicy-common-file-contexts-添加如下语句"><a href="#4-device-qcom-sepolicy-common-file-contexts-添加如下语句" class="headerlink" title="4.device/qcom/sepolicy/common/file_contexts 添加如下语句"></a>4.device/qcom/sepolicy/common/file_contexts 添加如下语句</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;system&#x2F;bin&#x2F;copy_apps.sh                      u:object_r:copy_apps_exec:s0</span><br></pre></td></tr></table></figure>
+<h4 id="5、添加SELinux规则，device-qcom-sepolicy-common-copy-apps-te"><a href="#5、添加SELinux规则，device-qcom-sepolicy-common-copy-apps-te" class="headerlink" title="5、添加SELinux规则，device/qcom/sepolicy/common/copy_apps.te"></a>5、添加SELinux规则，device/qcom/sepolicy/common/copy_apps.te</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#需要为新增的进程增加域、执行权限</span><br><span class="line">type copy_apps, domain;</span><br><span class="line">type copy_apps_exec, exec_type, file_type;</span><br><span class="line"></span><br><span class="line">#仅用于调试；本进程所需权限均许可，跨进程的要到其他文件设定</span><br><span class="line">#permissive copy_apps; </span><br><span class="line"></span><br><span class="line">#然后启用这个域</span><br><span class="line">init_daemon_domain(copy_apps)</span><br><span class="line"></span><br><span class="line">allow copy_apps rootfs:lnk_file &#123;getattr write open read&#125;;</span><br><span class="line">allow copy_apps apk_data_file:dir &#123;search getattr read write setattr add_name open&#125;;</span><br><span class="line">allow copy_apps apk_data_file:file &#123;getattr open read write create setattr&#125;;</span><br><span class="line">allow copy_apps system_file:dir &#123;read getattr open&#125;;</span><br><span class="line">allow copy_apps system_file:file&#123;read getattr open execute_no_trans &#125;;</span><br><span class="line">allow copy_apps system_data_file:dir &#123;read getattr open write add_name&#125;;</span><br><span class="line">allow copy_apps toolbox_exec:file &#123;getattr execute read open execute_no_trans&#125;;</span><br><span class="line">allow copy_apps copy_apps:capability &#123;dac_override dac_read_search fowner fsetid&#125;;</span><br><span class="line">allow copy_apps copy_apps:file &#123;getattr write open&#125;;</span><br><span class="line">allow copy_apps copy_apps:dir &#123;search&#125;;</span><br><span class="line">allow copy_apps copy_apps:process &#123;execmem&#125;;</span><br><span class="line">allow copy_apps shell_exec:file &#123;entrypoint getattr read execute open execute_no_trans&#125;;</span><br><span class="line">allow copy_apps zygote_exec:file &#123;entrypoint getattr read execute open execute_no_trans&#125;;</span><br><span class="line">allow copy_apps zygote_exec:file &#123;entrypoint getattr read execute open execute_no_trans&#125;;</span><br><span class="line">allow copy_apps servicemanager:binder &#123;call&#125;;</span><br><span class="line">allow copy_apps sysfs:file &#123;read getattr open&#125;;</span><br><span class="line">allow copy_apps dalvikcache_data_file:dir &#123;rw_dir_perms&#125;;</span><br><span class="line">allow copy_apps dalvikcache_data_file:file &#123;create_file_perms&#125;; </span><br><span class="line">allow copy_apps dalvikcache_data_file:lnk_file &#123;read getattr&#125;;</span><br><span class="line">allow copy_apps proc_net:file &#123;read open getattr&#125;;</span><br><span class="line">allow copy_apps ashmem_device:chr_file&#123;execute&#125;;</span><br><span class="line">allow copy_apps copy_apps_tmpfs:file&#123;execute&#125;;</span><br><span class="line">allow copy_apps system_server:binder&#123;call transfer&#125;;</span><br><span class="line">allow copy_apps system_server:fd&#123;use&#125;;</span><br><span class="line">allow copy_apps system_server:unix_stream_socket&#123;getopt read write&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="修改sepolicy后编译出现‘Error-while-expanding-policy’"><a href="#修改sepolicy后编译出现‘Error-while-expanding-policy’" class="headerlink" title="修改sepolicy后编译出现‘Error while expanding policy’"></a>修改sepolicy后编译出现‘Error while expanding policy’</h4><p>在系统中添加某个“*.te”后，可能会出现下面的错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">libsepol.report_failure: neverallow on line 263 of system&#x2F;sepolicy&#x2F;domain.te (or line 9133 of policy.conf) violated by allow xx device:chr_file &#123; read write open &#125;;</span><br><span class="line">    libsepol.check_assertions: 1 neverallow failures occurred</span><br><span class="line">    Error while expanding policy</span><br></pre></td></tr></table></figure>
+
+
+<p>这是因为在“system/sepolicy/domain.te” 添加了一些neverallow rules，导致编译检查的时候出现错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># Do not allow any domain other than init or recovery to create unlabeled files.</span><br><span class="line">    neverallow &#123; domain -init -recovery &#125; unlabeled:dir_file_class_set create;</span><br></pre></td></tr></table></figure>
+
+
+<p>只需要根据错误的提示，在system/sepolicy/domain.te找到对应的neverallow规则修改即可，我编译出现error的是allow xx device:chr_file { read write open };</p>
+<p>只需要在下面的规则中，去掉我们添加的xx.te即可,在neverallow后的第一个‘{}’里 利用“-xx”，排除某个，即不应有此规则</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># Don&#39;t allow raw read&#x2F;write&#x2F;open access to generic devices.</span><br><span class="line">    # Rather force a relabel to a more specific type.</span><br><span class="line">    # init is exempt from this as there are character devices that only it uses.</span><br><span class="line">    # ueventd is exempt from this, as it is managing these devices.</span><br><span class="line">    neverallow &#123; domain -init -ueventd -systool_server -xx &#125; device:chr_file &#123; open read write &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在编译的时候出现3个位置neverallow的错误，在对应的位置上添加 -copy_apps，<br>下面是其中一个添加位置的地方。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">neverallow &#123;</span><br><span class="line">    domain</span><br><span class="line">    -appdomain</span><br><span class="line">    -autoplay_app</span><br><span class="line">    -dumpstate</span><br><span class="line">    -shell</span><br><span class="line">    userdebug_or_eng(&#96;-su&#39;)</span><br><span class="line">    -system_server</span><br><span class="line">    -zygote</span><br><span class="line">    -copy_apps  </span><br><span class="line">&#125; &#123; file_type -system_file -exec_type -postinstall_file &#125;:file execute;</span><br></pre></td></tr></table></figure>
+
+
+<p>以上方法最终没有通过，应该是可以的，把上面的问题改一下应该就可以。</p>
+<h3 id="最终使用的方法"><a href="#最终使用的方法" class="headerlink" title="最终使用的方法"></a>最终使用的方法</h3><p>这种方法最简单，直接在设备上验证也能通过。主要是设备上没有开启SELinux规则，如果开启，应该也需要上面那种方法的配置。暂时不用。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;system&#x2F;etc&#x2F;init&#x2F;目录里的.rc文件里</span><br><span class="line">bootanim.rc</span><br></pre></td></tr></table></figure>
+<p>文件内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">service bootanim &#x2F;system&#x2F;bin&#x2F;bootanimation</span><br><span class="line">    class core</span><br><span class="line">    user graphics</span><br><span class="line">    group graphics audio</span><br><span class="line">    disabled</span><br><span class="line">    oneshot</span><br><span class="line">    writepid &#x2F;dev&#x2F;stune&#x2F;top-app&#x2F;tasks</span><br><span class="line"></span><br><span class="line">service copy_apps &#x2F;system&#x2F;bin&#x2F;sh &#x2F;system&#x2F;vendor&#x2F;hq&#x2F;etc&#x2F;copy_apps.sh</span><br><span class="line">    oneshot</span><br><span class="line"></span><br><span class="line">on property:service.bootanim.exit&#x3D;1</span><br><span class="line">   start copy_apps</span><br></pre></td></tr></table></figure>
+<p>源码目录在：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">frameworks&#x2F;base&#x2F;cmds&#x2F;bootanimation&#x2F;bootanim.rc</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>系统源码</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>系统源码</tag>
       </tags>
   </entry>
 </search>
