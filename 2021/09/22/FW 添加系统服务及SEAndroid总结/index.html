@@ -1,0 +1,1358 @@
+﻿<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Roboto-Black:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,系统源码," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="常见的AMS、PWS、WMS等都是系统服务，运行于system_server进程，并且向ServiceManager进程注册其Binder以便其他进程获取binder与对应的服务进行通信。为了新增自定义系统服务，我们可以参考AMS等原生系统 服务，如新增 TestManagerService ：   ITestManager.aidl 文件：生成Binder类，其中Stub即为Binder的服务端">
+<meta property="og:type" content="article">
+<meta property="og:title" content="添加系统服务及安全机制">
+<meta property="og:url" content="http://yoursite.com/2021/09/22/FW%20%E6%B7%BB%E5%8A%A0%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1%E5%8F%8ASEAndroid%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="WZKingdom-个人博客">
+<meta property="og:description" content="常见的AMS、PWS、WMS等都是系统服务，运行于system_server进程，并且向ServiceManager进程注册其Binder以便其他进程获取binder与对应的服务进行通信。为了新增自定义系统服务，我们可以参考AMS等原生系统 服务，如新增 TestManagerService ：   ITestManager.aidl 文件：生成Binder类，其中Stub即为Binder的服务端">
+<meta property="article:published_time" content="2021-09-22T15:26:43.000Z">
+<meta property="article:modified_time" content="2024-11-16T13:29:11.926Z">
+<meta property="article:author" content="WZKingdom">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="系统源码">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/09/22/FW 添加系统服务及SEAndroid总结/"/>
+
+
+
+
+
+  <title>添加系统服务及安全机制 | WZKingdom-个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+		<a href="https://github.com/WKingdom" target="_blank" rel="noopener" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta custom-logo">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">WZKingdom-个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">那些疯狂到以为自己能够改变世界的人，才能真正改变世界。</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/09/22/FW%20%E6%B7%BB%E5%8A%A0%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1%E5%8F%8ASEAndroid%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WZKingdom">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/timg.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="WZKingdom-个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">添加系统服务及安全机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-22T23:26:43+08:00">
+                2021-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81/" itemprop="url" rel="index">
+                    <span itemprop="name">系统源码</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.8k
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>常见的AMS、PWS、WMS等都是系统服务，运行于system_server进程，并且向ServiceManager进程注册其Binder以便其他进程获取binder与对应的服务进行通信。为了新增自定义系统服务，我们可以参考AMS等原生系统 服务，如新增 TestManagerService ： </p>
+<ol>
+<li>ITestManager.aidl 文件：生成Binder类，其中Stub即为Binder的服务端；</li>
+<li>TestManagerService：系统服务类，继承自Stub； </li>
+<li>TestManager：封装了AIDL接口方法的类，相当于Binder客户端（Proxy），其他进程通过此类完成与系统服务的通信。</li>
+</ol>
+<h3 id="源码中添加自定义系统服务"><a href="#源码中添加自定义系统服务" class="headerlink" title="源码中添加自定义系统服务"></a>源码中添加自定义系统服务</h3><h5 id="1、ITestManager-aidl"><a href="#1、ITestManager-aidl" class="headerlink" title="1、ITestManager.aidl"></a>1、ITestManager.aidl</h5><p>在frameworks/base/core/java/android/app中编写 ITestManager.aidl</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ITestManager.aidl</span></span><br><span class="line"><span class="keyword">package</span> android.app;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * System private API for talking with the activity manager service.  This</span></span><br><span class="line"><span class="comment"> * provides calls from the application back to the activity manager.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@hide</span>&#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ITestManager</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">request</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="2、TestManager-java"><a href="#2、TestManager-java" class="headerlink" title="2、TestManager.java"></a>2、TestManager.java</h5><p>在frameworks/base/core/java/android/app 下编写TestManager.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> android.app;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.annotation.SystemService;</span><br><span class="line"><span class="keyword">import</span> android.compat.annotation.UnsupportedAppUsage;</span><br><span class="line"><span class="keyword">import</span> android.content.Context;</span><br><span class="line"><span class="keyword">import</span> android.os.IBinder;</span><br><span class="line"><span class="keyword">import</span> android.os.RemoteException;</span><br><span class="line"><span class="keyword">import</span> android.annotation.Nullable;</span><br><span class="line"><span class="keyword">import</span> android.os.ServiceManager;</span><br><span class="line"><span class="keyword">import</span> android.util.Singleton;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SystemService</span>(Context.LANCE_SERVICE)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestManager</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Context mContext;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@hide</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TestManager</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@hide</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ITestManager <span class="title">getService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ILanceManagerSingleton.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@UnsupportedAppUsage</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton&lt;ITestManager&gt; ITestManagerSingleton =</span><br><span class="line">            <span class="keyword">new</span> Singleton&lt;ITestManager&gt;() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">protected</span> ITestManager <span class="title">create</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">final</span> IBinder b = ServiceManager.getService(Context.TEST_SERVICE);</span><br><span class="line">                    <span class="keyword">final</span> ITestManager im = ITestManager.Stub.asInterface(b);</span><br><span class="line">                    <span class="keyword">return</span> im;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">request</span><span class="params">( @Nullable String msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> getService().request(msg);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> e.rethrowFromSystemServer();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3、修改Context"><a href="#3、修改Context" class="headerlink" title="3、修改Context"></a>3、修改Context</h5><p>在frameworks/base/core/java/android/content/Context.java中加入常量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** <span class="doctag">@hide</span> */</span></span><br><span class="line">    <span class="meta">@StringDef</span>(suffix = &#123; <span class="string">"_SERVICE"</span> &#125;, value = &#123;</span><br><span class="line">        <span class="comment">//......</span></span><br><span class="line">        ACTIVITY_SERVICE,</span><br><span class="line">        TEST_SERVICE, </span><br><span class="line">        <span class="comment">//......          </span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="meta">@Retention</span>(RetentionPolicy.SOURCE)</span><br><span class="line">    <span class="keyword">public</span> <span class="meta">@interface</span> ServiceName &#123;&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String TEST_SERVICE=<span class="string">"test"</span>;</span><br></pre></td></tr></table></figure>
+
+<h5 id="4、TestManagerService-java"><a href="#4、TestManagerService-java" class="headerlink" title="4、TestManagerService.java"></a>4、TestManagerService.java</h5><p>在frameworks/base/services/core/java/com/android/service/test中编写TestManagerService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.android.server.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.annotation.Nullable;</span><br><span class="line"><span class="keyword">import</span> android.app.ITestManager;</span><br><span class="line"><span class="keyword">import</span> android.os.RemoteException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestManagerService</span> <span class="keyword">extends</span> <span class="title">ITestManager</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">request</span><span class="params">(String msg)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"TestManagerService接收数据:"</span> + msg;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="5、ServiceManager注册"><a href="#5、ServiceManager注册" class="headerlink" title="5、ServiceManager注册"></a>5、ServiceManager注册</h5><p>在frameworks/base/services/java/com/android/server/SystemServer.java中注册系统服务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.android.server.test.TestManagerService;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">    ServiceManager.addService(Context.TEST_SERVICE,<span class="keyword">new</span> TestManagerService());</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="6、SystemServiceRegistry注册"><a href="#6、SystemServiceRegistry注册" class="headerlink" title="6、SystemServiceRegistry注册"></a>6、SystemServiceRegistry注册</h5><p>在frameworks/base/core/java/android/app/SystemServiceRegistry.java注册服务获取器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> android.app.TestManager;</span><br><span class="line"><span class="keyword">import</span> android.app.ITestManager;</span><br><span class="line"><span class="keyword">static</span>&#123;</span><br><span class="line">    registerService(Context.TEST_SERVICE, TestManager<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                <span class="title">new</span> <span class="title">CachedServiceFetcher</span>&lt;<span class="title">TestManager</span>&gt;() </span>&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> TestManager <span class="title">createService</span><span class="params">(ContextImpl ctx)</span> <span class="keyword">throws</span> ServiceNotFoundException </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> TestManager();</span><br><span class="line">            &#125;&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="7、配置SELinux权限"><a href="#7、配置SELinux权限" class="headerlink" title="7、配置SELinux权限"></a>7、配置SELinux权限</h5><p>在system/sepolicy/prebuilts/api/31.0/private/与system/sepolicy/private/目录下，分别修改：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">注意：两个目录下文件需要一致，否则报错，如：</span><br><span class="line">Files system&#x2F;sepolicy&#x2F;prebuilts&#x2F;api&#x2F;31.0&#x2F;private&#x2F;untrusted_app_all.te and</span><br><span class="line">system&#x2F;sepolicy&#x2F;private&#x2F;untrusted_app_all.te diﬀer</span><br><span class="line">ninja failed with: exit status 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>service_contexts</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">activity                                  u:object_r:activity_service:s0                </span><br><span class="line">#配置自定义服务selinux角色      </span><br><span class="line">test                                     u:object_r:test_service:s0</span><br></pre></td></tr></table></figure>
+
+<p>service.te:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#配置自定义服务类型</span><br><span class="line">type test_service, app_api_service, ephemeral_app_api_service, system_server_service, </span><br><span class="line">service_manager_type;</span><br></pre></td></tr></table></figure>
+
+<p>untrusted_app_all.te :</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#允许所有app使用自定义服务</span><br><span class="line">allow untrusted_app_all test_service:service_manager find;</span><br></pre></td></tr></table></figure>
+
+<p>8、更新并编译</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 更新api</span><br><span class="line">make update-api</span><br><span class="line"># 编译</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后，启动模拟器或者烧写设备后命令行查看服务是否：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell service list| grep test</span><br><span class="line">#输出： 表示成功加入自定义服务</span><br><span class="line">106 test: [android.app.ITestManager]</span><br></pre></td></tr></table></figure>
+
+<h5 id="使用自定义服务"><a href="#使用自定义服务" class="headerlink" title="使用自定义服务"></a>使用自定义服务</h5><p>1、双亲委托机制，在需要使用自定义服务的app中编写TestManager（包名与framework中一致），方法名空实现。app中的<br>TestManager仅仅只是为了编译成功编写的空壳。</p>
+<p>2、修改app使用的sdk，可以通过make sdk 将SDK完整编译出来，在AS中使用自编译出的SDK即可，也可以将原生SDK中的android.jar替换。</p>
+<h3 id="安全机制"><a href="#安全机制" class="headerlink" title="安全机制"></a>安全机制</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELinux: avc: denied &#123; add &#125; for service&#x3D;cvnavi_storage pid&#x3D;3933 uid&#x3D;1000 scontext&#x3D;u:r:system_app:s0 tcontext&#x3D;u:object_r:default_android_service:s0 tclass&#x3D;service_manager permissive&#x3D;0</span><br></pre></td></tr></table></figure>
+<p>系统进程添加一个服务到系统进程调用ServiceManager.addService(name, service);系统中抛出上面的错误。</p>
+<p>通过错误信息看出可能是没有添加到系统服务的权限，SELinux拒绝添加。然后通过命令行验证是否是SELinux安全策略导致的这个问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0 （1：Enforcing 0：Permissive）临时禁用掉SELinux，5.1版本默认强制开启；</span><br><span class="line"></span><br><span class="line">getenforce （得到结果为Permissive）</span><br></pre></td></tr></table></figure>
+
+<p>禁用掉SELinux后发现功能可以正常使用，就是这个问题导致的，直接关掉是不可能的，容易出问题，需要想办法解决。</p>
+<p>上面的这个属于Android中SEAndroid安全机制（MAC）强制访问控制。</p>
+<p>Android中自主访问控制是通过Linux UID/GID实现，而强制访问控制则是使用的SEAndroid。</p>
+<p>在Android中SEAndroid安全机制（MAC）与传统的Linux UID/GID安全机制（DAC）是并存关系的，也就是说，它们同时用来约束进程的权限。</p>
+<p><strong>当一个进程访问一个文件的时候，首先要通过基于UID/GID的DAC安全检查，接着才有资格进入到基于SEAndroid的MAC安全检查。只要其中的一个检查不通过，那么进程访问文件的请求就会被拒绝。</strong></p>
+<h4 id="DAC自主访问控制"><a href="#DAC自主访问控制" class="headerlink" title="DAC自主访问控制"></a>DAC自主访问控制</h4><p>自主访问控制，正式的英文名称为Discretionary Access Control，简称为DAC。</p>
+<p>比如通过ls -l /system，可以查看到该目录下存在一个manifest.xml文件，其输出为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwxr-x---   <span class="number">1</span> root root   <span class="number">2544</span> <span class="number">2021</span>-<span class="number">09</span>-<span class="number">22</span> <span class="number">22</span>:<span class="number">02</span> manifest.xml</span><br></pre></td></tr></table></figure>
+
+<p>表示 manifest.xml是root用户组的root用户拥有，对于root用户来说，是rwx（可读可写可执行）；而对于root用户组其他用户来说，是可读可执行；对于其他用户则没有任何权限；也就是750权限。</p>
+<p>Android是一个基于Linux内核的系统，但是它不像传统的Linux系统，需要用户登录之后才能使用。然而，Android系统又像传统的Linux系统一样有用户的概念。只不过这些用户不需要登录，也可以使用Android系统，这是因为Android系统将每一个安装在系统的APK都映射为一个不同的Linux用户。也就是说，每一个APK都有一个对应的UID和GID。这些UID和GID是在APK安装的时候由系统安装服务PMS分配的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//framework/base/services/core/java/com/android/server/pm/PackageManagerService.java</span></span><br><span class="line"><span class="keyword">private</span> PackageParser.<span class="function">Package <span class="title">scanPackageDirtyLI</span><span class="params">(PackageParser.Package pkg,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                 <span class="keyword">final</span> <span class="keyword">int</span> policyFlags, <span class="keyword">final</span> <span class="keyword">int</span> </span></span></span><br><span class="line"><span class="function"><span class="params">scanFlags, <span class="keyword">long</span> currentTime, @Nullable UserHandle user)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> PackageManagerException </span>&#123;</span><br><span class="line">    ......</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> (pkgSetting == <span class="keyword">null</span>) &#123;</span><br><span class="line">            .......................</span><br><span class="line">            mSettings.addUserToSettingLPw(pkgSetting);</span><br><span class="line">        &#125;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">return</span> pkg;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//framework/base/services/core/java/com/android/server/pm/Settings.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addUserToSettingLPw</span><span class="params">(PackageSetting p)</span> <span class="keyword">throws</span> PackageManagerException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (p.appId == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 分配uid</span></span><br><span class="line">        p.appId = newUserIdLPw(p);</span><br><span class="line">    &#125; </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">newUserIdLPw</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> N = mUserIds.size();</span><br><span class="line">    <span class="comment">//从0开始，找到第一个未使用的ID，此处对应之前有应用被移除的情况，复用之前的ID</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = mFirstAvailableUid; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mUserIds.get(i) == <span class="keyword">null</span>) &#123;</span><br><span class="line">            mUserIds.set(i, obj);</span><br><span class="line">            <span class="keyword">return</span> Process.FIRST_APPLICATION_UID + i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//最多只能安装 9999 个应用</span></span><br><span class="line">    <span class="keyword">if</span> (N &gt; (Process.LAST_APPLICATION_UID-Process.FIRST_APPLICATION_UID)) &#123;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">    mUserIds.add(obj);</span><br><span class="line">    <span class="keyword">return</span> Process.FIRST_APPLICATION_UID + N;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在完成安装并运行程序后，可以通过ps -A | grep PACKAGENAME 查看程序uid</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -A | grep xxx</span><br><span class="line">u0_a72        7124   562 2402748 170132 SyS_epoll_wait 78511081d4 S xxx</span><br></pre></td></tr></table></figure>
+
+<p>得到当前程序进程ID为7124，然后通过cat /proc/7124/status查看</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">cat &#x2F;proc&#x2F;7124&#x2F;status</span><br><span class="line">#输出</span><br><span class="line">Name:   xxxxx</span><br><span class="line">State:  S (sleeping)</span><br><span class="line">Tgid:   7124</span><br><span class="line">Pid:    7124</span><br><span class="line">PPid:   562</span><br><span class="line">TracerPid:      0</span><br><span class="line">Uid:    10072   10072   10072   10072</span><br><span class="line">Gid:    10072   10072   10072   10072</span><br><span class="line">FDSize: 64</span><br><span class="line">Groups: 9997 20072 50072</span><br></pre></td></tr></table></figure>
+
+<p>可以看到当前程序UID为10072，通过这种方式，就可以保证每一个APK进程都以不同的身份来运行，从而保证了相互之间不会受到干扰。这就是所谓的沙箱了，这完全是建立在Linux的UID和GID基础上的。</p>
+<p>root的UID/GID可以通过下面方式查看：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//system/core/include/private/android_ﬁlesystem_conﬁg.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_ROOT 0 <span class="comment">/* traditional unix root user */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_SYSTEM 1000 <span class="comment">/* system server */</span></span></span><br><span class="line">......</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_APP 10000       <span class="comment">/* <span class="doctag">TODO:</span> switch users over to AID_APP_START */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_APP_START 10000 <span class="comment">/* first app user */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_APP_END 19999   <span class="comment">/* last app user */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，普通APP的UID从10000开始分配，最大到19999，而root用户的id为0。</p>
+<h5 id="应用权限与DAC的关系"><a href="#应用权限与DAC的关系" class="headerlink" title="应用权限与DAC的关系"></a>应用权限与DAC的关系</h5><p>如何才能让我们的进程能通过Linux UID/GID的拦截呢？如果是一个Android APP若让其具备网络权限，只需要在AndroidManifest.xml中配置:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;uses-permission android:name=<span class="string">"android.permission.INTERNET"</span>/&gt;</span><br></pre></td></tr></table></figure>
+
+<p>APP的UID和GID是在安装时候就由PMS分配好了的。为什么这样一个配置就能够让程序通过Linux UID/GID的拦截？</p>
+<p>这是因为PMS在安装APK时，从Manifest文件中把App信息和权限存到/data/system/packages.xml和/data/system/packages.list文件中。打开packages.list会存在下面的记录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">com.baidu.homework 10051 0 &#x2F;data&#x2F;user&#x2F;0&#x2F;com.baidu.homework default:targetSdkVersion&#x3D;26 3002,3003,3001</span><br></pre></td></tr></table></figure>
+
+<p>其中3002,3003,3001代表的就是用户组，通过/system/core/include/private/android_filesystem_config.h 查看可知</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_NET_BT_ADMIN 3001 <span class="comment">/* bluetooth: create any socket */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_NET_BT 3002       <span class="comment">/* bluetooth: create sco, rfcomm or l2cap sockets */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AID_INET 3003         <span class="comment">/* can create AF_INET and AF_INET6 sockets */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>3001与3002代表了具备蓝牙相关权限的用户组，而3003则表示具备网络权限的用户组。PMS会将APK加入到相应的某个Linux用户组去，这样APK才能够具备对应的权限。</p>
+<p>为了通过DAC的权限检查具备网络权限，以FDBus为例，有网络权限，需要将name-server指定到3003用户组。</p>
+<p>在/framework/base/data/etc/platform.xml 中可以看到：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;permission name=<span class="string">"android.permission.NET_TUNNELING"</span> &gt;</span><br><span class="line">    &lt;group gid=<span class="string">"vpn"</span> /&gt;</span><br><span class="line">&lt;/permission&gt;</span><br><span class="line"></span><br><span class="line">&lt;permission name=<span class="string">"android.permission.INTERNET"</span> &gt;</span><br><span class="line">    &lt;group gid=<span class="string">"inet"</span> /&gt;</span><br><span class="line">&lt;/permission&gt;</span><br><span class="line"></span><br><span class="line">&lt;permission name=<span class="string">"android.permission.READ_LOGS"</span> &gt;</span><br><span class="line">    &lt;group gid=<span class="string">"log"</span> /&gt;</span><br><span class="line">&lt;/permission&gt;</span><br><span class="line"></span><br><span class="line">&lt;permission name=<span class="string">"android.permission.WRITE_MEDIA_STORAGE"</span> &gt;</span><br><span class="line">    &lt;group gid=<span class="string">"media_rw"</span> /&gt;</span><br><span class="line">    &lt;group gid=<span class="string">"sdcard_rw"</span> /&gt;</span><br><span class="line">&lt;/permission&gt;</span><br></pre></td></tr></table></figure>
+
+<p>inet 就是网络权限组，即：inet就是3003。因此，我们配置init.rc内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">service name-server &#x2F;system&#x2F;bin&#x2F;name-server -u tcp:&#x2F;&#x2F;104.129.181.88:60002 -n android</span><br><span class="line">    #指定进程类属，类属的作用是方便操作多个服务同时启动或停止</span><br><span class="line">    class core</span><br><span class="line">    # 进程 用户组为inet （也可以直接给system，system组也具备网络权限）</span><br><span class="line">    group inet</span><br><span class="line">    # 进程id 写入到tasks</span><br><span class="line">    writepid &#x2F;dev&#x2F;cpuset&#x2F;system-background&#x2F;tasks</span><br></pre></td></tr></table></figure>
+
+<p>在理想情况下，DAC机制是没有问题的。如果将某个系统文件的权限改为777，只有DAC机制那么任何用户都能具备对该文件的读写以及执行权限，可能造成严重的安全问题。为了解决这个问题，Android中还使用了一种更为强有力的安全机制来保证系统的安全，这种机制就是MAC。</p>
+<h4 id="MAC强制访问控制"><a href="#MAC强制访问控制" class="headerlink" title="MAC强制访问控制"></a>MAC强制访问控制</h4><p>Android中使用的MAC机制就是SEAndroid。SELinux(Security-Enhanced Linux) 是美国国家安全局（NSA）在Linux社区的帮助下设计的一个Linux历史上最杰出的安全系统，是一种MAC机制（Mandatory Access Control，强制访问控制）。在这种访问控制体系的限制下，进程只能访问那些在他的任务中所需要文件。由于Android系统有着独特的用户空间运行时，因此SELinux不能完全适用于Android系统。为此，NSA针对Android系统，在SELinux基础上开发了SEAndroid。</p>
+<h4 id="SEAndroid权限配置"><a href="#SEAndroid权限配置" class="headerlink" title="SEAndroid权限配置"></a>SEAndroid权限配置</h4><p>SEAndroid安全机制又称为是基于TE（Type Enforcement）策略的安全机制。在/system/sepolicy目录中，所有以.te为后缀的文件均为策略配置文件。</p>
+<h5 id="安全上下文"><a href="#安全上下文" class="headerlink" title="安全上下文"></a>安全上下文</h5><p>SEAndroid安全机制中的安全策略是在安全上下文的基础上进行描述的，也就是说，它通过主体和客体的安全上下文，定义主体是否有权限访问客体。主体通常就是进程，而客体就是指进程所要访问的资源，例如文件、系统属性等。</p>
+<p>由于我们的服务程序可执行为/system/bin/name-server，首先我们需要在/system/sepolicy/private/ﬁle_contexts中声明该执行文件的SEAndroid系统文件的安全上下文</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;system&#x2F;bin&#x2F;name-server     u:object_r:name-server_exec:s0</span><br></pre></td></tr></table></figure>
+
+<p>安全上下文实际上就是一个附加在对象上的标签（Tag）。这个标签实际上就是一个字符串，它由四部分内容组成，<br><strong>分别是SELinux用户、SELinux角色、类型、安全级别，每一个部分都通过一个冒号来分隔，格式为”user:role:type:sensitivity”</strong></p>
+<p>在安全上下文中，只有类型（Type）才是最重要的，SELinux用户、SELinux角色和安全级别都几乎可以忽略不计的。正因为如此，SEAndroid安全机制又称为是基于TE（Type Enforcement）策略的安全机制。</p>
+<h5 id="用户与角色"><a href="#用户与角色" class="headerlink" title="用户与角色"></a>用户与角色</h5><p>在/system/sepolicy/private/users中声明了SELinux用户u，它可用的SELinux角色为r，它的默认安全级别为s0，可用的安全级别范围为s0 - mls_systemhigh：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user u roles &#123; r &#125; level s0 range s0 - mls_systemhigh;</span><br></pre></td></tr></table></figure>
+
+<p>mls_systemhigh为系统定义的最高安全级别</p>
+<p>在/system/sepolicy/public/roles中声明了SELinux角色r与类型domain关联：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">role r types domain;</span><br></pre></td></tr></table></figure>
+
+<p>在SEAndroid中，只定义了唯一一个用户u，两个角色r（适用于主题，如进程）与object_r(适用于对象，如文件)，这意味着只有u、r/object_r和domain可以组合在一起形成一个合法的安全上下文，那么ps -Z查看进程应为u:r:domain:s0 ，ls -Z查看文件则为： u:object_r:domain:s0，而其它形式的安全上下文定义均是非法的。</p>
+<p>以init进程为例，执行 adb shell ps -Z | grep zygote，可以看到输出为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">u:r:zygote:s0 root 646     1 1577904  69500 poll_schedule_timeout eb7e743c S zygote</span><br></pre></td></tr></table></figure>
+
+<p>安全上下文u:r:zygote:s0，按照上面的分析，这不是应该是一个不合法的上下文吗？原因是在/system/sepolicy/public/zygote.te 中通过type声明了类型zygote并且将domain设置为类型zygote的属性：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">type zygote, domain;</span><br><span class="line">type zygote_tmpfs, file_type;</span><br><span class="line">type zygote_exec, system_file_type, exec_type, file_type;</span><br></pre></td></tr></table></figure>
+
+<p>因此它就可以像domain一样，可以和SELinux用户u和SELinux角色组合在一起形成合法的安全上下文。</p>
+<h5 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h5><p>在SEAndroid中，每一个用来描述文件安全上下文的类型都将ﬁle_type设置为其属性，每一个用于进程安全上下文的类型都将domain设置为其属性。</p>
+<h5 id="安全策略"><a href="#安全策略" class="headerlink" title="安全策略"></a>安全策略</h5><p>SEAndroid安全机制主要是使用对象安全上下文中的类型来定义安全策略，这种安全策略就称TypeEnforcement，简称TE，.te文件即为安全策略配置文件。</p>
+<p>system/sepolicy/public：公共策略配置，将此目录视为相应平台的已导出政策 API，包括供应商特定策略。<br>system/sepolicy/private：系统正常运行所必需（但供应商映像政策应该不知道）的策略。</p>
+<p>对于权限的配置不建议直接修改以上目录，应该在/device/manufacturer/device-name/sepolicy 目录进行自己设备的专用策略配置。<br>如Pixel5手机搭载AAOS，则应该在：/device/google_car/redfin_car/sepolicy目录下配置。同时修改或添加政策文件和上下文的描述文件后，需要修改 /device/manufacturer/device-name/BoardConfig.mk 以引用 sepolicy 子目录和每个新的政策文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SEPOLICY_DIRS += \</span><br><span class="line">     &lt;root&gt;/device/manufacturer/device-name/sepolicy</span><br><span class="line"></span><br><span class="line">BOARD_SEPOLICY_UNION += \</span><br><span class="line">     genfs_contexts \</span><br><span class="line">     file_contexts \</span><br><span class="line">     sepolicy.te</span><br></pre></td></tr></table></figure>
+
+<p>以FDBUS name-server为例，在/system/sepolicy/private目录下创建一个name-server.te作为该进程的策略文件。文件内容如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"># 声明name-server类型，并将domain属性关联到该类型 （进程）</span><br><span class="line">type name-server, domain; </span><br><span class="line"># 声明name-server_exec类型（可执行文件，类型要与file_contexts中的相同）</span><br><span class="line">type name-server_exec, exec_type, file_type;</span><br><span class="line"></span><br><span class="line">#allow语句表示允许的权限。</span><br><span class="line">allow name-server self:tcp_socket &#123; read write getattr getopt setopt shutdown create bind </span><br><span class="line">connect name_connect &#125;;</span><br><span class="line">allow name-server self:netlink_route_socket &#123;create write read nlmsg_readpriv nlmsg_read&#125;;</span><br><span class="line">allow name-server fwmarkd_socket:sock_file &#123;write&#125;;</span><br><span class="line">allow name-server port:tcp_socket &#123;name_connect&#125;;</span><br><span class="line">allow name-server netd:unix_stream_socket &#123;connectto&#125;;</span><br><span class="line">allow name-server self:capability &#123;net_raw&#125;;</span><br><span class="line">allow name-server node:tcp_socket &#123;node_bind&#125;;</span><br><span class="line"></span><br><span class="line">#init_daemon_domain：system/sepolicy/public/te_macros中定义的宏（函数） 进行默认的一些配置</span><br><span class="line">#domain_auto_trans（init,name-server_exec,name-server）</span><br><span class="line">#   domain_trans(init,name-server_exec,name-server)</span><br><span class="line">#       allow init name-server_exec:file &#123; getattr open read execute &#125;;</span><br><span class="line">#       allow init name-server:process transition;</span><br><span class="line">#       allow name-server name-server_exec:file &#123; entrypoint open read execute getattr &#125;;</span><br><span class="line">#   type_transition init name-server_exec:process name-server;</span><br><span class="line"># ......</span><br><span class="line">#声明 name-server 是从 init 衍生而来的，并且可以与其通信</span><br><span class="line">init_daemon_domain(name-server)</span><br></pre></td></tr></table></figure>
+
+<h5 id="Allow规则"><a href="#Allow规则" class="headerlink" title="Allow规则"></a>Allow规则</h5><p>allow表示开放权限，当某个进程执行，如果该进程不具备对应的权限，则可以在logcat 或者在执行adb root 后执行 adb shell dmesg查看。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">avc: denied &#123; bind &#125; <span class="keyword">for</span> pid=<span class="number">417</span> comm=<span class="string">"name-server"</span> scontext=u:r:name-server:s0 </span><br><span class="line">tcontext=u:r:name-server:s0 tclass=tcp_socket permissive=<span class="number">0</span></span><br><span class="line">    </span><br><span class="line">avc: denied &#123; connectto &#125; <span class="keyword">for</span> pid=<span class="number">417</span> comm=<span class="string">"name-server"</span> scontext=u:r:name-server:s0 </span><br><span class="line">tcontext=u:r:netd:s0 tclass=unix_stream_socket permissive=<span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>对于上面日志的分析步骤如下：</p>
+<ul>
+<li>缺少什么权限 ：denied { bind } </li>
+<li>谁缺少权限：scontext=u:r:name-server:s0 </li>
+<li>对谁缺少权限 ：tcontext=u:r:name-server:s0</li>
+<li>什么类型的权限：tclass=tcp_socket</li>
+</ul>
+<p>需要添加对应的权限，在TE文件中声明：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#allow [谁缺少权限]  [对谁缺少权限]:[什么类型的权限] [缺少什么权限]</span><br><span class="line">#当sconext与tcontext都是自己时候，可以将 [对谁缺少权限]写为：self</span><br><span class="line">allow name-server self:tcp_socket &#123;bind&#125;</span><br><span class="line">allow name-server netd:unix_stream_socket &#123;connectto&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="宏函数"><a href="#宏函数" class="headerlink" title="宏函数"></a>宏函数</h5><p>在system/sepolicy/public/te_macros中定义了很多宏函数，其中init_daemon_domain表示声明 name-server是从 init 衍生而来的，并且可以与其通信。<br>另外还有其他宏如：net_domain，其定义为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#####################################</span><br><span class="line"># net_domain(domain)</span><br><span class="line"># Allow a base set of permissions required for network access.</span><br><span class="line">define(&#96;net_domain&#39;, &#96;</span><br><span class="line">typeattribute $1 netdomain;</span><br><span class="line">&#39;)</span><br></pre></td></tr></table></figure>
+
+<p>如果调用该宏：net_domain(name-server)表示将name-server赋予netdomain类型。而netdomain类型可以在<br>system/sepolicy/public/net.te 中看到，存在如下规则：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#......</span><br><span class="line">allow netdomain self:tcp_socket create_stream_socket_perms;</span><br><span class="line">#......</span><br></pre></td></tr></table></figure>
+
+<p>那么使用该宏则表示，将name-server赋予tcp_socket对应的create_stream_socket_perms权限。整体而言net_domain函数表示允许使用 net 域中的常用网络功能，如读取和写入 TCP 数据包、通过套接字进行通信，以及执行 DNS 请求等。也就是说，可以通过对应的宏函数调用完成对某些类型权限的统一allow。</p>
+<h5 id="name-server编译报错"><a href="#name-server编译报错" class="headerlink" title="name-server编译报错"></a>name-server编译报错</h5><p>out目录下error.log</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">libsepol.report_failure: neverallow on line <span class="number">959</span> of system/sepolicy/<span class="keyword">public</span>/domain.te (or line <span class="number">12961</span> of policy.conf) violated by allow name-server name-server_exec:file &#123; entrypoint &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在system/sepolicy/public/domain.te中第959行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">full_treble_only(`</span><br><span class="line">    # Do not allow coredomain to access entrypoint for files other</span><br><span class="line">    # than system_file_type and postinstall_file</span><br><span class="line">       </span><br><span class="line">    neverallow coredomain &#123;</span><br><span class="line">        file_type  # 禁止coredomain对file_type类型的执行权限</span><br><span class="line">        -system_file_type  # 排除system_file_type</span><br><span class="line">        -postinstall_file</span><br><span class="line">    &#125;:file entrypoint;</span><br><span class="line">    # Do not allow domains other than coredomain to access entrypoint</span><br><span class="line">    # for anything but vendor_file_type and init_exec for vendor_init.</span><br><span class="line">    neverallow &#123; domain -coredomain &#125; &#123;</span><br><span class="line">        file_type</span><br><span class="line">        -vendor_file_type</span><br><span class="line">        -init_exec</span><br><span class="line">    &#125;:file entrypoint;</span><br><span class="line"><span class="string">')</span></span><br></pre></td></tr></table></figure>
+
+<p>在以上配置中，可以理解为neverallow（禁止）了coredomain类型与domain类型对于ﬁle_type类型的访问权限。为解决该问题，可以在name-server.te中，修改name-server_exec赋予system_ﬁle_type属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type name-server_exec, system_file_type, exec_type, file_type;</span><br></pre></td></tr></table></figure>
+
+<p>另外，在system/sepolicy/public/domain.te中第300行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#不允许coredomain类型对domain类型进行unix_stream_socket</span><br><span class="line">full_treble_only(`</span><br><span class="line">  neverallow_establish_socket_comms(&#123;</span><br><span class="line">    coredomain</span><br><span class="line">    -init</span><br><span class="line">    -adbd</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    domain</span><br><span class="line">    -coredomain</span><br><span class="line">    -socket_between_core_and_vendor_violators</span><br><span class="line">  &#125;);</span><br><span class="line"><span class="string">')</span></span><br></pre></td></tr></table></figure>
+
+<p>此时system/sepolicy/private/untrusted_app.te 中配置为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">typeattribute untrusted_app coredomain;</span><br><span class="line"></span><br><span class="line">app_domain(untrusted_app)</span><br><span class="line">untrusted_app_domain(untrusted_app)</span><br><span class="line">net_domain(untrusted_app)</span><br><span class="line">bluetooth_domain(untrusted_app)</span><br></pre></td></tr></table></figure>
+
+<p>即第三方app类型为coredomain类型，而我们的name-server又是domain，即不允许APP通过Socket连接系统服务name-server。解决办法就是将name-server赋于其他类型（如cordomain）作为属性！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typeattribute name-server coredomain;</span><br></pre></td></tr></table></figure>
+
+<p>同时在system/sepolicy/private/mls中存在如下限制：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mlsconstrain unix_stream_socket &#123; connectto &#125;</span><br><span class="line">             (l1 eq l2 or t1 &#x3D;&#x3D; mlstrustedsubject or t2 &#x3D;&#x3D; mlstrustedsubject);</span><br></pre></td></tr></table></figure>
+
+<p>必须满足3 个条件之一，才能授予 unix_stream_socket 的 connectto 权限：</p>
+<ol>
+<li>l1 == l2，l1代表untrusted_app，l2代表name-server，不满足；</li>
+<li>t1 == mlstrustedsubject，t1为 untrusted_app，不属于 mlstrustedsubject；</li>
+<li>t2 == mlstrustedsubject，t2为 name-server，不属于 mlstrustedsubject。</li>
+</ol>
+<p>以上3 个条件都不满足。因此app还是无法访问name-server的socket服务。</p>
+<p>综合上述分析，可以修改name-server.te，为name-server配置mlstrustedsubject属性即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">typeattribute name-server coredomain;</span><br><span class="line">typeattribute name-server mlstrustedsubject;</span><br></pre></td></tr></table></figure>
+
+<p>untrusted_app与untrusted_app_all的关系：</p>
+<p>untrusted_app表示第三方app，在untrusted_app.te中存在untrusted_app_domain(untrusted_app)配置。untrusted_app_domain 定义于：system/sepolicy/public/te_macros</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#####################################</span><br><span class="line"># untrusted_app_domain(domain)</span><br><span class="line"># Allow a base set of permissions required for all untrusted apps.</span><br><span class="line">define(`untrusted_app_domain<span class="string">', `</span></span><br><span class="line"><span class="string">typeattribute $1 untrusted_app_all;</span></span><br><span class="line"><span class="string">'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>表示为untrusted_app赋于untrusted_app_all属性，即untrusted_app就是untrusted_app_all。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"><i class="fa fa-tag"></i> Android</a>
+          
+            <a href="/tags/%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 系统源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/08/16/MSM8953%207.1%E9%A2%84%E8%A3%85%E5%8F%AF%E5%8D%B8%E8%BD%BD%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%94%E7%94%A8/" rel="next" title="MSM8953 7.1预装可卸载第三方应用">
+                <i class="fa fa-chevron-left"></i> MSM8953 7.1预装可卸载第三方应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/08/24/Android%20Perfetto%E4%BD%BF%E7%94%A8/" rel="prev" title="Perfetto使用">
+                Perfetto使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/timg.png"
+                alt="WZKingdom" />
+            
+              <p class="site-author-name" itemprop="name">WZKingdom</p>
+              <p class="site-description motion-element" itemprop="description">撸起袖子加油干！</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#源码中添加自定义系统服务"><span class="nav-number">1.</span> <span class="nav-text">源码中添加自定义系统服务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1、ITestManager-aidl"><span class="nav-number">1.0.1.</span> <span class="nav-text">1、ITestManager.aidl</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2、TestManager-java"><span class="nav-number">1.0.2.</span> <span class="nav-text">2、TestManager.java</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3、修改Context"><span class="nav-number">1.0.3.</span> <span class="nav-text">3、修改Context</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4、TestManagerService-java"><span class="nav-number">1.0.4.</span> <span class="nav-text">4、TestManagerService.java</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5、ServiceManager注册"><span class="nav-number">1.0.5.</span> <span class="nav-text">5、ServiceManager注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6、SystemServiceRegistry注册"><span class="nav-number">1.0.6.</span> <span class="nav-text">6、SystemServiceRegistry注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#7、配置SELinux权限"><span class="nav-number">1.0.7.</span> <span class="nav-text">7、配置SELinux权限</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用自定义服务"><span class="nav-number">1.0.8.</span> <span class="nav-text">使用自定义服务</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全机制"><span class="nav-number">2.</span> <span class="nav-text">安全机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DAC自主访问控制"><span class="nav-number">2.1.</span> <span class="nav-text">DAC自主访问控制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#应用权限与DAC的关系"><span class="nav-number">2.1.1.</span> <span class="nav-text">应用权限与DAC的关系</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MAC强制访问控制"><span class="nav-number">2.2.</span> <span class="nav-text">MAC强制访问控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SEAndroid权限配置"><span class="nav-number">2.3.</span> <span class="nav-text">SEAndroid权限配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安全上下文"><span class="nav-number">2.3.1.</span> <span class="nav-text">安全上下文</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#用户与角色"><span class="nav-number">2.3.2.</span> <span class="nav-text">用户与角色</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#类型"><span class="nav-number">2.3.3.</span> <span class="nav-text">类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安全策略"><span class="nav-number">2.3.4.</span> <span class="nav-text">安全策略</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Allow规则"><span class="nav-number">2.3.5.</span> <span class="nav-text">Allow规则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#宏函数"><span class="nav-number">2.3.6.</span> <span class="nav-text">宏函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#name-server编译报错"><span class="nav-number">2.3.7.</span> <span class="nav-text">name-server编译报错</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WZKingdom</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">71.5k</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/miku.model.json"},"display":{"position":"right","width":100,"height":200},"mobile":{"show":true},"log":false});</script></body>
+</html>
