@@ -1,0 +1,1271 @@
+﻿<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Roboto-Black:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,系统源码," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="车载 HAL 与 Android Automotive 架构  Car API：内有包含 CarSensorManager 在内的 API。如需详细了解受支持的 API，请参阅 &#x2F;platform&#x2F;packages&#x2F;services&#x2F;Car&#x2F;car-lib。 CarService：位于 &#x2F;platform&#x2F;packages&#x2F;services&#x2F;Car&#x2F;。 车载 HAL：用于定义 OEM 可以实现的车">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 13 车载CarService和Vehicle HAL">
+<meta property="og:url" content="http://yoursite.com/2024/10/24/FW%20%E8%BD%A6%E8%BD%BDCarService%E5%92%8CVehicle%20HAL/index.html">
+<meta property="og:site_name" content="WZKingdom-个人博客">
+<meta property="og:description" content="车载 HAL 与 Android Automotive 架构  Car API：内有包含 CarSensorManager 在内的 API。如需详细了解受支持的 API，请参阅 &#x2F;platform&#x2F;packages&#x2F;services&#x2F;Car&#x2F;car-lib。 CarService：位于 &#x2F;platform&#x2F;packages&#x2F;services&#x2F;Car&#x2F;。 车载 HAL：用于定义 OEM 可以实现的车">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBa1269c3146640700735649e3ec5b6fe4?method=download&shareKey=285f6480c42d8b10c78d4b620b02921c">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB92b0a2491a0e312231c5bcd97f23cc32?method=download&shareKey=7d2d00f8036390b273f00d70d67049a8">
+<meta property="article:published_time" content="2024-10-24T14:26:43.000Z">
+<meta property="article:modified_time" content="2024-11-25T11:07:57.964Z">
+<meta property="article:author" content="WZKingdom">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="系统源码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBa1269c3146640700735649e3ec5b6fe4?method=download&shareKey=285f6480c42d8b10c78d4b620b02921c">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2024/10/24/FW 车载CarService和Vehicle HAL/"/>
+
+
+
+
+
+  <title>Android 13 车载CarService和Vehicle HAL | WZKingdom-个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+		<a href="https://github.com/WKingdom" target="_blank" rel="noopener" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta custom-logo">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">WZKingdom-个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">那些疯狂到以为自己能够改变世界的人，才能真正改变世界。</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2024/10/24/FW%20%E8%BD%A6%E8%BD%BDCarService%E5%92%8CVehicle%20HAL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WZKingdom">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/timg.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="WZKingdom-个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android 13 车载CarService和Vehicle HAL</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-10-24T22:26:43+08:00">
+                2024-10-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81/" itemprop="url" rel="index">
+                    <span itemprop="name">系统源码</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.8k
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>车载 HAL 与 Android Automotive 架构</p>
+<ul>
+<li><strong>Car API</strong>：内有包含 <code>CarSensorManager</code> 在内的 API。如需详细了解受支持的 API，请参阅 <code>/platform/packages/services/Car/car-lib</code>。</li>
+<li><strong>CarService</strong>：位于 <code>/platform/packages/services/Car/</code>。</li>
+<li><strong>车载 HAL</strong>：用于定义 OEM 可以实现的车辆属性的接口。包含属性元数据（例如，车辆属性是否为 int 以及允许使用哪些更改模式）。位于 <code>hardware/libhardware/include/hardware/vehicle.h</code>。如需了解基本参考实现，请参阅 <code>hardware/libhardware/modules/vehicle/</code>。</li>
+</ul>
+<p><a href="https://source.android.com/docs/devices/automotive?hl=zh-cn" target="_blank" rel="noopener">Automotive  | Android Open Source Project</a></p>
+<p><a href="https://source.android.google.cn/docs/automotive/car-framework-core?hl=zh-cn" target="_blank" rel="noopener">汽车框架核心  | Android Open Source Project</a></p>
+<h4 id="汽车框架核心"><a href="#汽车框架核心" class="headerlink" title="汽车框架核心"></a>汽车框架核心</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa1269c3146640700735649e3ec5b6fe4?method=download&shareKey=285f6480c42d8b10c78d4b620b02921c" alt=""></p>
+<p>传统 Android 堆栈和汽车堆栈之间的区别：<br>● 汽车专用应用使用汽车 API 来访问汽车服务实现的功能。<br>● 汽车服务通过 CarServiceHelperService 与系统服务器通信，以访问核心 Android 功能。<br>● CarServiceHelperService 的主要目的是启动汽车服务。但是，当没有指定 API 与系统服务器通信时，将使用 CSHS。<br>● 汽车服务还连接到汽车专用的本机服务，例如 CarWatchdog。这些服务在系统服务器和汽车服务初始化之前处理汽车专用的任务。<br>● 使用车辆 HAL 和汽车专用 HAL 抽象出汽车硬件</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB92b0a2491a0e312231c5bcd97f23cc32?method=download&shareKey=7d2d00f8036390b273f00d70d67049a8" alt=""></p>
+<h5 id="Car-Service"><a href="#Car-Service" class="headerlink" title="Car Service"></a>Car Service</h5><p>● 汽车服务提供汽车特定功能和策略的实现。它允许应用程序与汽车硬件交互。<br>● 汽车服务 (com.android.car) 以用户 0 身份运行，可以为所有用户提供服务，无论用户切换如何。<br>● 另一个版本 (CarPerUserService) 为用户 10+ 运行<br>○ 这是因为蓝牙和 LocationManager 仅适用于当前用户。<br>○ 此服务仅供内部汽车服务使用，不直接提供任何汽车 API。<br>● 在客户端应用程序中创建 Car 对象时，它将包含一个 ICar Binder 对象，以便它可以与 Car Service 通信。<br>● ICarImpl 负责创建各种 CarXYZServices 并实现应用程序与之交互的 ICar.aidl 接口。</p>
+<h5 id="Car-Managers"><a href="#Car-Managers" class="headerlink" title="Car Managers"></a>Car Managers</h5><p>● 应用程序用来访问汽车服务功能的共享库。<br>● 公开汽车特定的 API 功能。<br>● 每个 CarXYZManager 都有一个关联的 CarXYZService对应项。<br>● CarXYZManagers 使用 AIDL 文件定义的 ICarXYZService 绑定接口与各个 CarXYZServices 进行通信。<br>● CarXYZServices 还与汽车服务内的 XYZHalServices 进行通信</p>
+<p>使用Car APIs</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line"> Car mCar = Car.createCar(mContext);</span><br><span class="line"> (CarPropertyManager) mCarPropertyManager =</span><br><span class="line">   mCar.getCarManager(CarPropertyManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getProperty</span><span class="params">(<span class="keyword">int</span> propId, <span class="keyword">int</span> areaId)</span> </span>&#123;</span><br><span class="line"> <span class="keyword">return</span> mCarPropertyManager.getProperty(propId, areaId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>监听CarService崩溃重新获取。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// This waits for the car service connection to be established.</span></span><br><span class="line">  Car.createCar(mContext, <span class="keyword">null</span>, CAR_WAIT_TIMEOUT_WAIT_FOREVER, </span><br><span class="line"><span class="keyword">this</span>::onLifecycleChanged);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onLifecycleChanged</span><span class="params">(Car car, <span class="keyword">boolean</span> ready)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ready) &#123;</span><br><span class="line">      mCarPropertyManager =</span><br><span class="line">        (CarPropertyManager) car.getCarManager(CarPropertyManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">      <span class="comment">// Do initialization with CarXXXManager here, e.g. subscribe to </span></span><br><span class="line">property events.</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      Log.e(“Car service is disconnected”);</span><br><span class="line">      mCarPropertyManager = <span class="keyword">null</span>; </span><br><span class="line">      <span class="comment">// Clear all internal state associated with CarXXXManager.</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="CarAPI"><a href="#CarAPI" class="headerlink" title="CarAPI"></a>CarAPI</h4><p>packages/services/Car/car-lib/  aidl接口，客户端IBinder对象在Car API中被封装在一个个<code>XXXManager</code>类中，列举其中几个</p>
+<ul>
+<li>CarActivityManager：运行Task状态监听，设置</li>
+<li>CarDrivingStateManager：车辆运动状态监听</li>
+<li>CarAudioManager：声音相关</li>
+<li>CarMediaManager：多媒体播放源相关</li>
+<li>CarPropertyManager：车辆相关，空调车门车窗等数据设置获取和监听</li>
+</ul>
+<h4 id="CarService启动"><a href="#CarService启动" class="headerlink" title="CarService启动"></a>CarService启动</h4><h5 id="启动CarServiceHelperService"><a href="#启动CarServiceHelperService" class="headerlink" title="启动CarServiceHelperService"></a>启动CarServiceHelperService</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CAR_SERVICE_HELPER_SERVICE_CLASS =</span><br><span class="line">            <span class="string">"com.android.internal.car.CarServiceHelperService"</span>;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">(@NonNull TimingsTraceAndSlog t)</span> </span>&#123;</span><br><span class="line"> 	<span class="keyword">boolean</span> isAutomotive = mPackageManager</span><br><span class="line">                    .hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE);</span><br><span class="line">            <span class="keyword">if</span> (isAutomotive) &#123;</span><br><span class="line">                t.traceBegin(<span class="string">"StartCarServiceHelperService"</span>);</span><br><span class="line">                <span class="keyword">final</span> SystemService cshs = mSystemServiceManager</span><br><span class="line">                        .startService(CAR_SERVICE_HELPER_SERVICE_CLASS);</span><br><span class="line">                ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CarServiceHelperService中执行onStart</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//frameworks/opt/car/services/builtInServices/src/com/android/internal/car/CarServiceHelperService.java</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CSHS_UPDATABLE_CLASSNAME_STRING =</span><br><span class="line">            <span class="string">"com.android.internal.car.updatable.CarServiceHelperServiceUpdatableImpl"</span>;</span><br><span class="line">CarServiceHelperService(</span><br><span class="line">            Context context,</span><br><span class="line">            CarLaunchParamsModifier carLaunchParamsModifier,</span><br><span class="line">            CarWatchdogDaemonHelper carWatchdogDaemonHelper,</span><br><span class="line">            <span class="meta">@Nullable</span> CarServiceHelperServiceUpdatable carServiceHelperServiceUpdatable,</span><br><span class="line">            <span class="meta">@Nullable</span> CarDevicePolicySafetyChecker carDevicePolicySafetyChecker) &#123;</span><br><span class="line">    <span class="comment">//创建CarServiceHelperServiceUpdatableImpl</span></span><br><span class="line">     mCarServiceHelperServiceUpdatable = (CarServiceHelperServiceUpdatable) Class</span><br><span class="line">                        .forName(CSHS_UPDATABLE_CLASSNAME_STRING)</span><br><span class="line">                        .getConstructor(Context<span class="class">.<span class="keyword">class</span>, <span class="title">CarServiceHelperInterface</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">                                <span class="title">CarLaunchParamsModifierInterface</span>.<span class="title">class</span>)</span></span><br><span class="line"><span class="class">                        .<span class="title">newInstance</span>(<span class="title">mContext</span>, <span class="title">this</span>,</span></span><br><span class="line"><span class="class">                                <span class="title">mCarLaunchParamsModifier</span>.<span class="title">getBuiltinInterface</span>())</span>;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        mCarServiceHelperServiceUpdatable.onStart();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//frameworks/opt/car/services/updatableServices/src/com/android/internal/car/updatable/CarServiceHelperServiceUpdatableImpl.java</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//bind这个服务action = android.car.ICar</span></span><br><span class="line">        Intent intent = <span class="keyword">new</span> Intent(CAR_SERVICE_INTERFACE).setPackage(CAR_SERVICE_PACKAGE);</span><br><span class="line">        Context userContext = mContext.createContextAsUser(UserHandle.SYSTEM, <span class="comment">/* flags= */</span> <span class="number">0</span>);</span><br><span class="line">        <span class="comment">//Connection返回的IBinder mCarServiceBinder = ICar.Stub.asInterface(iBinder);</span></span><br><span class="line">        <span class="keyword">if</span> (!userContext.bindService(intent, Context.BIND_AUTO_CREATE, <span class="keyword">this</span>,</span><br><span class="line">                mCarServiceConnection)) &#123;</span><br><span class="line">            Slogf.wtf(TAG, <span class="string">"cannot start car service"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="启动CarService"><a href="#启动CarService" class="headerlink" title="启动CarService"></a>启动CarService</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//packages/services/Car/service-builtin/src/com/android/car/CarService.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CarService</span> <span class="keyword">extends</span> <span class="title">ServiceProxy</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CarService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//CAR_SERVICE_IMPL_CLASS = "com.android.car.CarServiceImpl"</span></span><br><span class="line">        <span class="keyword">super</span>(UpdatablePackageDependency.CAR_SERVICE_IMPL_CLASS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CarServiceImpl</span> <span class="keyword">extends</span> <span class="title">ProxiedService</span> </span>&#123;</span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//这个地方创建的是aidl实现的AidlVehicleStub（android.hardware.automotive.vehicle.IVehicle/default）</span></span><br><span class="line">        <span class="comment">//如果获取不到，返回hidl实现的HidlVehicleStub</span></span><br><span class="line">        mVehicle = VehicleStub.newVehicleStub();</span><br><span class="line">        mVehicleInterfaceName = mVehicle.getInterfaceDescriptor();</span><br><span class="line">		</span><br><span class="line">        mICarImpl = <span class="keyword">new</span> ICarImpl(<span class="keyword">this</span>,</span><br><span class="line">                getBuiltinPackageContext(),</span><br><span class="line">                mVehicle,</span><br><span class="line">                SystemInterface.Builder.defaultSystemInterface(<span class="keyword">this</span>).build(),</span><br><span class="line">                mVehicleInterfaceName);</span><br><span class="line">        mICarImpl.init();</span><br><span class="line"></span><br><span class="line">        mVehicle.linkToDeath(mVehicleDeathRecipient);</span><br><span class="line"></span><br><span class="line">        ServiceManagerHelper.addService(<span class="string">"car_service"</span>, mICarImpl);</span><br><span class="line">        SystemPropertiesHelper.set(<span class="string">"boot.car_service_created"</span>, <span class="string">"1"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="ICarImpl创建"><a href="#ICarImpl创建" class="headerlink" title="ICarImpl创建"></a>ICarImpl创建</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">ICarImpl(Context serviceContext, <span class="meta">@Nullable</span> Context builtinContext, VehicleStub vehicle,</span><br><span class="line">            SystemInterface systemInterface, String vehicleInterfaceName,</span><br><span class="line">            <span class="meta">@Nullable</span> CarUserService carUserService,</span><br><span class="line">            <span class="meta">@Nullable</span> CarWatchdogService carWatchdogService,</span><br><span class="line">            <span class="meta">@Nullable</span> CarPerformanceService carPerformanceService,</span><br><span class="line">            <span class="meta">@Nullable</span> GarageModeService garageModeService,</span><br><span class="line">            <span class="meta">@Nullable</span> ICarPowerPolicySystemNotification powerPolicyDaemon,</span><br><span class="line">            <span class="meta">@Nullable</span> CarTelemetryService carTelemetryService) &#123;</span><br><span class="line">     mHal = constructWithTrace(t, VehicleHal<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">VehicleHal</span>(<span class="title">serviceContext</span>, <span class="title">vehicle</span>))</span>;</span><br><span class="line">     mCarPropertyService = constructWithTrace(</span><br><span class="line">                t, CarPropertyService<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">CarPropertyService</span>(<span class="title">serviceContext</span>, <span class="title">mHal</span>.<span class="title">getPropertyHal</span>()))</span>;</span><br><span class="line">     mCarDrivingStateService = constructWithTrace(</span><br><span class="line">                t, CarDrivingStateService<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">CarDrivingStateService</span>(<span class="title">serviceContext</span>, <span class="title">mCarPropertyService</span>))</span>;</span><br><span class="line">        mCarOccupantZoneService = constructWithTrace(t, CarOccupantZoneService<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">CarOccupantZoneService</span>(<span class="title">serviceContext</span>))</span>;</span><br><span class="line">    	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CarService的服务已经启动，再看下CarPropertyService的具体流程。</p>
+<h4 id="CarPropertyService"><a href="#CarPropertyService" class="headerlink" title="CarPropertyService"></a>CarPropertyService</h4><h5 id="客户端CarPropertyManager"><a href="#客户端CarPropertyManager" class="headerlink" title="客户端CarPropertyManager"></a>客户端CarPropertyManager</h5><p>以获取VIN为例分析下流程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">services/Car/car-lib/src/android/car/VehiclePropertyIds.java</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VIN of vehicle</span></span><br><span class="line"><span class="comment">     * Requires permission: &#123;<span class="doctag">@link</span> Car#PERMISSION_IDENTIFICATION&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@RequiresPermission</span>(Car.PERMISSION_IDENTIFICATION)</span><br><span class="line">    <span class="meta">@AddedInOrBefore</span>(majorVersion = <span class="number">33</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> INFO_VIN = <span class="number">286261504</span>; <span class="comment">// 0x11100100</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Car mCar = Car.createCar(mContext);</span><br><span class="line">  (CarPropertyManager) mCarPropertyManager =</span><br><span class="line">    mCar.getCarManager(CarPropertyManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    mCarPropertyManager.getProperty(INFO_VIN,NO_AREA);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getProperty</span><span class="params">(<span class="keyword">int</span> propId, <span class="keyword">int</span> areaId)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mCarPropertyManager.getProperty(propId, areaId);</span><br><span class="line"> &#125;</span><br><span class="line"><span class="comment">//客户端最终调用到这个方法，然后跨进程到SystemServer进程中CarService的子服务CarPropertyService中</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ICarProperty mService;</span><br><span class="line"><span class="keyword">public</span> &lt;E&gt; <span class="function">CarPropertyValue&lt;E&gt; <span class="title">getProperty</span><span class="params">(<span class="keyword">int</span> propId, <span class="keyword">int</span> areaId)</span> </span>&#123;</span><br><span class="line">        checkSupportedProperty(propId);</span><br><span class="line">            CarPropertyValue&lt;E&gt; propVal = mService.getProperty(propId, areaId);</span><br><span class="line">            <span class="keyword">return</span> propVal;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="服务端代码"><a href="#服务端代码" class="headerlink" title="服务端代码"></a>服务端代码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//services/Car/service/src/com/android/car/CarPropertyService.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CarPropertyService</span> <span class="keyword">extends</span> <span class="title">ICarProperty</span>.<span class="title">Stub</span></span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">CarServiceBase</span>, <span class="title">PropertyHalService</span>.<span class="title">PropertyHalListener</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CarPropertyValue <span class="title">getProperty</span><span class="params">(<span class="keyword">int</span> prop, <span class="keyword">int</span> zone)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IllegalArgumentException, ServiceSpecificException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mConfigs.get(prop) == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// Do not attempt to register an invalid propId</span></span><br><span class="line">                Slogf.e(TAG, <span class="string">"getProperty: propId is not in config list:0x"</span> + toHexString(prop));</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">         <span class="comment">// Checks if android has permission to read property.</span></span><br><span class="line">        String permission = mHal.getReadPermission(prop);</span><br><span class="line">        CarServiceUtils.assertPermission(mContext, permission);</span><br><span class="line">        <span class="comment">//mHal需要确定下是哪个对象</span></span><br><span class="line">        <span class="keyword">return</span> mHal.getProperty(prop, zone);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>mHal是CarPropertyService创建的时候传递的参数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">CarPropertyService</span><span class="params">(Context context, PropertyHalService hal)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (DBG) &#123;</span><br><span class="line">            Slogf.d(TAG, <span class="string">"CarPropertyService started!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        mHal = hal;</span><br><span class="line">        mContext = context;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ICarImpl中创建的CarPropertyService</span></span><br><span class="line">mCarPropertyService = constructWithTrace(</span><br><span class="line">                t, CarPropertyService<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">CarPropertyService</span>(<span class="title">serviceContext</span>, <span class="title">mHal</span>.<span class="title">getPropertyHal</span>()))</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ICarImpl中mHal</span></span><br><span class="line"> mHal = constructWithTrace(t, VehicleHal<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                () -&gt; <span class="title">new</span> <span class="title">VehicleHal</span>(<span class="title">serviceContext</span>, <span class="title">vehicle</span>))</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//VehicleHal中的两个参数的构造函数</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="title">VehicleHal</span><span class="params">(Context context, VehicleStub vehicle)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(context, <span class="comment">/* powerHal= */</span> <span class="keyword">null</span>, <span class="comment">/* propertyHal= */</span> <span class="keyword">null</span>,</span><br><span class="line">                <span class="comment">/* inputHal= */</span> <span class="keyword">null</span>, <span class="comment">/* vmsHal= */</span> <span class="keyword">null</span>, <span class="comment">/* userHal= */</span> <span class="keyword">null</span>,</span><br><span class="line">                <span class="comment">/* diagnosticHal= */</span> <span class="keyword">null</span>, <span class="comment">/* clusterHalService= */</span> <span class="keyword">null</span>,</span><br><span class="line">                <span class="comment">/* timeHalService= */</span> <span class="keyword">null</span>, <span class="comment">/* halClient= */</span> <span class="keyword">null</span>,</span><br><span class="line">                CarServiceUtils.getHandlerThread(VehicleHal<span class="class">.<span class="keyword">class</span>.<span class="title">getSimpleName</span>()), <span class="title">vehicle</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> VehicleHal(Context context,</span><br><span class="line">            PowerHalService powerHal,</span><br><span class="line">            PropertyHalService propertyHal,</span><br><span class="line">            InputHalService inputHal,</span><br><span class="line">            VmsHalService vmsHal,</span><br><span class="line">            UserHalService userHal,</span><br><span class="line">            DiagnosticHalService diagnosticHal,</span><br><span class="line">            ClusterHalService clusterHalService,</span><br><span class="line">            TimeHalService timeHalService,</span><br><span class="line">            HalClient halClient,</span><br><span class="line">            HandlerThread handlerThread,</span><br><span class="line">            VehicleStub vehicle) &#123;</span><br><span class="line">     	...</span><br><span class="line">     	mPropertyHal = propertyHal != <span class="keyword">null</span> ? propertyHal : <span class="keyword">new</span> PropertyHalService(<span class="keyword">this</span>);</span><br><span class="line">     	<span class="comment">// mPropertyHal must be the last so that on init/release</span></span><br><span class="line">        <span class="comment">// it can be used for all other HAL services properties.</span></span><br><span class="line">        mHalClient = halClient != <span class="keyword">null</span></span><br><span class="line">                ? halClient : <span class="keyword">new</span> HalClient(vehicle, mHandlerThread.getLooper(),</span><br><span class="line">                <span class="comment">/* callback= */</span> <span class="keyword">this</span>);</span><br><span class="line">        mVehicleStub = vehicle;</span><br><span class="line"> &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> PropertyHalService <span class="title">getPropertyHal</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      	<span class="comment">//返回的是PropertyHalService(this)</span></span><br><span class="line">        <span class="keyword">return</span> mPropertyHal;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//PropertyHalService.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> CarPropertyValue <span class="title">getProperty</span><span class="params">(<span class="keyword">int</span> mgrPropId, <span class="keyword">int</span> areaId)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IllegalArgumentException, ServiceSpecificException </span>&#123;</span><br><span class="line">    <span class="comment">//mVehicleHal在PropertyHalService创建传递过来，回到VehicleHal的get方法</span></span><br><span class="line">     HalPropValue value = mVehicleHal.get(halPropId, areaId);</span><br><span class="line">     HalPropConfig propConfig;</span><br><span class="line">        <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">            propConfig = mHalPropIdToPropConfig.get(halPropId);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> value.toCarPropertyValue(mgrPropId, propConfig);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="title">PropertyHalService</span><span class="params">(VehicleHal vehicleHal)</span> </span>&#123;</span><br><span class="line">        mPropIds = <span class="keyword">new</span> PropertyHalServiceIds();</span><br><span class="line">        mSubscribedHalPropIds = <span class="keyword">new</span> HashSet&lt;Integer&gt;();</span><br><span class="line">     	<span class="comment">//VehicleHal对象，回到这个里面看下get方法</span></span><br><span class="line">        mVehicleHal = vehicleHal;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//VehicleHal中的get</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> HalPropValue <span class="title">get</span><span class="params">(<span class="keyword">int</span> propertyId, <span class="keyword">int</span> areaId)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IllegalArgumentException, ServiceSpecificException </span>&#123;</span><br><span class="line">    	<span class="comment">//VehicleHal构造函数mHalClient = new HalClient(vehicle, );</span></span><br><span class="line">        <span class="keyword">return</span> mHalClient.getValue(mPropValueBuilder.build(propertyId, areaId));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//HalClient.java</span></span><br><span class="line"> <span class="function">HalPropValue <span class="title">getValue</span><span class="params">(HalPropValue requestedPropValue)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IllegalArgumentException, ServiceSpecificException </span>&#123;</span><br><span class="line">        <span class="comment">// Use a wrapper to create a final object passed to lambda.</span></span><br><span class="line">        ObjectWrapper&lt;ValueResult&gt; resultWrapper = <span class="keyword">new</span> ObjectWrapper&lt;&gt;();</span><br><span class="line">        resultWrapper.object = <span class="keyword">new</span> ValueResult();</span><br><span class="line">        <span class="keyword">int</span> status = invokeRetriable(() -&gt; &#123;</span><br><span class="line">            resultWrapper.object = internalGet(requestedPropValue);</span><br><span class="line">            <span class="keyword">return</span> resultWrapper.object.status;</span><br><span class="line">        &#125;, mWaitCapMs, mSleepMs);</span><br><span class="line"></span><br><span class="line">        ValueResult result = resultWrapper.object;</span><br><span class="line"> &#125;</span><br><span class="line">	<span class="comment">//调用HalClient的internalGet</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> ValueResult <span class="title">internalGet</span><span class="params">(HalPropValue requestedPropValue)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> ValueResult result = <span class="keyword">new</span> ValueResult();</span><br><span class="line">        	<span class="comment">//mVehicle继续寻找这个参数</span></span><br><span class="line">            result.propValue = mVehicle.get(requestedPropValue);</span><br><span class="line">            result.status = StatusCode.OK;</span><br><span class="line">            result.errorMsg = <span class="keyword">new</span> String();</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//mVehicle在HalClient构造函数中赋值，在VehicleHal中创建的</span></span><br><span class="line"> HalClient(VehicleStub vehicle, Looper looper, HalClientCallback callback, <span class="keyword">int</span> waitCapMs,</span><br><span class="line">            <span class="keyword">int</span> sleepMs) &#123;</span><br><span class="line">     	<span class="comment">//mVehicle是CarServiceImpl#onCreate创建时mVehicle = VehicleStub.newVehicleStub()一路传递下去的</span></span><br><span class="line">     	<span class="comment">//</span></span><br><span class="line">        mVehicle = vehicle;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>获取VIN的流程已经执行到了HalClient#internalGet中的mVehicle.get代码，mVehicle是VehicleStub的对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//VehicleStub.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> VehicleStub <span class="title">newVehicleStub</span><span class="params">()</span> <span class="keyword">throws</span> IllegalStateException </span>&#123;</span><br><span class="line">        VehicleStub stub = <span class="keyword">new</span> AidlVehicleStub();</span><br><span class="line">        <span class="keyword">if</span> (stub.isValid()) &#123;</span><br><span class="line">            <span class="keyword">return</span> stub;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//AidlVehicleStub.java</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String AIDL_VHAL_SERVICE =</span><br><span class="line">            <span class="string">"android.hardware.automotive.vehicle.IVehicle/default"</span>;</span><br><span class="line"> AidlVehicleStub() &#123;</span><br><span class="line">        <span class="keyword">this</span>(getAidlVehicle());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">AidlVehicleStub(IVehicle aidlVehicle) &#123;</span><br><span class="line">        mAidlVehicle = aidlVehicle;</span><br><span class="line">        mPropValueBuilder = <span class="keyword">new</span> HalPropValueBuilder(<span class="comment">/*isAidl=*/</span><span class="keyword">true</span>);</span><br><span class="line">        mHandlerThread = CarServiceUtils.getHandlerThread(AidlVehicleStub<span class="class">.<span class="keyword">class</span>.<span class="title">getSimpleName</span>())</span>;</span><br><span class="line">        mHandler = <span class="keyword">new</span> Handler(mHandlerThread.getLooper());</span><br><span class="line">        mGetSetValuesCallback = <span class="keyword">new</span> GetSetValuesCallback();</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> IVehicle <span class="title">getAidlVehicle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//android.hardware.automotive.vehicle.IVehicle/default hal层的aidl服务</span></span><br><span class="line">            <span class="keyword">return</span> IVehicle.Stub.asInterface(</span><br><span class="line">                    ServiceManagerHelper.waitForDeclaredService(AIDL_VHAL_SERVICE));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">            Slogf.w(CarLog.TAG_SERVICE, <span class="string">"Failed to get \""</span> + AIDL_VHAL_SERVICE + <span class="string">"\" service"</span>, e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>看下AidlVehicleStub的get方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IVehicle mAidlVehicle;</span><br><span class="line"><span class="function"><span class="keyword">public</span> HalPropValue <span class="title">get</span><span class="params">(HalPropValue requestedPropValue)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> RemoteException, ServiceSpecificException </span>&#123;</span><br><span class="line">       ...</span><br><span class="line">    	<span class="comment">//这个地方通过IVehicle获取数据，aidl接口</span></span><br><span class="line">        mAidlVehicle.getValues(mGetSetValuesCallback, requests);</span><br><span class="line">        AndroidAsyncFuture&lt;GetValueResult&gt; asyncResultFuture = <span class="keyword">new</span> AndroidAsyncFuture(resultFuture);</span><br><span class="line">           GetValueResult result = asyncResultFuture.get(mTimeoutMs, TimeUnit.MILLISECONDS);</span><br><span class="line">         <span class="keyword">return</span> mPropValueBuilder.build(result.prop);</span><br><span class="line">       </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>IVehicle.aidl在下面的目录中，这块属于hal层的vehicle代码，CarService通过Binder跨进程通信</p>
+<p>hardware/interfaces/automotive/vehicle/aidl/aidl_api/android.hardware.automotive.vehicle/1/android/hardware/automotive/vehicle/IVehicle.aidl</p>
+<p>aidl确实方便，比hidl少了好多步骤。在继续分析下Vehicle hal层的代码</p>
+<h4 id="Vehicle-hal"><a href="#Vehicle-hal" class="headerlink" title="Vehicle hal"></a>Vehicle hal</h4><p>hardware/libhardware/modules/vehicle/</p>
+<p>在VehicleProperty.aidl中INFO_VIN跟VehiclePropertyIds.java的也是对应上的</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//VehicleProperty</span></span><br><span class="line">package android.hardware.automotive.vehicle;</span><br><span class="line">@Backing(type=<span class="string">"int"</span>) @VintfStability</span><br><span class="line"><span class="keyword">enum</span> VehicleProperty &#123;</span><br><span class="line">  INVALID = <span class="number">0</span>,</span><br><span class="line">  INFO_VIN = <span class="number">286261504</span>,</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="comment">//VehiclePropertyIds</span></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> INFO_VIN = <span class="number">286261504</span>; <span class="comment">// 0x11100100</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//types.hal中的值也能对应上</span></span><br><span class="line">    INFO_VIN = (</span><br><span class="line">        <span class="number">0x0100</span></span><br><span class="line">        | VehiclePropertyGroup:SYSTEM</span><br><span class="line">        | VehiclePropertyType:STRING</span><br><span class="line">        | VehicleArea:GLOBAL),</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://source.android.google.cn/docs/core/architecture/hidl?hl=zh-cn" target="_blank" rel="noopener">HIDL  | Android Open Source Project</a></p>
+<p><a href="https://source.android.google.cn/docs/core/architecture/aidl?hl=zh-cn" target="_blank" rel="noopener">AIDL 概览  | Android Open Source Project</a></p>
+<p>服务启动</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">service vendor.vehicle-hal-<span class="keyword">default</span> /vendor/bin/hw/android.hardware.automotive.vehicle@V1-<span class="keyword">default</span>-service</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">early_hal</span></span></span><br><span class="line"><span class="class">    <span class="title">user</span> <span class="title">vehicle_network</span></span></span><br><span class="line"><span class="class">    <span class="title">group</span> <span class="title">system</span> <span class="title">inet</span></span></span><br></pre></td></tr></table></figure>
+
+<p>服务声明</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;manifest version=<span class="string">"1.0"</span> type=<span class="string">"device"</span>&gt;</span><br><span class="line">    &lt;hal format=<span class="string">"aidl"</span>&gt;</span><br><span class="line">        &lt;name&gt;android.hardware.automotive.vehicle&lt;/name&gt;</span><br><span class="line">        &lt;version&gt;1&lt;/version&gt;</span><br><span class="line">        &lt;fqname&gt;IVehicle/default&lt;/fqname&gt;</span><br><span class="line">    &lt;/hal&gt;</span><br><span class="line">&lt;/manifest&gt;</span><br></pre></td></tr></table></figure>
+
+<p>Android.bp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;android.hardware.automotive.vehicle@V1-default-service&quot;,</span><br><span class="line">    vendor: true,</span><br><span class="line">    defaults: [</span><br><span class="line">        &quot;FakeVehicleHardwareDefaults&quot;,</span><br><span class="line">        &quot;VehicleHalDefaults&quot;,</span><br><span class="line">        &quot;android-automotive-large-parcelable-defaults&quot;,</span><br><span class="line">    ],</span><br><span class="line">    vintf_fragments: [&quot;vhal-default-service.xml&quot;],</span><br><span class="line">    init_rc: [&quot;vhal-default-service.rc&quot;],</span><br><span class="line">    relative_install_path: &quot;hw&quot;,</span><br><span class="line">    srcs: [&quot;src&#x2F;VehicleService.cpp&quot;],</span><br><span class="line">    static_libs: [</span><br><span class="line">        &quot;DefaultVehicleHal&quot;,</span><br><span class="line">        &quot;FakeVehicleHardware&quot;,</span><br><span class="line">        &quot;VehicleHalUtils&quot;,</span><br><span class="line">    ],</span><br><span class="line">    header_libs: [</span><br><span class="line">        &quot;IVehicleHardware&quot;,</span><br><span class="line">    ],</span><br><span class="line">    shared_libs: [</span><br><span class="line">        &quot;libbinder_ndk&quot;,</span><br><span class="line">    ],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="VehicleService-cpp"><a href="#VehicleService-cpp" class="headerlink" title="VehicleService.cpp"></a>VehicleService.cpp</h5><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;DefaultVehicleHal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;FakeVehicleHardware.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;android/binder_manager.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;android/binder_process.h&gt;</span></span></span><br><span class="line">sing ::android::hardware::automotive::vehicle::DefaultVehicleHal;</span><br><span class="line"><span class="keyword">using</span> ::android::hardware::automotive::vehicle::fake::FakeVehicleHardware;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> <span class="comment">/* argc */</span>, <span class="keyword">char</span>* <span class="comment">/* argv */</span>[])</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;FakeVehicleHardware&gt; hardware = <span class="built_in">std</span>::make_unique&lt;FakeVehicleHardware&gt;();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;DefaultVehicleHal&gt; vhal =</span><br><span class="line">            ::ndk::SharedRefBase::make&lt;DefaultVehicleHal&gt;(<span class="built_in">std</span>::<span class="built_in">move</span>(hardware));</span><br><span class="line">    <span class="comment">//添加服务到ServiceManager</span></span><br><span class="line">    <span class="keyword">binder_exception_t</span> err = AServiceManager_addService(</span><br><span class="line">            vhal-&gt;asBinder().<span class="built_in">get</span>(), <span class="string">"android.hardware.automotive.vehicle.IVehicle/default"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!ABinderProcess_setThreadPoolMaxThreadCount(<span class="number">4</span>)) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s"</span>, <span class="string">"failed to set thread pool max thread count"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ABinderProcess_startThreadPool();</span><br><span class="line">    ALOGI(<span class="string">"Vehicle Service Ready"</span>);</span><br><span class="line">    ABinderProcess_joinThreadPool();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>采用双层架构。上层是 <code>DefaultVehicleHal</code>，实现了 VHAL AIDL 接口，并提供适用于所有硬件设备的通用 VHAL 逻辑。下层是 <code>FakeVehicleHardware</code>，实现了 <code>IVehicleHardware</code> 接口。此类可模拟与实际硬件或车载总线交互的 VHAL 逻辑，并且特定于设备。供应商也可以视需要调整这一架构，重复使用同一 <code>DefaultVehicleHal</code> 类（扩展该类以覆盖某个方法），并提供自己的 <code>IVehicleHardware</code> 实现。</p>
+<p>DefaultVehicleHal的构造函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//hardware/interfaces/automotive/vehicle/aidl/impl/vhal/src/DefaultVehicleHal.cpp</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DefaultVehicleHal</span> <span class="title">final</span> :</span> <span class="keyword">public</span> aidl::android::hardware::automotive::vehicle::BnVehicle &#123;</span><br><span class="line">  DefaultVehicleHal::DefaultVehicleHal(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;IVehicleHardware&gt; hardware)</span><br><span class="line">    : mVehicleHardware(<span class="built_in">std</span>::<span class="built_in">move</span>(hardware)),</span><br><span class="line">      mPendingRequestPool(<span class="built_in">std</span>::make_shared&lt;PendingRequestPool&gt;(TIMEOUT_IN_NANO)) &#123;</span><br><span class="line">    <span class="comment">//获取所有属性配置</span></span><br><span class="line">    <span class="keyword">auto</span> configs = mVehicleHardware-&gt;getAllPropertyConfigs();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; <span class="built_in">config</span> : configs) &#123;</span><br><span class="line">        mConfigsByPropId[<span class="built_in">config</span>.prop] = <span class="built_in">config</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    VehiclePropConfigs vehiclePropConfigs;</span><br><span class="line">    vehiclePropConfigs.payloads = <span class="built_in">std</span>::<span class="built_in">move</span>(configs);</span><br><span class="line">    <span class="keyword">auto</span> result = LargeParcelableBase::parcelableToStableLargeParcelable(vehiclePropConfigs);</span><br><span class="line">    <span class="keyword">if</span> (!result.ok()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"failed to convert configs to shared memory file, error: %s, code: %d"</span>,</span><br><span class="line">              result.error().message().c_str(), <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(result.error().code()));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result.value() != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        mConfigFile = <span class="built_in">std</span>::<span class="built_in">move</span>(result.value());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mSubscriptionClients = <span class="built_in">std</span>::make_shared&lt;SubscriptionClients&gt;(mPendingRequestPool);</span><br><span class="line">    mSubscriptionClients = <span class="built_in">std</span>::make_shared&lt;SubscriptionClients&gt;(mPendingRequestPool);</span><br><span class="line">	<span class="comment">//subscribeIdByClient是一个线程安全类，用于维护每个订阅客户端的请求 ID 不断增加。此类可以安全地传递给异步回调。</span></span><br><span class="line">    <span class="keyword">auto</span> subscribeIdByClient = <span class="built_in">std</span>::make_shared&lt;SubscribeIdByClient&gt;();</span><br><span class="line">    IVehicleHardware* hardwarePtr = mVehicleHardware.<span class="built_in">get</span>();</span><br><span class="line">    mSubscriptionManager = <span class="built_in">std</span>::make_shared&lt;SubscriptionManager&gt;(hardwarePtr);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::weak_ptr&lt;SubscriptionManager&gt; subscriptionManagerCopy = mSubscriptionManager;</span><br><span class="line">    <span class="comment">//注册一个回调，当车辆发生属性更改事件时将调用该回调，回调函数为onPropertyChangeEvent。</span></span><br><span class="line">    mVehicleHardware-&gt;registerOnPropertyChangeEvent(</span><br><span class="line">            <span class="built_in">std</span>::make_unique&lt;IVehicleHardware::PropertyChangeCallback&gt;(</span><br><span class="line">                    [subscriptionManagerCopy](<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VehiclePropValue&gt; updatedValues) &#123;</span><br><span class="line">                        onPropertyChangeEvent(subscriptionManagerCopy, updatedValues);</span><br><span class="line">                    &#125;));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Register heartbeat event.</span></span><br><span class="line">    mRecurrentAction =</span><br><span class="line">            <span class="built_in">std</span>::make_shared&lt;<span class="built_in">std</span>::function&lt;<span class="keyword">void</span>()&gt;&gt;([hardwarePtr, subscriptionManagerCopy]() &#123;</span><br><span class="line">                checkHealth(hardwarePtr, subscriptionManagerCopy);</span><br><span class="line">            &#125;);</span><br><span class="line">    <span class="comment">//注册心跳事件</span></span><br><span class="line">    mRecurrentTimer.registerTimerCallback(HEART_BEAT_INTERVAL_IN_NANO, mRecurrentAction);</span><br><span class="line"></span><br><span class="line">    mBinderImpl = <span class="built_in">std</span>::make_unique&lt;AIBinderImpl&gt;();</span><br><span class="line">    mOnBinderDiedUnlinkedHandlerThread = <span class="built_in">std</span>::thread([<span class="keyword">this</span>] &#123; onBinderDiedUnlinkedHandler(); &#125;);</span><br><span class="line">    mDeathRecipient = ScopedAIBinder_DeathRecipient(</span><br><span class="line">            AIBinder_DeathRecipient_new(&amp;DefaultVehicleHal::onBinderDied));</span><br><span class="line">    AIBinder_DeathRecipient_setOnUnlinked(mDeathRecipient.<span class="built_in">get</span>(),</span><br><span class="line">                                          &amp;DefaultVehicleHal::onBinderUnlinked);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>BnVehicle是IVehicle.aidl的服务端实现，CarService远程调用到这个地方</p>
+<p>看下客户端调用的mAidlVehicle.getValues(mGetSetValuesCallback, requests);对应这个方法</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//hardware/interfaces/automotive/vehicle/aidl/impl/vhal/src/DefaultVehicleHal.cpp</span></span><br><span class="line"><span class="function">ScopedAStatus <span class="title">DefaultVehicleHal::getValues</span><span class="params">(<span class="keyword">const</span> CallbackType&amp; callback,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">const</span> GetValueRequests&amp; requests)</span> </span>&#123;</span><br><span class="line">    expected&lt;LargeParcelableBase::BorrowedOwnedObject&lt;GetValueRequests&gt;, ScopedAStatus&gt;</span><br><span class="line">            deserializedResults = fromStableLargeParcelable(requests);</span><br><span class="line">    <span class="keyword">if</span> (!deserializedResults.ok()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"getValues: failed to parse getValues requests"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">move</span>(deserializedResults.error());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;GetValueRequest&gt;&amp; getValueRequests =</span><br><span class="line">            deserializedResults.value().getObject()-&gt;payloads;</span><br><span class="line">    <span class="comment">// A list of failed result we already know before sending to hardware.</span></span><br><span class="line">    <span class="comment">//在发送到硬件之前,失败结果的列表</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;GetValueResult&gt; failedResults;</span><br><span class="line">    <span class="comment">// The list of requests that we would send to hardware.</span></span><br><span class="line">    <span class="comment">//发送给硬件的请求列表</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;GetValueRequest&gt; hardwareRequests;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; request : getValueRequests) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">auto</span> result = checkReadPermission(request.prop); !result.ok()) &#123;</span><br><span class="line">            ALOGW(<span class="string">"property does not support reading: %s"</span>, getErrorMsg(result).c_str());</span><br><span class="line">            failedResults.push_back(GetValueResult&#123;</span><br><span class="line">                    .requestId = request.requestId,</span><br><span class="line">                    .status = getErrorCode(result),</span><br><span class="line">                    .prop = &#123;&#125;,</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            hardwareRequests.push_back(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The set of request Ids that we would send to hardware.</span></span><br><span class="line">    <span class="comment">//发送给硬件的一组请求 ID</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unordered_set</span>&lt;<span class="keyword">int64_t</span>&gt; hardwareRequestIds;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; request : hardwareRequests) &#123;</span><br><span class="line">        hardwareRequestIds.insert(request.requestId);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;GetValuesClient&gt; client;</span><br><span class="line">    &#123;</span><br><span class="line">        client = getOrCreateClient(&amp;mGetValuesClients, callback, mPendingRequestPool);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Register the pending hardware requests and also check for duplicate request Ids.</span></span><br><span class="line">    <span class="comment">//注册待处理的硬件请求并检查重复的请求 ID</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">auto</span> addRequestResult = client-&gt;addRequests(hardwareRequestIds); !addRequestResult.ok()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"getValues[%s]: failed to add pending requests, error: %s"</span>,</span><br><span class="line">              toString(hardwareRequestIds).c_str(), getErrorMsg(addRequestResult).c_str());</span><br><span class="line">        <span class="keyword">return</span> toScopedAStatus(addRequestResult);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!failedResults.empty()) &#123;</span><br><span class="line">        <span class="comment">// First send the failed results we already know back to the client.</span></span><br><span class="line">        client-&gt;sendResults(<span class="built_in">std</span>::<span class="built_in">move</span>(failedResults));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (hardwareRequests.empty()) &#123;</span><br><span class="line">        <span class="keyword">return</span> ScopedAStatus::ok();</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//调用到FakeVehicleHardware的getValues</span></span><br><span class="line">    <span class="keyword">if</span> (StatusCode status =</span><br><span class="line">                mVehicleHardware-&gt;getValues(client-&gt;getResultCallback(), hardwareRequests);</span><br><span class="line">        status != StatusCode::OK) &#123;</span><br><span class="line">        <span class="comment">// If the hardware returns error, finish all the pending requests for this request because</span></span><br><span class="line">        <span class="comment">// we never expect hardware to call callback for these requests.</span></span><br><span class="line">        <span class="comment">//硬件返回错误，则完成此请求的所有待处理请求</span></span><br><span class="line">        client-&gt;tryFinishRequests(hardwareRequestIds);</span><br><span class="line">        ALOGE(<span class="string">"getValues[%s]: failed to get value from VehicleHardware, status: %d"</span>,</span><br><span class="line">              toString(hardwareRequestIds).c_str(), toInt(status));</span><br><span class="line">        <span class="keyword">return</span> ScopedAStatus::fromServiceSpecificErrorWithMessage(</span><br><span class="line">                toInt(status), <span class="string">"failed to get value from VehicleHardware"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ScopedAStatus::ok();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FakeVehicleHardware继承于IVehicleHardware，因此会调用FakeVehicleHardware的getValues</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">StatusCode <span class="title">FakeVehicleHardware::getValues</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">const</span> GetValuesCallback&gt; callback,</span></span></span><br><span class="line"><span class="function"><span class="params">                                          <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;GetValueRequest&gt;&amp; requests)</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; request : requests) &#123;</span><br><span class="line">        <span class="keyword">if</span> (FAKE_VEHICLEHARDWARE_DEBUG) &#123;</span><br><span class="line">            ALOGD(<span class="string">"getValues(%d)"</span>, request.prop.prop);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// In a real VHAL implementation, you could either send the getValue request to vehicle bus</span></span><br><span class="line">        <span class="comment">// here in the binder thread, or you could send the request in getValue which runs in</span></span><br><span class="line">        <span class="comment">// the handler thread. If you decide to send the getValue request here, you should not</span></span><br><span class="line">        <span class="comment">// wait for the response here and the handler thread should handle the getValue response.</span></span><br><span class="line">        mPendingGetValueRequests.addRequest(request, callback);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> StatusCode::OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>把GetValue添加到RequestmPendingGetValueRequests</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">CallbackType</span>, <span class="title">class</span> <span class="title">RequestType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">FakeVehicleHardware</span>:</span>:PendingRequestHandler&lt;CallbackType, RequestType&gt;::PendingRequestHandler(</span><br><span class="line">        FakeVehicleHardware* hardware)</span><br><span class="line">    : mHardware(hardware) &#123;</span><br><span class="line">    <span class="comment">// Don't initialize mThread in initialization list because mThread depends on mRequests and we</span></span><br><span class="line">    <span class="comment">// want mRequests to be initialized first.</span></span><br><span class="line">    mThread = <span class="built_in">std</span>::thread([<span class="keyword">this</span>] &#123;</span><br><span class="line">        <span class="keyword">while</span> (mRequests.waitForItems()) &#123;</span><br><span class="line">            handleRequestsOnce();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">CallbackType</span>, <span class="title">class</span> <span class="title">RequestType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">FakeVehicleHardware</span>:</span>:PendingRequestHandler&lt;CallbackType, RequestType&gt;::addRequest(</span><br><span class="line">        RequestType request, <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">const</span> CallbackType&gt; callback) &#123;</span><br><span class="line">    <span class="comment">//mRequests是ConcurrentQueue，会在上面PendingRequestHandler的线程中执行</span></span><br><span class="line">    mRequests.push(&#123;</span><br><span class="line">            request,</span><br><span class="line">            callback,</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>handleRequestsOnce方法</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> FakeVehicleHardware::PendingRequestHandler&lt;FakeVehicleHardware::GetValuesCallback,</span><br><span class="line">                                                GetValueRequest&gt;::handleRequestsOnce() &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unordered_map</span>&lt;<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">const</span> GetValuesCallback&gt;, <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;GetValueResult&gt;&gt;</span><br><span class="line">            callbackToResults;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; rwc : mRequests.<span class="built_in">flush</span>()) &#123;</span><br><span class="line">        <span class="comment">//FakeVehicleHardware的handleGetValueRequest</span></span><br><span class="line">        <span class="keyword">auto</span> result = mHardware-&gt;handleGetValueRequest(rwc.request);</span><br><span class="line">        callbackToResults[rwc.callback].push_back(<span class="built_in">std</span>::<span class="built_in">move</span>(result));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; [callback, results] : callbackToResults) &#123;</span><br><span class="line">        (*callback)(<span class="built_in">std</span>::<span class="built_in">move</span>(results));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">GetValueResult <span class="title">FakeVehicleHardware::handleGetValueRequest</span><span class="params">(<span class="keyword">const</span> GetValueRequest&amp; request)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> result = getValue(request.prop);</span><br><span class="line">    <span class="keyword">return</span> getValueResult;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">FakeVehicleHardware::ValueResultType <span class="title">FakeVehicleHardware::getValue</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">       <span class="keyword">const</span> VehiclePropValue&amp; value)</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> readResult = mServerSidePropStore-&gt;readValue(value);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">move</span>(readResult);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> mServerSidePropStore是VehiclePropertyStore。</p>
+<p>FakeVehicleHardware模拟与实际硬件或车载总线交互的VHAL逻辑。它使用内存中的映射来存储属性值，并且不与实际的车载总线通信。</p>
+<p>VehiclePropertyStore就是用来存储和管理车辆属性的配置。模拟器修改的配置也会通过这个保存，没有硬件相关的交互，就是存储数据，通知数据。</p>
+<p>实际开发中FakeVehicleHardware需要修改调用驱动的接口，比如向CAN或者串口读写数据，或者使用socket通信，跟相关的ECU通信，可以接入SOME/IP或FDBus。</p>
+<p><a href="https://blog.csdn.net/zjfengdou30/article/details/125332151" target="_blank" rel="noopener">(一) 车载以太网通信之SOME/IP协议_someip协议-CSDN博客</a>  这篇SOME/IP系列文章很推荐。</p>
+<p><a href="https://source.android.google.cn/docs/automotive/vhal/vhal-interface?hl=zh-cn" target="_blank" rel="noopener">VHAL 接口  | Android Open Source Project</a>   车辆属性相关参考官方文档。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"><i class="fa fa-tag"></i> Android</a>
+          
+            <a href="/tags/%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 系统源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/10/16/AndroidR%20Input%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BB%93/" rel="next" title="AndroidR Input子系统总结">
+                <i class="fa fa-chevron-left"></i> AndroidR Input子系统总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/timg.png"
+                alt="WZKingdom" />
+            
+              <p class="site-author-name" itemprop="name">WZKingdom</p>
+              <p class="site-description motion-element" itemprop="description">撸起袖子加油干！</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#汽车框架核心"><span class="nav-number">1.</span> <span class="nav-text">汽车框架核心</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Car-Service"><span class="nav-number">1.1.</span> <span class="nav-text">Car Service</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Car-Managers"><span class="nav-number">1.2.</span> <span class="nav-text">Car Managers</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CarAPI"><span class="nav-number">2.</span> <span class="nav-text">CarAPI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CarService启动"><span class="nav-number">3.</span> <span class="nav-text">CarService启动</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#启动CarServiceHelperService"><span class="nav-number">3.1.</span> <span class="nav-text">启动CarServiceHelperService</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动CarService"><span class="nav-number">3.2.</span> <span class="nav-text">启动CarService</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ICarImpl创建"><span class="nav-number">3.3.</span> <span class="nav-text">ICarImpl创建</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CarPropertyService"><span class="nav-number">4.</span> <span class="nav-text">CarPropertyService</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#客户端CarPropertyManager"><span class="nav-number">4.1.</span> <span class="nav-text">客户端CarPropertyManager</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#服务端代码"><span class="nav-number">4.2.</span> <span class="nav-text">服务端代码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vehicle-hal"><span class="nav-number">5.</span> <span class="nav-text">Vehicle hal</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#VehicleService-cpp"><span class="nav-number">5.1.</span> <span class="nav-text">VehicleService.cpp</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WZKingdom</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">80.1k</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/miku.model.json"},"display":{"position":"right","width":100,"height":200},"mobile":{"show":true},"log":false});</script></body>
+</html>
