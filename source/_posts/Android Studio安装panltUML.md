@@ -1,6 +1,6 @@
 ---
-layout: android
 title: Android Studio安装panltUML
+date: 2017-04-03 22:25:41
 categories: 
 - Java
 - UML
